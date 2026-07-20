@@ -1,0 +1,10 @@
+{
+  "name": "math-mafia",
+  "version": "1.0.0",
+  "description": "Class 10 Maths - Math Mafia",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

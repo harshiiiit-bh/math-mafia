@@ -1,0 +1,40 @@
+{
+  "chapter": 3,
+  "title": "Pair of Linear Equations in Two Variables",
+  "notes": [
+    "A pair of linear equations a1x+b1y+c1=0 and a2x+b2y+c2=0 can be solved graphically or algebraically (substitution, elimination).",
+    "Graphically, two lines can: intersect at one point (unique solution -- consistent), be coincident (infinite solutions -- dependent & consistent), or be parallel (no solution -- inconsistent).",
+    "Ratio test: a1/a2 != b1/b2 -> intersecting (unique solution). a1/a2 = b1/b2 = c1/c2 -> coincident (infinite solutions). a1/a2 = b1/b2 != c1/c2 -> parallel (no solution).",
+    "Substitution method: express one variable in terms of the other from one equation, plug into the second equation, solve.",
+    "Elimination method: multiply equations to make coefficients of one variable equal, then add/subtract to eliminate it.",
+    "If, during elimination/substitution, the variable cancels out and you get a TRUE statement (like 18=18) -> infinitely many solutions. If you get a FALSE statement (like -4=0) -> no solution.",
+    "Word problems are the heart of this chapter: ages, numbers/digits, fractions, cost problems, speed/distance -- always define variables clearly first, form two equations, then solve."
+  ],
+  "formulas": [
+    { "name": "Consistency test", "formula": "a1/a2 vs b1/b2 vs c1/c2", "use": "Determine unique / infinite / no solution without graphing." },
+    { "name": "Two-digit number", "formula": "Number = 10x + y (x=tens digit, y=units digit); reversed = 10y + x", "use": "Digit-reversal word problems." },
+    { "name": "Substitution method", "formula": "Solve one eqn for a variable, substitute into the other", "use": "Best when one equation is already simple to isolate a variable." },
+    { "name": "Elimination method", "formula": "Scale equations so one variable's coefficients match, then add/subtract", "use": "Best for symmetric-looking equations." }
+  ],
+  "examples": [
+    { "id": "ex1", "question": "Check graphically whether x+3y=6 and 2x-3y=12 is consistent; solve if so.", "solution": "Plotting both lines, they intersect at (6,0). So the pair is consistent with unique solution x=6, y=0." },
+    { "id": "ex4", "question": "Solve 7x-15y=2 and x+2y=3 by substitution.", "solution": "From eqn2: x=3-2y. Sub into eqn1: 7(3-2y)-15y=2 -> 21-29y=2 -> y=19/29. Then x=3-2(19/29)=49/29." },
+    { "id": "ex8", "question": "Ratio of incomes of two persons is 9:7, ratio of expenditures is 4:3. Both save Rs 2000/month. Find incomes.", "solution": "Let incomes=9x,7x; expenditures=4y,3y. 9x-4y=2000, 7x-3y=2000. Scale to eliminate y: multiply eqn1 by3, eqn2 by4 -> 27x-12y=6000, 28x-12y=8000. Subtract: x=2000. Sub back: y=4000. Incomes = 18000 and 14000." },
+    { "id": "ex10", "question": "Sum of a two-digit number and its digit-reversal is 66; digits differ by 2. Find the number(s).", "solution": "x+y=6 (from sum condition /11) and x-y=2 or y-x=2. Solving both cases gives numbers 42 and 24 -- two valid answers." }
+  ],
+  "exercises": [
+    { "id": "3.1-1", "source": "NCERT Ex 3.1 Q1", "topic": "Graphical Method (word problem)", "difficulty": "medium", "question": "(i) 10 students took a quiz, girls are 4 more than boys -- find boys & girls graphically. (ii) 5 pencils+7 pens cost Rs50, 7 pencils+5 pens cost Rs46 -- find cost of each.", "answer": "(i) Girls=7, Boys=3. (ii) Pencil=Rs3, Pen=Rs5." },
+    { "id": "3.1-2", "source": "NCERT Ex 3.1 Q2", "topic": "Consistency Check", "difficulty": "easy", "question": "Using ratio comparison, classify: (i) 5x-4y+8=0, 7x+6y-9=0 (ii) 9x+3y+12=0, 18x+6y+24=0 (iii) 6x-3y+10=0, 2x-y+9=0", "answer": "(i) Intersecting (ii) Coincident (iii) Parallel" },
+    { "id": "3.1-3", "source": "NCERT Ex 3.1 Q3", "topic": "Consistent/Inconsistent Check", "difficulty": "easy", "question": "Determine if consistent/inconsistent: (i) 3x+2y=5, 2x-3y=7 (ii) 2x-3y=8, 4x-6y=9 (iii)(3/2)x+(5/3)y=7, 9x-10y=14 (iv) 5x-3y=11, -10x+6y=-22 (v)(4/3)x+2y=8, 2x+3y=12", "answer": "(i) Consistent (ii) Inconsistent (iii) Consistent (iv) Consistent (v) Consistent" },
+    { "id": "3.1-4", "source": "NCERT Ex 3.1 Q4", "topic": "Consistent/Inconsistent + Graph", "difficulty": "medium", "question": "Classify consistent/inconsistent, solve graphically if consistent: (i) x+y=5, 2x+2y=10 (ii) x-y=8, 3x-3y=16 (iii) 2x+y-6=0, 4x-2y-4=0 (iv) 2x-2y-2=0, 4x-4y-5=0", "answer": "(i) Consistent, infinite solns, y=5-x (ii) Inconsistent (iii) Consistent, unique soln x=2,y=2 (iv) Inconsistent" },
+    { "id": "3.1-5", "source": "NCERT Ex 3.1 Q5", "topic": "Word Problem (Perimeter)", "difficulty": "medium", "question": "Half perimeter of a rectangular garden is 36m; length is 4m more than width. Find dimensions.", "answer": "Length=20m, Breadth=16m" },
+    { "id": "3.1-6", "source": "NCERT Ex 3.1 Q6", "topic": "Forming Equations for Given Line Type", "difficulty": "medium", "question": "Given 2x+3y-8=0, write another equation so the pair is: (i) intersecting (ii) parallel (iii) coincident.", "answer": "Any one valid example each, e.g. (i) 3x+2y-7=0 (ii) 2x+3y-12=0 (iii) 4x+6y-16=0" },
+    { "id": "3.1-7", "source": "NCERT Ex 3.1 Q7", "topic": "Graphing + Triangle Area", "difficulty": "medium-hard", "question": "Draw graphs of x-y+1=0 and 3x+2y-12=0. Find vertices of the triangle formed with the x-axis.", "answer": "Vertices: (-1,0), (4,0), (2,3)" },
+    { "id": "3.2-1", "source": "NCERT Ex 3.2 Q1", "topic": "Substitution Method", "difficulty": "medium", "question": "Solve by substitution: (i) x+y=14, x-y=4 (ii) s-t=3, s/3+t/2=6 (iii) 3x-y=3, 9x-3y=9 (iv) 0.2x+0.3y=1.3, 0.4x+0.5y=2.3 (v) root2 x+root3 y=0, root3 x-root8 y=0 (vi) (3x/2)-(5y/3)=-2, x/3+y/2=13/6", "answer": "(i) x=9,y=5 (ii) s=9,t=6 (iii) infinite solutions y=3x-3 (iv) x=2,y=3 (v) x=0,y=0 (vi) x=2,y=3" },
+    { "id": "3.2-2", "source": "NCERT Ex 3.2 Q2", "topic": "Substitution + Parameter", "difficulty": "medium", "question": "Solve 2x+3y=11 and 2x-4y=-24; find m for which y=mx+3.", "answer": "x=-2, y=5; m=-1" },
+    { "id": "3.2-3", "source": "NCERT Ex 3.2 Q3", "topic": "Word Problems (Substitution)", "difficulty": "medium-hard", "question": "(i) Two numbers differ by 26, one is 3x the other. (ii) Supplementary angles differ by 18deg. (iii) 7 bats+6 balls=Rs3800, 3 bats+5 balls=Rs1750. (iv) Taxi: 10km=Rs105, 15km=Rs155; find fixed charge, per-km rate, cost for 25km. (v) A fraction becomes 9/11 when 2 added to both parts, 5/6 when 3 added to both. Find fraction.", "answer": "(i) 39,13 (ii) 99,81 degrees (iii) Bat=Rs500, Ball=Rs50 (iv) Fixed=Rs5, per km=Rs10, 25km=Rs255 (v) 7/9" },
+    { "id": "3.2-4", "source": "NCERT Ex 3.2 Q3(vi)", "topic": "Word Problem (Ages)", "difficulty": "medium", "question": "5 years hence Jacob's age = 3x his son's; 5 years ago Jacob's age = 7x his son's. Find present ages.", "answer": "Jacob=40, Son=10" },
+    { "id": "3.3-1", "source": "NCERT Ex 3.3 Q1", "topic": "Elimination Method", "difficulty": "medium", "question": "Solve by elimination and substitution: (i) x+y=5, 2x-3y=4 (ii) 3x+4y=10, 2x-2y=2 (iii) 3x-5y-4=0, 9x=2y+7 (iv) x/2+2y/3=-1, x-y/3=3", "answer": "(i) x=19/5,y=6/5 (ii) x=2,y=1 (iii) x=2,y=1/2 (iv) x=2,y=-3" },
+    { "id": "3.3-2", "source": "NCERT Ex 3.3 Q2", "topic": "Word Problems (Elimination)", "difficulty": "medium-hard", "question": "(i) Fraction reduces to 1 if 1 added to numerator & 1 subtracted from denominator; becomes 1/2 if 1 added to denominator only. (ii) 5 yrs ago Nuri was thrice Sonu's age; 10 yrs later Nuri will be twice Sonu's age. (iii) Sum of digits of 2-digit no. is 9; 9x the number = 2x its reverse. (iv) Meena withdrew Rs2000 in Rs50 & Rs100 notes only, got 25 notes total. (v) Library: fixed charge for first 3 days + extra per day; Rs27 for 7 days, Rs21 for 5 days.", "answer": "(i) 3/5 (ii) Nuri=50, Sonu=20 (iii) 81 (iv) 50-notes:10, 100-notes:15 (v) Fixed=Rs15, extra/day=Rs3" }
+  ]
+}
