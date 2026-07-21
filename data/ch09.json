@@ -1,0 +1,33 @@
+{
+  "chapter": 9,
+  "title": "Some Applications of Trigonometry",
+  "notes": [
+    "Line of sight = the line from the observer's eye to the object being viewed.",
+    "Angle of elevation = angle between the line of sight and the horizontal, when looking UP at something above eye level.",
+    "Angle of depression = angle between the line of sight and the horizontal, when looking DOWN at something below eye level.",
+    "Angle of depression from point A to point B equals the angle of elevation from point B to point A (alternate angles, since horizontal lines are parallel) -- this trick is used constantly.",
+    "Standard setup: draw a right triangle with the vertical height as one leg, horizontal distance as the other leg, and the line of sight as the hypotenuse. Then apply tan (most common), sin, or cos depending on which two quantities you know/need.",
+    "If observer height is given (e.g. 'a 1.5m tall boy'), you must subtract/adjust it from the total height of the object -- a very common mistake is forgetting this adjustment.",
+    "Two-angle problems (elevation changes from 30 to 60 as you walk closer, or two ships/two poles) usually need TWO right triangles sharing a common height, solved simultaneously."
+  ],
+  "formulas": [
+    { "name": "Elevation/Depression setup", "formula": "tan(angle) = opposite/adjacent = height/horizontal distance", "use": "The single most-used relation in this chapter." },
+    { "name": "Alternate angle trick", "formula": "Angle of depression (from top) = Angle of elevation (from bottom)", "use": "Converts a depression problem into a standard elevation triangle." }
+  ],
+  "examples": [
+    { "id": "setup", "question": "A pole's shadow makes what triangle with the sun's elevation angle?", "solution": "Vertical pole = one leg (height), shadow on ground = other leg (base), line from sun to pole-top = hypotenuse. tan(elevation angle) = pole height / shadow length." }
+  ],
+  "exercises": [
+    { "id": "9.1-1", "source": "NCERT Ex 9.1 Q1", "topic": "Basic Elevation (rope/pole)", "difficulty": "easy", "question": "A circus artist climbs a 20m rope tied from a pole's top to the ground, making 30 degrees with the ground. Find the pole's height.", "answer": "10 m" },
+    { "id": "9.1-2", "source": "NCERT Ex 9.1 Q2", "topic": "Broken Tree Problem", "difficulty": "medium", "question": "A tree breaks; top touches ground at 30 degrees, 8m from the foot. Find the original height of the tree.", "answer": "8root3 m (total height = broken part + standing part)" },
+    { "id": "9.1-4", "source": "NCERT Ex 9.1 Q4", "topic": "Basic Elevation (tower)", "difficulty": "easy", "question": "Angle of elevation of a tower's top from a point 30m away is 30 degrees. Find the tower's height.", "answer": "10root3 m" },
+    { "id": "9.1-5", "source": "NCERT Ex 9.1 Q5", "topic": "Kite String Problem", "difficulty": "medium", "question": "A kite flies at 60m height, string inclination 60 degrees with ground. Find the string's length.", "answer": "40root3 m" },
+    { "id": "9.1-6", "source": "NCERT Ex 9.1 Q6", "topic": "Two-Angle Problem (walking towards building)", "difficulty": "medium-hard", "question": "A 1.5m boy sees a 30m building's top at elevation 30 degrees, then 60 degrees after walking closer. Find distance walked.", "answer": "19root3 m" },
+    { "id": "9.1-7", "source": "NCERT Ex 9.1 Q7", "topic": "Tower on Building (two angles)", "difficulty": "medium-hard", "question": "From a ground point, elevation of bottom and top of a transmission tower (on a 20m building) are 45 and 60 degrees. Find tower height.", "answer": "20(root3-1) m" },
+    { "id": "9.1-9", "source": "NCERT Ex 9.1 Q9", "topic": "Two Structures, Two Angles", "difficulty": "medium", "question": "Elevation of building top from tower's foot is 30, elevation of tower top from building's foot is 60. Tower is 50m. Find building height.", "answer": "50/3 m" },
+    { "id": "9.1-10", "source": "NCERT Ex 9.1 Q10", "topic": "Two Poles (classic)", "difficulty": "medium-hard", "question": "Two equal-height poles on either side of an 80m wide road. From a point between, elevations are 60 and 30 degrees. Find pole heights and point's distance from each pole.", "answer": "Height=20root3 m, distances=20m and 60m" },
+    { "id": "9.1-12", "source": "NCERT Ex 9.1 Q12", "topic": "Elevation + Depression combined", "difficulty": "medium-hard", "question": "From a 7m building, elevation of a cable tower's top is 60, depression of its foot is 45. Find tower height.", "answer": "7(root3+1) m" },
+    { "id": "9.1-13", "source": "NCERT Ex 9.1 Q13", "topic": "Two Ships, Two Depression Angles", "difficulty": "hard", "question": "From a 75m lighthouse, depression angles of two ships (same side, one behind other) are 30 and 45. Find distance between ships.", "answer": "75(root3-1) m" },
+    { "id": "9.1-15", "source": "NCERT Ex 9.1 Q15", "topic": "Time-Speed via Angles", "difficulty": "hard", "question": "From a tower, a car's depression angle is 30, then 60 after 6 seconds (uniform speed). Find time to reach the tower's foot from the second point.", "answer": "3 seconds" }
+  ]
+}

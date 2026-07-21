@@ -1,0 +1,32 @@
+{
+  "chapter": 6,
+  "title": "Triangles",
+  "notes": [
+    "Similar figures: same shape, not necessarily same size. All congruent figures are similar, but similar figures need not be congruent.",
+    "Two polygons (same number of sides) are similar if: (i) corresponding angles are equal AND (ii) corresponding sides are in the same ratio. BOTH conditions needed -- angles-equal alone or sides-proportional alone is not enough.",
+    "Basic Proportionality Theorem (Thales Theorem / Theorem 6.1): If a line is drawn parallel to one side of a triangle intersecting the other two sides at distinct points, the other two sides are divided in the same ratio.",
+    "Converse of BPT (Theorem 6.2): If a line divides two sides of a triangle in the same ratio, it is parallel to the third side.",
+    "Similarity criteria for triangles: AAA (all 3 angles equal), AA (just 2 angles equal is enough since the 3rd is automatically equal), SSS (all 3 sides proportional), SAS (one angle equal + the two sides forming it proportional).",
+    "RHS Similarity Criterion (Note to Reader): in two right triangles, if the hypotenuse and one side of one are proportional to the hypotenuse and one side of the other, the triangles are similar.",
+    "Common proof strategy: prove two triangles similar first (using AA usually), then use the property that corresponding sides of similar triangles are proportional to derive the required relation."
+  ],
+  "formulas": [
+    { "name": "Basic Proportionality Theorem", "formula": "If DE || BC in triangle ABC (D on AB, E on AC): AD/DB = AE/EC", "use": "Finding unknown segment lengths when a line is parallel to one side." },
+    { "name": "AA Similarity", "formula": "2 angles of one triangle = 2 angles of another -> triangles similar", "use": "Most common similarity proof method." },
+    { "name": "SSS Similarity", "formula": "AB/DE = BC/EF = CA/FD -> triangle ABC ~ triangle DEF", "use": "When all three side ratios are given/computable." },
+    { "name": "SAS Similarity", "formula": "One angle equal + including sides proportional -> triangles similar", "use": "When one angle and its two arms' ratios are known." },
+    { "name": "Indirect height/distance (shadow method)", "formula": "height1/shadow1 = height2/shadow2", "use": "Classic tower/pole shadow problems using similar triangles." }
+  ],
+  "examples": [
+    { "id": "concept", "question": "Are a square and a rhombus similar even though sides are proportional?", "solution": "No -- proportional sides alone isn't enough; corresponding angles must also be equal. A square has all 90-degree angles, a rhombus generally doesn't, so they're not similar despite equal side ratios." },
+    { "id": "shadow", "question": "A vertical pole 6m casts a 4m shadow. At the same time a tower casts a 28m shadow. Find the tower's height.", "solution": "Using similar triangles (pole/shadow ratio = tower/shadow ratio): 6/4 = h/28, so h = 6*28/4 = 42m." }
+  ],
+  "exercises": [
+    { "id": "6.1-1", "source": "NCERT Ex 6.1 Q1", "topic": "Similarity Basics", "difficulty": "easy", "question": "Fill blanks: (i) All circles are ___ (congruent/similar). (ii) All squares are ___. (iii) All ___ triangles are similar. (iv) Two polygons of same sides are similar if corresponding angles are ___ and corresponding sides are ___.", "answer": "(i) similar (ii) similar (iii) equilateral (iv) equal, proportional" },
+    { "id": "6.2-1", "source": "NCERT Ex 6.2 Q1", "topic": "Basic Proportionality Theorem", "difficulty": "medium", "question": "In a triangle, DE || BC. Find EC in case (i), and AD in case (ii), given standard figure measurements.", "answer": "(i) EC=2cm (ii) AD=2.4cm" },
+    { "id": "6.2-2", "source": "NCERT Ex 6.2 Q2", "topic": "Checking DE || QR using BPT converse", "difficulty": "medium", "question": "E,F on sides PQ,PR of triangle PQR. Check if EF||QR: (i) PE=3.9,EQ=3,PF=3.6,FR=2.4 (ii) PE=4,QE=4.5,PF=8,RF=9 (iii) PQ=1.28,PR=2.56,PE=0.18,PF=0.36", "answer": "(i) No (ii) Yes (iii) Yes" },
+    { "id": "6.3-1", "source": "NCERT Ex 6.3 Q1", "topic": "Identifying Similarity Criterion", "difficulty": "medium", "question": "State which pairs of given triangles are similar, and name the criterion (AAA/SSS/SAS/AA) used, for six given figure pairs.", "answer": "(i) Yes AAA (ii) Yes SSS (iii) No (iv) Yes SAS (v) No (vi) Yes AA" },
+    { "id": "6.3-2", "source": "NCERT Ex 6.3 Q2", "topic": "Similar Triangles - Angle Chasing", "difficulty": "medium", "question": "Triangle ODC ~ Triangle OBA, angle BOC=125 degrees, angle CDO=70 degrees. Find angle DOC, angle DCO, angle OAB.", "answer": "55 degrees, 55 degrees, 55 degrees" },
+    { "id": "6.3-15", "source": "NCERT Ex 6.3 Q15", "topic": "Word Problem (Shadow/Height)", "difficulty": "medium", "question": "A vertical pole of length 6m casts a shadow 4m long. At the same time a tower casts a shadow 28m long. Find the height of the tower.", "answer": "42 m" }
+  ]
+}

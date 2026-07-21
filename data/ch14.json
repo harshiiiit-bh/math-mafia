@@ -1,0 +1,32 @@
+{
+  "chapter": 14,
+  "title": "Probability",
+  "notes": [
+    "This chapter covers THEORETICAL (classical) probability only -- based on equally likely outcomes, not experimental/observed frequency.",
+    "P(E) = (Number of outcomes favourable to E) / (Total number of possible outcomes) -- the single formula this entire chapter is built on.",
+    "P(E) + P(not E) = 1, so P(not E) = 1 - P(E). 'Not E' is called the complement of E.",
+    "Probability of an impossible event = 0. Probability of a sure/certain event = 1.",
+    "0 <= P(E) <= 1 always -- a probability can NEVER be negative or greater than 1. Great way to instantly spot wrong answers.",
+    "Common experiment setups to know cold: single die (6 outcomes), pair of dice (36 outcomes), deck of 52 cards (4 suits x 13 ranks, 12 face cards, 26 red/26 black), coin toss (2 outcomes, HH/HT/TH/TT for two coins).",
+    "'Without replacement' problems (cards/pens/bulbs removed and not put back) change the total number of outcomes for the next draw -- always recompute the denominator."
+  ],
+  "formulas": [
+    { "name": "Classical Probability", "formula": "P(E) = favourable outcomes / total outcomes", "use": "The core formula for every problem in this chapter." },
+    { "name": "Complement Rule", "formula": "P(not E) = 1 - P(E)", "use": "Fast way to find probability of an event NOT happening." },
+    { "name": "Deck of Cards facts", "formula": "52 cards = 26 red + 26 black = 4 suits x 13 ranks; 12 face cards (K,Q,J of each suit)", "use": "Standard reference numbers for card problems." }
+  ],
+  "examples": [
+    { "id": "basic", "question": "A bag contains only lemon-flavoured candies. What's the probability of drawing an orange-flavoured one?", "solution": "0 -- it's an impossible event since the bag has no orange candies at all." }
+  ],
+  "exercises": [
+    { "id": "14.1-4", "source": "NCERT Ex 14.1 Q4", "topic": "Valid Probability Values", "difficulty": "easy", "question": "Which of these cannot be the probability of an event? (A) 2/3 (B) -1.5 (C) 15% (D) 0.7", "answer": "B (probability can never be negative)" },
+    { "id": "14.1-5", "source": "NCERT Ex 14.1 Q5", "topic": "Complement Rule", "difficulty": "easy", "question": "If P(E) = 0.05, what is P(not E)?", "answer": "0.95" },
+    { "id": "14.1-7", "source": "NCERT Ex 14.1 Q7", "topic": "Complement Rule (word problem)", "difficulty": "medium", "question": "Probability of 2 students NOT sharing a birthday (in a group of 3) is 0.992. Find probability they DO share a birthday.", "answer": "0.008" },
+    { "id": "14.1-8", "source": "NCERT Ex 14.1 Q8", "topic": "Basic Draw Probability", "difficulty": "easy", "question": "A bag has 3 red and 5 black balls. Find probability of drawing (i) red (ii) not red.", "answer": "(i) 3/8 (ii) 5/8" },
+    { "id": "14.1-13", "source": "NCERT Ex 14.1 Q13", "topic": "Single Die Probability", "difficulty": "easy", "question": "A die is thrown once. Find probability of getting: (i) a prime number (ii) a number between 2 and 6 (iii) an odd number.", "answer": "(i) 1/2 (ii) 1/2 (iii) 1/2" },
+    { "id": "14.1-14", "source": "NCERT Ex 14.1 Q14", "topic": "Cards Probability", "difficulty": "medium", "question": "One card drawn from a 52-card deck. Find probability of: (i) a red king (ii) a face card (iii) a red face card (iv) jack of hearts (v) a spade (vi) queen of diamonds.", "answer": "(i) 1/26 (ii) 3/13 (iii) 3/26 (iv) 1/52 (v) 1/4 (vi) 1/52" },
+    { "id": "14.1-16", "source": "NCERT Ex 14.1 Q16", "topic": "Defective Items Probability", "difficulty": "medium", "question": "12 defective pens mixed with 132 good ones. One pen drawn at random. Find probability it's good.", "answer": "11/12" },
+    { "id": "14.1-18", "source": "NCERT Ex 14.1 Q18", "topic": "Number Properties Probability", "difficulty": "medium-hard", "question": "A box has discs numbered 1-90. Find probability the drawn disc has: (i) a two-digit number (ii) a perfect square number (iii) a number divisible by 5.", "answer": "(i) 9/10 (ii) 1/10 (iii) 1/5" },
+    { "id": "14.1-19", "source": "NCERT Ex 14.1 Q19", "topic": "Letter Die Probability", "difficulty": "easy", "question": "A die's six faces show letters A,B,C,D,E,A. Find probability of getting: (i) A (ii) D.", "answer": "(i) 1/3 (ii) 1/6" }
+  ]
+}

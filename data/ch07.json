@@ -1,0 +1,36 @@
+{
+  "chapter": 7,
+  "title": "Coordinate Geometry",
+  "notes": [
+    "Distance formula comes straight from Pythagoras Theorem applied to the coordinate plane.",
+    "Distance of a point from the origin is a special case of the distance formula with the second point as (0,0).",
+    "Collinearity check: three points are collinear if the distance between the outer two equals the sum of distances of the middle point to each (i.e. AB+BC=AC), OR if the area of the triangle they form is zero.",
+    "To identify quadrilateral type from 4 points: compute all 4 sides and both diagonals using distance formula, then compare (all sides equal + diagonals equal = square; all sides equal + diagonals unequal = rhombus; opposite sides equal + diagonals equal = rectangle; etc).",
+    "Section formula gives the point dividing a segment in a given ratio internally -- derived using AA similarity of triangles (links back to Chapter 6).",
+    "Midpoint formula is just the section formula with ratio 1:1.",
+    "For 'point dividing a line in ratio k:1' problems, or 'find the ratio' problems, set up the section formula and solve for the unknown ratio or coordinate."
+  ],
+  "formulas": [
+    { "name": "Distance Formula", "formula": "PQ = root[(x2-x1)^2 + (y2-y1)^2]", "use": "Distance between any two points P(x1,y1), Q(x2,y2)." },
+    { "name": "Distance from origin", "formula": "d = root(x^2+y^2)", "use": "Distance of point (x,y) from (0,0)." },
+    { "name": "Section Formula (internal division)", "formula": "P(x,y) = [(m1x2+m2x1)/(m1+m2), (m1y2+m2y1)/(m1+m2)]", "use": "Point dividing segment AB in ratio m1:m2 from A." },
+    { "name": "Midpoint Formula", "formula": "Midpoint = [(x1+x2)/2, (y1+y2)/2]", "use": "Special case of section formula with ratio 1:1." }
+  ],
+  "examples": [
+    { "id": "distance", "question": "Find the distance between P(4,6) and Q(6,8).", "solution": "PQ = root[(6-4)^2+(8-6)^2] = root[4+4] = root8 = 2root2 units." },
+    { "id": "section", "question": "A relay tower P divides segment AB (A at origin, B(36,15)) so that distance from B is twice distance from A -- ratio 1:2. Find P.", "solution": "Using section formula with m1:m2=1:2: x=(1x36+2x0)/3=12, y=(1x15+2x0)/3=5. So P=(12,5)." }
+  ],
+  "exercises": [
+    { "id": "7.1-1", "source": "NCERT Ex 7.1 Q1", "topic": "Distance Formula", "difficulty": "easy", "question": "Find the distance between: (i) (2,3),(4,1) (ii) (-5,7),(-1,3) (iii) (a,b),(-a,-b)", "answer": "(i) 2root2 (ii) 4root2 (iii) 2root(a^2+b^2)" },
+    { "id": "7.1-2", "source": "NCERT Ex 7.1 Q2", "topic": "Distance from Origin (word problem)", "difficulty": "easy", "question": "Find the distance between (0,0) and (36,15). What real-world distance does this represent?", "answer": "39 units; 39 km" },
+    { "id": "7.1-3", "source": "NCERT Ex 7.1 Q3", "topic": "Collinearity", "difficulty": "medium", "question": "Determine if the points (1,5), (2,3) and (-2,-11) are collinear.", "answer": "No" },
+    { "id": "7.1-4", "source": "NCERT Ex 7.1 Q4", "topic": "Type of Triangle", "difficulty": "medium", "question": "Check whether (5,-2), (6,4) and (7,-2) are vertices of an isosceles triangle.", "answer": "Yes" },
+    { "id": "7.1-7", "source": "NCERT Ex 7.1 Q7", "topic": "Equidistant Point on Axis", "difficulty": "medium", "question": "Find the point on the x-axis equidistant from (2,-5) and (-2,9).", "answer": "(-7, 0)" },
+    { "id": "7.1-8", "source": "NCERT Ex 7.1 Q8", "topic": "Finding unknown coordinate", "difficulty": "medium", "question": "Find y such that distance between P(2,-3) and Q(10,y) is 10 units.", "answer": "-9 or 3" },
+    { "id": "7.2-1", "source": "NCERT Ex 7.2 Q1", "topic": "Section Formula", "difficulty": "medium", "question": "Find coordinates of the point dividing the join of (-1,7) and (4,-3) in ratio 2:3.", "answer": "(1, 3)" },
+    { "id": "7.2-4", "source": "NCERT Ex 7.2 Q4", "topic": "Finding the Ratio", "difficulty": "medium", "question": "Find the ratio in which the segment joining (-3,10) and (6,-8) is divided by (-1,6).", "answer": "2:7" },
+    { "id": "7.2-6", "source": "NCERT Ex 7.2 Q6", "topic": "Parallelogram Vertices", "difficulty": "medium-hard", "question": "If (1,2),(4,y),(x,6),(3,5) are vertices of a parallelogram in order, find x and y.", "answer": "x=6, y=3" },
+    { "id": "7.2-7", "source": "NCERT Ex 7.2 Q7", "topic": "Diameter/Center Problem", "difficulty": "medium", "question": "AB is a diameter of a circle with centre (2,-3), B is (1,4). Find A.", "answer": "(3, -10)" },
+    { "id": "7.2-10", "source": "NCERT Ex 7.2 Q10", "topic": "Area of Rhombus via Diagonals", "difficulty": "medium-hard", "question": "Find the area of a rhombus with vertices (3,0),(4,5),(-1,4),(-2,-1) taken in order. (Area = half product of diagonals)", "answer": "24 sq units" }
+  ]
+}
