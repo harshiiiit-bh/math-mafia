@@ -41,6 +41,11 @@
     "Cases of No Bending: (1) Normal incidence - when light hits the boundary perpendicular to the surface (angle of incidence = 0), there is no refraction/bending. (2) No medium change / no change in refractive index - if angle i = angle r = 0."
   ],
 
+  "imageNotes": [
+    "assets/science/notes/9/page-1.jpg",
+    "assets/science/notes/9/page-2.jpg"
+  ],
+
   "formulas": [
     { "formula": "angle i = angle r", "name": "Law of Reflection", "use": "Angle of incidence equals angle of reflection" },
     { "formula": "1/f = 1/v + 1/u", "name": "Mirror Formula", "use": "Relating object distance, image distance and focal length for spherical mirrors" },
@@ -57,7 +62,7 @@
 
   "examples": [
     { "question": "State the uses of a concave mirror.", "solution": "Concave mirrors are used in torches, search lights and vehicle headlights to get powerful parallel beams of light, by dentists to see enlarged images of teeth, and in solar furnaces to concentrate sunlight to a point.", "topic": "Spherical Mirrors" },
-    { "question": "An object is placed between the pole and focus of a concave lens. What is the nature of the image formed by a convex lens when the object is between the optical centre and focus, versus a concave lens for any object position?", "solution": "For a convex lens with the object between the optical centre and F, the image is virtual, erect, and enlarged, on the same side as the object. For a concave lens, regardless of object position, the image is always virtual, erect, and diminished.", "topic": "Image Formation by Lenses" },
+    { "question": "What is the nature of image formed by a convex lens when the object is between the optical centre and focus, versus a concave lens for any object position?", "solution": "For a convex lens with the object between the optical centre and F, the image is virtual, erect, and enlarged, on the same side as the object. For a concave lens, regardless of object position, the image is always virtual, erect, and diminished.", "topic": "Image Formation by Lenses" },
     { "question": "Why does a light ray bend towards the normal when going from air to glass, but there is no bending at normal incidence?", "solution": "Light bends towards the normal when passing from a rarer medium (air) to a denser medium (glass) because its speed decreases. At normal incidence, the angle of incidence is 0 degrees, so there is no bending even though the medium changes.", "topic": "Refraction of Light" }
   ],
 
