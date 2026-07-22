@@ -1,0 +1,33 @@
+{
+  "chapter": 13,
+  "title": "Statistics",
+  "notes": [
+    "This chapter is entirely about grouped (class-interval) data -- finding mean, mode, and median from frequency distribution tables.",
+    "Three methods to find MEAN: Direct Method (mean = sum(fi*xi)/sum(fi), xi=class mark), Assumed Mean Method (use a deviation di=xi-a to simplify arithmetic), Step Deviation Method (further simplify using ui=di/h when class widths are equal). All three give the SAME answer -- pick based on how large/messy the numbers are.",
+    "Class mark (xi) = (upper limit + lower limit)/2 for each class -- always compute this first for mean calculations.",
+    "MODE for grouped data: identify the modal class (class with highest frequency), then apply the mode formula using that class's boundaries and the frequencies of the classes right before/after it.",
+    "MEDIAN for grouped data: build a cumulative frequency (less than type) column, find n/2, locate the median class (where cumulative frequency first exceeds n/2), then apply the median formula.",
+    "Empirical relationship (approximation, not exact): Mode = 3(Median) - 2(Mean). Useful for finding one measure if the other two are known.",
+    "Word problems disguise themselves as everyday data: heartbeats, wages, electricity units, ages, literacy rates, plant counts -- always start by identifying class marks / cumulative frequencies before applying any formula."
+  ],
+  "formulas": [
+    { "name": "Mean (Direct Method)", "formula": "Mean = sum(fi*xi) / sum(fi)", "use": "Basic mean formula using class marks xi and frequencies fi." },
+    { "name": "Mean (Assumed Mean Method)", "formula": "Mean = a + [sum(fi*di)/sum(fi)], where di = xi - a", "use": "When class marks are large numbers, pick a convenient assumed mean 'a' to simplify." },
+    { "name": "Mean (Step Deviation Method)", "formula": "Mean = a + h*[sum(fi*ui)/sum(fi)], where ui = (xi-a)/h", "use": "Further simplification when class width h is constant." },
+    { "name": "Mode of Grouped Data", "formula": "Mode = l + [(f1-f0)/(2f1-f0-f2)]*h", "use": "l=lower limit of modal class, f1=modal class freq, f0=preceding class freq, f2=succeeding class freq, h=class width." },
+    { "name": "Median of Grouped Data", "formula": "Median = l + [(n/2 - cf)/f]*h", "use": "l=lower limit of median class, n=total frequency, cf=cumulative freq before median class, f=median class freq, h=class width." },
+    { "name": "Empirical Relationship", "formula": "Mode = 3*Median - 2*Mean", "use": "Quick cross-check or find a missing measure of central tendency." }
+  ],
+  "examples": [
+    { "id": "mode-basic", "question": "Wickets taken by a bowler in 10 matches: 2,6,4,5,0,2,1,3,2,3. Find the mode.", "solution": "Frequency table shows 2 wickets occurred 3 times -- the maximum. So mode = 2." }
+  ],
+  "exercises": [
+    { "id": "13.1-1", "source": "NCERT Ex 13.1 Q1", "topic": "Mean of Grouped Data (Direct Method)", "difficulty": "medium", "question": "Find the mean number of plants per house from a grouped frequency table of 20 houses (class intervals 0-2 through 12-14).", "answer": "8.1 plants (Direct Method used since xi and fi values are small)" },
+    { "id": "13.1-2", "source": "NCERT Ex 13.1 Q2", "topic": "Mean of Grouped Data (Assumed Mean)", "difficulty": "medium", "question": "Find the mean daily wages of 50 factory workers from a grouped frequency table (class intervals 500-520 through 580-600).", "answer": "Rs 545.20" },
+    { "id": "13.1-3", "source": "NCERT Ex 13.1 Q3", "topic": "Finding Missing Frequency from Mean", "difficulty": "medium-hard", "question": "Daily pocket allowance data has mean Rs18; find the missing frequency f in the distribution.", "answer": "f = 20" },
+    { "id": "13.2-1", "source": "NCERT Ex 13.2 Q1", "topic": "Mode + Mean comparison", "difficulty": "medium-hard", "question": "Ages of patients admitted to a hospital, grouped data. Find the mode and mean, and interpret which age group is most common vs the average age.", "answer": "Mode = 36.8 years, Mean = 35.37 years" },
+    { "id": "13.2-2", "source": "NCERT Ex 13.2 Q2", "topic": "Mode of Grouped Data", "difficulty": "medium", "question": "Lifetimes of 225 electrical components, grouped data. Find the modal lifetime.", "answer": "65.625 hours" },
+    { "id": "13.3-1", "source": "NCERT Ex 13.3 Q1", "topic": "Mean, Median, Mode Combined", "difficulty": "hard", "question": "Monthly electricity consumption of 68 consumers, grouped data. Find median, mean, and mode; compare them.", "answer": "Median ~137, Mean ~137.05, Mode ~135.76 (all three close together, indicating fairly symmetric data)" },
+    { "id": "13.3-2", "source": "NCERT Ex 13.3 Q2", "topic": "Finding Unknowns from Median", "difficulty": "hard", "question": "Median of a distribution is 28.5; find the missing frequencies x and y given total = 60.", "answer": "x=8, y=7" }
+  ]
+}

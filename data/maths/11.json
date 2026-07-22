@@ -1,0 +1,30 @@
+{
+  "chapter": 11,
+  "title": "Areas Related to Circles",
+  "notes": [
+    "Sector = region between two radii and the arc they cut off. Minor sector < 180 deg worth of angle, major sector = 360 - minor angle.",
+    "Segment = region between a chord and the arc. Minor segment is the smaller piece, major segment is the rest of the circle.",
+    "Area of segment = Area of sector - Area of the triangle formed by the two radii and the chord. This is THE key formula for every segment problem.",
+    "For angle 90 or 60 or 120 degrees, the triangle part is often a standard triangle (right isosceles, equilateral) so its area can be computed directly instead of using general trig.",
+    "Unless stated otherwise, use pi = 22/7 in NCERT problems (some problems explicitly say use pi=3.14 -- always check what's specified).",
+    "Real-life sector problems (grazing horse, umbrella ribs, wiper blades, brooch design) are just repeated applications of arc length and sector area formulas -- identify r and theta, then plug in."
+  ],
+  "formulas": [
+    { "name": "Arc Length", "formula": "l = (theta/360) * 2*pi*r", "use": "Length of the curved part of a sector." },
+    { "name": "Area of Sector", "formula": "A = (theta/360) * pi*r^2", "use": "Pie-slice area." },
+    { "name": "Area of Segment", "formula": "Area of sector - Area of triangle (formed by the 2 radii + chord)", "use": "Region between chord and arc." },
+    { "name": "Area of full circle", "formula": "A = pi*r^2", "use": "Base formula; sector formula is a fraction of this." }
+  ],
+  "examples": [
+    { "id": "segment", "question": "Find area of segment AYB in a circle where sector area is 462 sq cm and triangle OAB area is (441/4)root3 sq cm.", "solution": "Area of segment = Area of sector - Area of triangle = 462 - (441/4)root3 = (21/4)(88 - 21root3) sq cm." }
+  ],
+  "exercises": [
+    { "id": "11.1-1", "source": "NCERT Ex 11.1 Q1", "topic": "Area of Sector", "difficulty": "easy", "question": "Find the area of a sector of a circle with radius 6cm, angle 60 degrees.", "answer": "132/7 sq cm" },
+    { "id": "11.1-2", "source": "NCERT Ex 11.1 Q2", "topic": "Quadrant Area from Circumference", "difficulty": "medium", "question": "Find the area of a quadrant of a circle whose circumference is 22cm.", "answer": "77/8 sq cm" },
+    { "id": "11.1-3", "source": "NCERT Ex 11.1 Q3", "topic": "Clock Minute Hand Sweep", "difficulty": "medium", "question": "The minute hand of a clock is 14cm long. Find the area swept in 5 minutes.", "answer": "154/3 sq cm" },
+    { "id": "11.1-5", "source": "NCERT Ex 11.1 Q5", "topic": "Arc Length + Sector + Segment (combined)", "difficulty": "medium-hard", "question": "In a circle of radius 21cm, an arc subtends 60 degrees at centre. Find (i) arc length (ii) sector area (iii) segment area.", "answer": "(i) 22 cm (ii) 231 sq cm (iii) (231 - 441root3/4) sq cm" },
+    { "id": "11.1-9", "source": "NCERT Ex 11.1 Q9", "topic": "Word Problem (Brooch)", "difficulty": "medium", "question": "A circular brooch, diameter 35mm, has 5 diameters dividing it into 10 sectors. Find (i) total wire length needed (ii) area of each sector.", "answer": "(i) 285 mm (ii) 385/4 sq mm" },
+    { "id": "11.1-11", "source": "NCERT Ex 11.1 Q11", "topic": "Word Problem (Wiper Blades)", "difficulty": "medium", "question": "A car has two non-overlapping wipers, each blade 25cm, sweeping 115 degrees. Find total area cleaned per sweep.", "answer": "158125/126 sq cm" },
+    { "id": "11.1-13", "source": "NCERT Ex 11.1 Q13", "topic": "Word Problem (Table Cover Cost)", "difficulty": "medium-hard", "question": "A round table cover, radius 28cm, has 6 equal designs. Find the cost of the designs at Rs0.35 per sq cm.", "answer": "Rs 162.68" }
+  ]
+}

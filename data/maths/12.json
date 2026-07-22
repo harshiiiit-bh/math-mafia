@@ -1,0 +1,34 @@
+{
+  "chapter": 12,
+  "title": "Surface Areas and Volumes",
+  "notes": [
+    "This chapter is entirely about COMBINATIONS of basic solids (cuboid, cone, cylinder, sphere, hemisphere) -- real objects like capsules, tents, toys, glasses, poles.",
+    "Surface area rule: DO NOT simply add the surface areas of the two constituent solids -- the joining face(s) disappear. Only add the EXPOSED curved/flat surfaces.",
+    "Volume rule: UNLIKE surface area, volumes of combined solids DO simply add up (or subtract, for a hollowed-out/scooped shape) -- no overlap issue since volume is 3D space, not surface.",
+    "Common combo shapes to recognize instantly: capsule = cylinder + 2 hemispheres, tent = cylinder + cone, toy = cone + hemisphere, test tube = cylinder + hemisphere, article with holes scooped out = solid minus smaller solid(s).",
+    "For 'find the surface area of the remaining solid after removing X' problems: Surface area = original surface area - area of the removed flat circle + area of the newly exposed curved surface.",
+    "Always double check whether the base/bottom of a combined shape is included or excluded (e.g. a tent's base isn't covered by canvas, so its area is excluded)."
+  ],
+  "formulas": [
+    { "name": "Cuboid", "formula": "Surface area = 2(lb+bh+hl), Volume = lbh", "use": "Basic solid, used as a building block." },
+    { "name": "Cylinder", "formula": "CSA = 2*pi*r*h, TSA = 2*pi*r*h + 2*pi*r^2, Volume = pi*r^2*h", "use": "Basic solid, used in capsules, tents, glasses." },
+    { "name": "Cone", "formula": "CSA = pi*r*l (l=slant height), TSA = pi*r*l + pi*r^2, Volume = (1/3)*pi*r^2*h", "use": "Basic solid, used in tents, toys." },
+    { "name": "Sphere", "formula": "Surface area = 4*pi*r^2, Volume = (4/3)*pi*r^3", "use": "Basic solid, rarely alone -- usually as hemisphere in combos." },
+    { "name": "Hemisphere", "formula": "CSA = 2*pi*r^2, TSA = 3*pi*r^2, Volume = (2/3)*pi*r^3", "use": "Most common piece in combination-solid problems." },
+    { "name": "Slant height of cone", "formula": "l = root(r^2 + h^2)", "use": "Needed whenever cone's curved surface area is required." }
+  ],
+  "examples": [
+    { "id": "ex6", "question": "A glass (cylinder, inner diameter 5cm, height 10cm) has a hemispherical raised bottom. Find apparent vs actual capacity.", "solution": "Apparent = pi*r^2*h = 3.14*2.5*2.5*10 = 196.25 cu cm. Hemisphere volume = (2/3)*pi*r^3 = 32.71 cu cm. Actual capacity = 196.25-32.71 = 163.54 cu cm." },
+    { "id": "ex7", "question": "A toy is a hemisphere (radius 2cm) + cone (height 2cm, same radius). Find its volume, and the difference from a circumscribing cylinder.", "solution": "Volume of toy = (2/3)pi(2)^3 + (1/3)pi(2)^2(2) = 25.12 cu cm (using pi=3.14). Circumscribing cylinder: radius 2, height 4, volume=3.14*4*4=50.24. Difference = 50.24-25.12 = 25.12 cu cm." }
+  ],
+  "exercises": [
+    { "id": "12.1-1", "source": "NCERT Ex 12.1 Q1", "topic": "Combining Cubes", "difficulty": "easy", "question": "2 cubes each of volume 64 cu cm are joined end to end. Find the surface area of the resulting cuboid.", "answer": "160 sq cm" },
+    { "id": "12.1-3", "source": "NCERT Ex 12.1 Q3", "topic": "Cone + Hemisphere (toy)", "difficulty": "medium", "question": "A toy is a cone (radius 3.5cm) on a hemisphere of the same radius. Total height is 15.5cm. Find total surface area.", "answer": "214.5 sq cm" },
+    { "id": "12.1-6", "source": "NCERT Ex 12.1 Q6", "topic": "Capsule (cylinder + 2 hemispheres)", "difficulty": "medium", "question": "A capsule is a cylinder with 2 hemispheres at its ends. Total length 14mm, diameter 5mm. Find surface area.", "answer": "220 sq mm" },
+    { "id": "12.1-7", "source": "NCERT Ex 12.1 Q7", "topic": "Tent (cylinder + cone), word problem", "difficulty": "medium-hard", "question": "A tent is a cylinder (height 2.1m, diameter 4m) + cone (slant height 2.8m). Find canvas area needed and cost at Rs500/sq m.", "answer": "44 sq m, Rs22000" },
+    { "id": "12.1-9", "source": "NCERT Ex 12.1 Q9", "topic": "Hollowed Cylinder (2 hemispheres scooped)", "difficulty": "medium-hard", "question": "A wooden article: hemisphere scooped from each end of a solid cylinder (height 10cm, radius 3.5cm). Find total surface area.", "answer": "374 sq cm" },
+    { "id": "12.2-3", "source": "NCERT Ex 12.2 Q3", "topic": "Word Problem (Gulab Jamun volume)", "difficulty": "medium-hard", "question": "45 gulab jamuns, each a cylinder with 2 hemispherical ends (length 5cm, diameter 2.8cm), contain sugar syrup = 30% of volume. Find total syrup volume.", "answer": "approx 338 cu cm" },
+    { "id": "12.2-5", "source": "NCERT Ex 12.2 Q5", "topic": "Word Problem (Lead shots in cone)", "difficulty": "medium-hard", "question": "An inverted cone (height 8cm, top radius 5cm) full of water; lead shots (radius 0.5cm spheres) dropped in, 1/4 of water overflows. Find number of shots.", "answer": "100" },
+    { "id": "12.2-6", "source": "NCERT Ex 12.2 Q6", "topic": "Word Problem (Iron Pole Mass)", "difficulty": "medium-hard", "question": "An iron pole: cylinder (height 220cm, diameter 24cm) + cylinder (height 60cm, radius 8cm). Find mass at 8g per cu cm.", "answer": "892.26 kg" }
+  ]
+}
