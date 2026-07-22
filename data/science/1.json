@@ -39,11 +39,6 @@
     "Chemical Change: A chemical reaction happens, a new substance is formed, both physical and chemical properties change. Examples: burning of paper, fermentation of grapes, souring of milk, curd from milk, rusting of iron, food digestion, food cooking, chemical battery usage."
   ],
 
-  "imageNotes": [
-    "assets/science/notes/1/page-1.jpg",
-    "assets/science/notes/1/page-2.jpg"
-  ],
-
   "formulas": [
     { "formula": "2Mg + O2 -> 2MgO", "name": "Combination Reaction (Magnesium burning)", "use": "Example of combination + exothermic reaction" },
     { "formula": "CaO + H2O -> Ca(OH)2", "name": "Combination Reaction (Slaking of lime)", "use": "Quicklime reacting with water" },

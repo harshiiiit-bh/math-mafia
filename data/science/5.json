@@ -59,14 +59,6 @@
     "VI. Excretion in Plants: (1) Oxygen is released during photosynthesis. (2) H2O released by transpiration. (3) Wastes may be stored in leaves, bark, etc. which fall off from the plants. (4) Waste products stored as gums and resin in old xylem. (5) Plants excrete some waste into the soil around them."
   ],
 
-  "imageNotes": [
-    "assets/science/notes/5/page-1.jpg",
-    "assets/science/notes/5/page-2.jpg",
-    "assets/science/notes/5/page-3.jpg",
-    "assets/science/notes/5/page-4.jpg",
-    "assets/science/notes/5/page-5.jpg"
-  ],
-
   "formulas": [
     { "formula": "6CO2 + 12H2O --sunlight/chlorophyll--> C6H12O6 + 6O2 + 6H2O", "name": "Photosynthesis Equation", "use": "Food (glucose) preparation in green plants" },
     { "formula": "Glucose (6C) -> Pyruvate (3C) -> CO2 + H2O + Energy (in mitochondria)", "name": "Aerobic Respiration Pathway", "use": "Energy release in presence of oxygen" },

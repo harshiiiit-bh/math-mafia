@@ -41,11 +41,6 @@
     "Cases of No Bending: (1) Normal incidence - when light hits the boundary perpendicular to the surface (angle of incidence = 0), there is no refraction/bending. (2) No medium change / no change in refractive index - if angle i = angle r = 0."
   ],
 
-  "imageNotes": [
-    "assets/science/notes/9/page-1.jpg",
-    "assets/science/notes/9/page-2.jpg"
-  ],
-
   "formulas": [
     { "formula": "angle i = angle r", "name": "Law of Reflection", "use": "Angle of incidence equals angle of reflection" },
     { "formula": "1/f = 1/v + 1/u", "name": "Mirror Formula", "use": "Relating object distance, image distance and focal length for spherical mirrors" },
