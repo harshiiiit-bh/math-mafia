@@ -323,6 +323,15 @@ function loadSubject(subjectId) {
     return combined;
     function isMc(q) { return Array.isArray(q.options) && q.options.length > 0; }
   }
+  // Draws only from the MCQ/Assertion-Reason pool (never plain text-answer questions), used by the
+  // premium CBT Mock Test mode. Same shuffle+slice shape as pickQuestions so it plugs into the same
+  // /api/quiz/check grading path — MCQ qids already live in questionPool/pypPool.
+  function pickMcqQuestions(chapterIds, count, difficulty) {
+    let pool = mcqPracticePool(chapterIds);
+    if (difficulty && difficulty !== 'all') pool = pool.filter(q => String(q.difficulty).toLowerCase() === String(difficulty).toLowerCase());
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, Math.min(count, shuffled.length)).map(q => q.qid);
+  }
   function mcqChapterCounts() {
     const counts = {};
     mcqPracticePool().forEach(q => {
@@ -336,7 +345,7 @@ function loadSubject(subjectId) {
     id: subjectId, chapters, chapterList, questionPool, DIFFICULTIES, mcqOnly,
     papers, paperList, paperLabelFor, pypPool,
     filterPool, pickQuestions, pypGradablePool, filterPypPool, pickPypQuestions, paperGradableQids,
-    mcqPracticePool, mcqChapterCounts
+    mcqPracticePool, mcqChapterCounts, pickMcqQuestions
   };
 }
 
@@ -433,6 +442,34 @@ app.post('/api/mix/test/create', (req, res) => {
   });
 });
 
+// ---------- CBT Mock Test (MCQ Practice, upgraded) ----------
+// Local single-player test, same "parts" shape as Mix Subjects War so it supports cross-subject
+// selection, but pulls ONLY MCQ / Assertion-Reason questions and never persists a shareable code —
+// grading still runs through the shared /api/quiz/check path since these qids live in the normal pools.
+app.post('/api/mcq/cbt/create', (req, res) => {
+  const { parts, count, difficulty } = req.body;
+  if (!Array.isArray(parts) || !parts.length) return res.status(400).json({ error: 'Pick at least one chapter' });
+  let qids = [];
+  const chaptersLabel = [];
+  for (const part of parts) {
+    const subj = SUBJECT_DATA[part.subject];
+    if (!subj) return res.status(400).json({ error: 'Unknown subject: ' + part.subject });
+    if (!Array.isArray(part.chapterIds) || !part.chapterIds.length) continue;
+    // grab every eligible MCQ from this part's chapters — the combined pool gets shuffled and
+    // trimmed to the requested total count below, so one part never "reserves" a fixed share.
+    const partQids = subj.pickMcqQuestions(part.chapterIds, Number.MAX_SAFE_INTEGER, difficulty);
+    qids = qids.concat(partQids);
+    const subjInfo = SUBJECTS.find(s => s.id === part.subject);
+    const chLabels = part.chapterIds.map(id => subj.chapters[id]?.title).filter(Boolean);
+    if (chLabels.length) chaptersLabel.push(`${subjInfo ? subjInfo.name : part.subject}: ${chLabels.join(', ')}`);
+  }
+  qids = [...new Set(qids)].sort(() => Math.random() - 0.5);
+  const total = Math.max(1, parseInt(count, 10) || 20);
+  qids = qids.slice(0, Math.min(total, qids.length));
+  if (!qids.length) return res.status(400).json({ error: 'No MCQ questions loaded for that selection yet' });
+  res.json({ questions: questionsPublic(qids), chapters: chaptersLabel });
+});
+
 // Every subject-scoped route below hangs off /api/:subject/... — this middleware validates the
 // subject once and hands every route handler the loaded data via req.subj.
 app.param('subject', (req, res, next, id) => {
@@ -501,17 +538,17 @@ app.get('/api/:subject/mcq/chapter/:id', (req, res) => {
   res.json(items.map(mcqPracticeItem));
 });
 
-// Multi-chapter MCQ practice set — powers the standalone "MCQ Practice" mode.
-app.post('/api/:subject/mcq/practice', (req, res) => {
-  const { chapterIds } = req.body;
-  if (!Array.isArray(chapterIds) || !chapterIds.length) return res.status(400).json({ error: 'Pick at least one chapter' });
-  const pool = req.subj.mcqPracticePool(chapterIds);
-  if (!pool.length) return res.status(400).json({ error: 'No MCQ questions loaded for that selection yet' });
-  const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 300); // generous cap, ~100+/chapter is expected
-  res.json({ questions: shuffled.map(mcqPracticeItem) });
+// Live "N MCQs available" counter for the CBT setup screen — mirrors /api/:subject/pool-count but
+// against the MCQ-only pool instead of the general gradable pool.
+app.post('/api/:subject/mcq/pool-count', (req, res) => {
+  const { chapterIds, difficulty } = req.body;
+  if (!Array.isArray(chapterIds) || !chapterIds.length) return res.json({ count: 0 });
+  let pool = req.subj.mcqPracticePool(chapterIds);
+  if (difficulty && difficulty !== 'all') pool = pool.filter(q => String(q.difficulty).toLowerCase() === String(difficulty).toLowerCase());
+  res.json({ count: pool.length });
 });
 
-// Practice mode sends the answer straight through (unlike graded tests) since there's no scoring —
+// Chapter MCQ tab sends the answer straight through (unlike graded tests) since there's no scoring —
 // the student is just reading and self-checking, same trust level as the existing Practice Bank tab.
 function mcqPracticeItem(q) {
   return {
@@ -1120,6 +1157,104 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
 .empty{ text-align:center; padding:60px 20px; color:var(--muted); }
 
 /* ============================================================
+   CBT MOCK TEST (premium exam interface — MCQ Test mode)
+   ============================================================ */
+.cbt-header{
+  position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--card-border);
+  padding:12px 4px; display:flex; align-items:center; gap:18px; margin:-8px -4px 18px;
+}
+.cbt-header .cbt-brand{ display:flex; flex-direction:column; gap:2px; flex-shrink:0; min-width:0; }
+.cbt-header .cbt-brand b{ color:var(--gold); font-family:'Oswald'; font-size:14px; letter-spacing:0.04em; white-space:nowrap; }
+.cbt-header .cbt-brand span{ color:var(--muted); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:220px; }
+.cbt-header .cbt-center{ flex:1; min-width:0; text-align:center; }
+.cbt-header .cbt-qcount{ font-size:12.5px; color:var(--cream); margin-bottom:6px; }
+.cbt-progress-track{ height:5px; border-radius:3px; background:var(--card-border); overflow:hidden; }
+.cbt-progress-fill{ height:100%; background:linear-gradient(90deg, var(--gold-soft), var(--gold)); transition:width 0.3s; }
+.cbt-header .cbt-right{ display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.cbt-header .cbt-timer{ font-family:'IBM Plex Mono'; color:var(--gold-soft); font-size:16px; background:var(--card); border:1px solid var(--card-border); padding:6px 12px; border-radius:6px; }
+.cbt-header .cbt-timer.low{ color:#E39AA6; border-color:#B0455A; }
+.cbt-end-btn{ background:transparent; border:1.5px solid #B0455A; color:#E39AA6; padding:8px 14px; border-radius:6px; font-size:12.5px; cursor:pointer; white-space:nowrap; }
+.cbt-end-btn:hover{ background:rgba(140,42,59,0.16); }
+.cbt-layout{ display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start; }
+.cbt-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.cbt-badge{ font-size:11px; text-transform:uppercase; letter-spacing:0.05em; padding:4px 10px; border-radius:20px; border:1px solid var(--card-border); color:var(--muted); }
+.cbt-badge.diff-easy{ color:#8FD19E; border-color:rgba(80,160,90,0.4); }
+.cbt-badge.diff-medium{ color:var(--gold-soft); border-color:rgba(212,175,55,0.4); }
+.cbt-badge.diff-hard{ color:#E39AA6; border-color:rgba(176,69,90,0.4); }
+.cbt-badge.qnum{ color:var(--gold); border-color:var(--gold); font-weight:600; }
+.cbt-opt{ padding:16px 16px; font-size:15px; }
+.cbt-opt .mcq-letter{ width:30px; height:30px; font-size:14px; }
+.cbt-nav-row{ position:sticky; bottom:0; background:var(--bg); padding:14px 0 4px; margin-top:16px; display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid var(--card-border); }
+.cbt-nav-row button{ flex:1; min-width:110px; padding:12px 10px; border-radius:8px; font-size:13px; cursor:pointer; }
+.cbt-nav-row .cbt-prev{ background:transparent; border:1.5px solid var(--card-border); color:var(--cream); }
+.cbt-nav-row .cbt-review{ background:transparent; border:1.5px solid var(--gold-soft); color:var(--gold-soft); }
+.cbt-nav-row .cbt-skip{ background:transparent; border:1.5px solid #B0455A; color:#E39AA6; }
+.cbt-nav-row .cbt-next{ background:var(--gold); border:none; color:var(--bg); font-weight:600; }
+.cbt-nav-row button:disabled{ opacity:0.4; cursor:not-allowed; }
+.cbt-side-box{ background:var(--card); border:1px solid var(--card-border); border-radius:10px; padding:16px; margin-bottom:14px; }
+.cbt-side-box .cbt-side-title{ font-size:11.5px; color:var(--gold-soft); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px; }
+.cbt-legend{ display:flex; flex-wrap:wrap; gap:8px; font-size:10.5px; color:var(--muted); margin-bottom:12px; }
+.cbt-legend span{ display:flex; align-items:center; gap:4px; }
+.cbt-legend i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.cbt-palette-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(36px,1fr)); gap:8px; }
+.cbt-pnum{
+  width:36px; height:36px; border-radius:7px; border:1.5px solid var(--card-border); background:var(--bg);
+  color:var(--cream); font-family:'IBM Plex Mono'; font-size:12.5px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.cbt-pnum.st-not-visited{ background:var(--bg); color:var(--muted); border-color:var(--card-border); }
+.cbt-pnum.st-visited{ background:rgba(90,130,220,0.15); border-color:#5A82DC; color:#9DB6EE; }
+.cbt-pnum.st-attempted{ background:rgba(80,160,90,0.22); border-color:#4CAF66; color:#8FD19E; }
+.cbt-pnum.st-review{ background:rgba(230,150,50,0.2); border-color:#E69632; color:#F0B871; }
+.cbt-pnum.st-skipped{ background:rgba(176,69,90,0.2); border-color:#B0455A; color:#E39AA6; }
+.cbt-pnum.st-current{ border-color:var(--gold); box-shadow:0 0 0 2px rgba(212,175,55,0.35); color:var(--gold); font-weight:700; }
+.cbt-stats-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.cbt-stat{ background:var(--bg); border:1px solid var(--card-border); border-radius:7px; padding:8px 10px; }
+.cbt-stat .n{ font-family:'Oswald'; font-size:18px; color:var(--gold); }
+.cbt-stat .l{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; }
+.cbt-modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:100; display:flex; align-items:center; justify-content:center; padding:20px; }
+.cbt-modal-box{ background:var(--card); border:1px solid var(--gold); border-radius:12px; padding:26px; max-width:420px; width:100%; }
+.cbt-modal-box h3{ color:var(--gold); font-family:'Oswald'; font-size:19px; margin-bottom:16px; }
+.cbt-modal-stats{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+.cbt-modal-actions{ display:flex; gap:10px; }
+.cbt-modal-actions button{ flex:1; padding:12px; border-radius:7px; font-size:13.5px; cursor:pointer; }
+.cbt-score-wrap{ display:flex; flex-wrap:wrap; gap:28px; align-items:center; justify-content:center; padding:30px 20px; }
+.cbt-score-ring{ position:relative; width:150px; height:150px; flex-shrink:0; }
+.cbt-score-ring svg{ transform:rotate(-90deg); }
+.cbt-score-ring .ring-mid{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.cbt-score-ring .ring-pct{ font-family:'Oswald'; font-size:30px; color:var(--gold); }
+.cbt-score-ring .ring-frac{ font-size:12px; color:var(--muted); }
+.cbt-score-meta{ display:grid; grid-template-columns:repeat(2,minmax(120px,1fr)); gap:14px 26px; }
+.cbt-score-meta .m-label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+.cbt-score-meta .m-val{ font-family:'Oswald'; font-size:19px; color:var(--cream); }
+.cbt-summary-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin:20px 0 28px; }
+.cbt-summary-cards .card{ background:var(--card); border:1px solid var(--card-border); border-radius:10px; padding:14px; text-align:center; }
+.cbt-summary-cards .card .v{ font-family:'Oswald'; font-size:22px; }
+.cbt-summary-cards .card .k{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; margin-top:2px; }
+.cbt-summary-cards .card.correct .v{ color:#8FD19E; }
+.cbt-summary-cards .card.wrong .v{ color:#E39AA6; }
+.cbt-summary-cards .card.skipped .v{ color:var(--muted); }
+.cbt-summary-cards .card.accuracy .v, .cbt-summary-cards .card.avgtime .v{ color:var(--gold); }
+.cbt-analysis-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:18px; margin-bottom:24px; }
+.cbt-bar-row{ display:flex; align-items:center; gap:10px; font-size:12.5px; margin-bottom:10px; }
+.cbt-bar-row .lbl{ width:110px; flex-shrink:0; color:var(--cream); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cbt-bar-track{ flex:1; height:8px; border-radius:4px; background:var(--card-border); overflow:hidden; }
+.cbt-bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold-soft), var(--gold)); }
+.cbt-bar-row .pct{ width:38px; text-align:right; color:var(--muted); font-family:'IBM Plex Mono'; font-size:11.5px; }
+.cbt-diff-card{ background:var(--card); border:1px solid var(--card-border); border-radius:8px; padding:12px 14px; margin-bottom:10px; }
+.cbt-diff-card .dtitle{ font-size:12.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--gold-soft); margin-bottom:8px; }
+.cbt-diff-card .drow{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:3px; }
+.cbt-time-bars{ display:flex; align-items:flex-end; gap:3px; height:90px; overflow-x:auto; padding-bottom:4px; }
+.cbt-time-bar{ width:10px; flex-shrink:0; border-radius:2px 2px 0 0; }
+.cbt-insights{ list-style:none; margin:0 0 24px; padding:0; }
+.cbt-insights li{ background:var(--card); border:1px solid var(--card-border); border-left:3px solid var(--gold); border-radius:6px; padding:11px 14px; margin-bottom:8px; font-size:13.5px; color:var(--cream); }
+.cbt-review-card{ background:var(--card); border:1px solid var(--card-border); border-radius:8px; margin-bottom:10px; overflow:hidden; }
+.cbt-review-card summary{ cursor:pointer; padding:13px 16px; font-size:13.5px; display:flex; align-items:center; gap:10px; list-style:none; }
+.cbt-review-card summary::-webkit-details-marker{ display:none; }
+.cbt-review-card .rstatus{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.cbt-review-card .rbody{ padding:0 16px 16px; border-top:1px solid var(--card-border); padding-top:14px; }
+.cbt-actions-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-top:8px; }
+
+/* ============================================================
    RESPONSIVE — mobile, tablet, laptop
    ============================================================ */
 .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:20px; border-radius:8px; }
@@ -1171,6 +1306,13 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
   .lb-row .name{ padding:0 8px; font-size:13px; }
   #quoteOverlay .quote-mark{ font-size:44px; }
   #quoteOverlay .quote-text{ font-size:19px; }
+  .cbt-layout{ grid-template-columns:1fr; }
+  .cbt-header{ flex-wrap:wrap; row-gap:8px; padding:10px 4px; }
+  .cbt-header .cbt-brand span{ max-width:140px; }
+  .cbt-header .cbt-center{ order:3; flex-basis:100%; }
+  .cbt-nav-row button{ min-width:80px; font-size:11.5px; padding:11px 6px; }
+  .cbt-score-wrap{ padding:20px 8px; gap:16px; }
+  .cbt-analysis-grid{ grid-template-columns:1fr; }
 }
 
 /* Very small phones (~420px) */
@@ -1225,7 +1367,9 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
 
 <script>
 const SUBJECT_IDS = ['maths','science','sst'];
-const state = { name: '', subject: localStorage.getItem('sm_subject') || 'maths', branch: 'all', subjects: [], chaptersCache: {}, metaCache: {}, branchesCache: {}, view: 'dashboard', selectedChapters: [], chapters: [], meta: null, currentChapter: null, quiz: null, quizIdx: 0, quizScore: 0, testCode: null, testTimer: null, testStart: null, timeLimitSeconds: null, readingTimeSeconds: null, paperTotalMarks: null, runnerMode: null, warMeta: null, pypPapers: null, pypChapters: null, mixParts: [] };
+const state = { name: '', subject: localStorage.getItem('sm_subject') || 'maths', branch: 'all', subjects: [], chaptersCache: {}, metaCache: {}, branchesCache: {}, view: 'dashboard', selectedChapters: [], chapters: [], meta: null, currentChapter: null, quiz: null, quizIdx: 0, quizScore: 0, testCode: null, testTimer: null, testStart: null, timeLimitSeconds: null, readingTimeSeconds: null, paperTotalMarks: null, runnerMode: null, warMeta: null, pypPapers: null, pypChapters: null, mixParts: [],
+  cbtParts: [], cbtQuiz: null, cbtIdx: 0, cbtTimer: null, cbtStart: null, cbtTimeLimitSeconds: null,
+  cbtReadingTimeSeconds: null, cbtReadingActive: false, cbtReadingStart: null, cbtChaptersLabel: [], cbtMarkedReview: {} };
 
 // Builds a URL under the CURRENT subject, e.g. sp('/chapter/3') -> '/s/maths/chapter/3'
 function sp(path){ return '/s/' + state.subject + (path || ''); }
@@ -1307,6 +1451,9 @@ function route(){
   if(seg[0]==='pick' && seg[1]==='join') return renderJoinWar();
   if(seg[0]==='mix' && seg[1]==='pick') return renderMixPicker();
   if(seg[0]==='mix' && seg[1]==='setup') return renderMixWarSetup();
+  if(seg[0]==='cbt' && seg[1]==='pick') return renderCbtPicker();
+  if(seg[0]==='cbt' && seg[1]==='setup') return renderCbtSetup();
+  if(seg[0]==='run' && seg[1]==='cbt' && state.cbtQuiz) return renderCbtReadingGate();
   if(seg[0]==='run' && seg[1]==='quiz' && state.quiz) return renderQuizQuestion();
   if(seg[0]==='run' && seg[1]==='solo' && state.quiz) return renderTimedRunner();
   if(seg[0]==='run' && seg[1]==='war' && state.quiz) return renderTimedRunner();
@@ -1321,8 +1468,6 @@ function route(){
       if(sub[0]==='pick' && sub[1]==='quiz') return renderPicker('quizPicker','Quick Heist','Pick one or more chapters to mix questions from.',true,(ids)=>navigate(sp('/setup/quiz?ch='+ids.join(','))));
       if(sub[0]==='pick' && sub[1]==='solo') return renderPicker('soloPicker','Solo Job','Pick chapters for your timed test.',true,(ids)=>navigate(sp('/setup/solo?ch='+ids.join(','))));
       if(sub[0]==='pick' && sub[1]==='war') return renderPicker('createWar','Start a Gang War','Pick chapters — your crew will get the exact same questions.',true,(ids)=>navigate(sp('/setup/war?ch='+ids.join(','))));
-      if(sub[0]==='pick' && sub[1]==='mcqpractice') return renderMcqPicker();
-      if(sub[0]==='mcqpractice') return renderMcqPractice((qs.get('ch')||'').split(',').filter(Boolean));
       if(sub[0]==='setup' && sub[1]) return renderTestSetup(sub[1], (qs.get('ch')||'').split(',').filter(Boolean));
       if(sub[0]==='pyp' && sub[1]==='paper' && sub[2] && sub[3]==='setup' && sub[4]) return renderPypPaperSetup(sub[2], sub[4]);
       if(sub[0]==='pyp' && sub[1]==='paper' && sub[2]) return renderPypPaperDetail(sub[2]);
@@ -1341,7 +1486,7 @@ function route(){
 // Maps the old view-name calls (mode-grid buttons) onto real routes
 function goto(view){
   if(view==='joinWar') return navigate('/pick/join');
-  const map = { notesPicker:'/pick/notes', quizPicker:'/pick/quiz', soloPicker:'/pick/solo', createWar:'/pick/war', mcqPractice:'/pick/mcqpractice' };
+  const map = { notesPicker:'/pick/notes', quizPicker:'/pick/quiz', soloPicker:'/pick/solo', createWar:'/pick/war', mcqPractice:'/cbt/pick' };
   navigate(sp(map[view] || ''));
 }
 
@@ -1688,7 +1833,7 @@ function renderDashboard(){
       <button class="mode-card" onclick="goto('quizPicker')"><span class="icon">⚡</span><h3>Quick Heist</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Instant-feedback MCQ practice, no pressure, no leaderboard.' : 'Instant-feedback practice quiz, no pressure, no leaderboard.'}</p></button>
       <button class="mode-card" onclick="goto('soloPicker')"><span class="icon">🎯</span><h3>Solo Job</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Timed MCQ test on one or many chapters. Just you and the clock.' : 'Timed test on one or many chapters. Just you and the clock.'}</p></button>
       <button class="mode-card" onclick="goto('createWar')"><span class="icon">🤝</span><h3>Start a Gang War</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Pick chapters, get a code, challenge your crew on MCQs.' : 'Pick chapters, get a code, challenge your crew. Leaderboard included.'}</p></button>
-      <button class="mode-card" onclick="goto('mcqPractice')"><span class="icon">🧠</span><h3>MCQ Practice</h3><p>Read, think, reveal — every MCQ &amp; Assertion-Reason question on file. No typing, no scoring.</p></button>
+      <button class="mode-card" onclick="goto('mcqPractice')"><span class="icon">🧠</span><h3>MCQ Test</h3><p>Full exam-style CBT — pick chapters (even across subjects), set questions/time/reading time, get a scored result.</p></button>
       <button class="mode-card" onclick="navigate('/mix/pick')"><span class="icon">🌐</span><h3>Mix Subjects War</h3><p>Blend chapters from every subject into one Gang War.</p></button>
       <button class="mode-card" onclick="goto('joinWar')"><span class="icon">🔑</span><h3>Join a Gang War</h3><p>Got a code from a friend? Enter it and take them down.</p></button>
       <button class="mode-card" onclick="navigate(sp('/pyp'))"><span class="icon">📜</span><h3>Previous Papers</h3><p>Real board papers, year-wise and chapter-wise, with every test mode.</p></button>
@@ -1887,53 +2032,604 @@ function handleMcqPracticeClick(btn){
   if(btn.dataset.correct!=='1') btn.classList.add('wrong');
 }
 
-// Chapter picker for MCQ Practice — shows mcqCount instead of gradableCount so students see where
-// there's actually enough MCQ material to practice with.
-function renderMcqPicker(){
-  replaceUrl(sp('/pick/mcqpractice'));
+// ---------- CBT Mock Test (premium exam interface — cross-subject MCQ pool, fully graded) ----------
+async function renderCbtPicker(){
   const main = document.getElementById('main');
+  if(!state.subjects.length) await loadSubjects();
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
-    <div class="section-title">MCQ Practice</div>
-    <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Pick one or more chapters. Read each question, think of your answer, then reveal it. No typing, no scoring.</p>
-    <div class="chapter-grid" id="mcqPickGrid"></div>
-    <div style="margin-top:24px; display:flex; justify-content:flex-end;">
-      <button class="btn" id="mcqPickGo">Start Practicing →</button>
+    <div class="section-title">MCQ Test — Pick Chapters</div>
+    <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Add chapters from as many subjects as you want — one combined CBT-style test.</p>
+    <div id="cbtPartsList"></div>
+    <div class="setup-box" style="margin-top:16px;">
+      <label for="cbtSubjSel">Add chapters from</label>
+      <select id="cbtSubjSel" class="setup-select"></select>
+      <div class="chapter-grid" id="cbtChGrid" style="margin-top:14px;"></div>
+      <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+        <button class="btn-outline" id="cbtAddBtn">+ Add these chapters</button>
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:20px; gap:12px;">
+      <button class="btn" id="cbtContinue">Continue to Setup →</button>
     </div>
   \`;
-  const grid = document.getElementById('mcqPickGrid');
-  grid.innerHTML = visibleChapters().map(c => \`
-    <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="toggleChapter(this,'${'$'}{c.id}',true)">
-      <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div>
-      <h3>${'$'}{esc(c.title)}</h3>
-      <div class="stats"><span>${'$'}{c.mcqCount||0} MCQs</span></div>
+  const subjSel = document.getElementById('cbtSubjSel');
+  subjSel.innerHTML = state.subjects.map(s=>\`<option value="${'$'}{s.id}">${'$'}{s.icon?s.icon+' ':''}${'$'}{esc(s.name)}</option>\`).join('');
+  subjSel.value = state.subject;
+
+  async function loadCbtChapters(){
+    const grid = document.getElementById('cbtChGrid');
+    grid.innerHTML = '<div class="empty">Loading…</div>';
+    const res = await fetch('/api/'+subjSel.value+'/mcq/chapters');
+    const chs = await res.json();
+    grid.innerHTML = chs.map(c=>\`
+      <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="this.classList.toggle('selected')">
+        <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div><h3>${'$'}{esc(c.title)}</h3>
+        <div class="progress-label">${'$'}{c.mcqCount} MCQs</div>
+      </div>\`).join('') || '<div class="empty">No MCQ chapters here yet.</div>';
+  }
+  subjSel.addEventListener('change', loadCbtChapters);
+  loadCbtChapters();
+
+  function renderPartsList(){
+    const list = document.getElementById('cbtPartsList');
+    if(!state.cbtParts.length){ list.innerHTML = ''; return; }
+    list.innerHTML = state.cbtParts.map((p,i)=>{
+      const sInfo = state.subjects.find(s=>s.id===p.subject) || {name:p.subject};
+      return \`<div class="ch-card" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div><b>${'$'}{sInfo.icon?sInfo.icon+' ':''}${'$'}{esc(sInfo.name)}</b> — ${'$'}{p.chapterIds.length} chapter(s) selected</div>
+        <button class="btn-ghost" onclick="removeCbtPart(${'$'}{i})">remove</button>
+      </div>\`;
+    }).join('');
+  }
+  renderPartsList();
+
+  document.getElementById('cbtAddBtn').addEventListener('click', ()=>{
+    const grid = document.getElementById('cbtChGrid');
+    const ids = [...grid.querySelectorAll('.ch-card.selected')].map(el=>el.dataset.id);
+    if(!ids.length){ alert('Pick at least one chapter first.'); return; }
+    const existing = state.cbtParts.find(p=>p.subject===subjSel.value);
+    if(existing){ existing.chapterIds = [...new Set([...existing.chapterIds, ...ids])]; }
+    else{ state.cbtParts.push({ subject: subjSel.value, chapterIds: ids }); }
+    renderPartsList();
+    loadCbtChapters();
+  });
+  document.getElementById('cbtContinue').addEventListener('click', ()=>{
+    if(!state.cbtParts.length){ alert('Add chapters from at least one subject first.'); return; }
+    navigate('/cbt/setup');
+  });
+}
+function removeCbtPart(i){ state.cbtParts.splice(i,1); renderCbtPicker(); }
+
+async function renderCbtSetup(){
+  const main = document.getElementById('main');
+  if(!state.cbtParts.length){ navigate('/cbt/pick'); return; }
+  main.innerHTML = '<div class="empty">Loading setup…</div>';
+  const rows = await Promise.all(state.cbtParts.map(async (p)=>{
+    const sInfo = state.subjects.find(s=>s.id===p.subject) || {name:p.subject};
+    const metaRes = await fetch('/api/'+p.subject+'/meta');
+    const meta = await metaRes.json();
+    return { p, sInfo, difficulties: meta.difficulties||[] };
+  }));
+  const allDifficulties = [...new Set(rows.flatMap(r=>r.difficulties))];
+  main.innerHTML = \`
+    <div class="crumbs"><button onclick="navigate('/cbt/pick')">← Change Chapters</button></div>
+    <div class="section-title">MCQ Test Setup</div>
+    <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Exam-style CBT — set questions, time and reading time, then start.</p>
+    <div class="setup-box">
+      <label>Chapters</label>
+      <div style="color:var(--cream); font-size:13.5px; margin-bottom:18px;">${'$'}{rows.map(r=>\`${'$'}{r.sInfo.icon?r.sInfo.icon+' ':''}${'$'}{esc(r.sInfo.name)}: ${'$'}{r.p.chapterIds.length} chapter(s)\`).join(' · ')}</div>
+
+      <label for="cbtDiffSel">Difficulty</label>
+      <select id="cbtDiffSel" class="setup-select">
+        <option value="all">All Difficulties</option>
+        ${'$'}{allDifficulties.map(d=>\`<option value="${'$'}{esc(d)}">${'$'}{esc(d)}</option>\`).join('')}
+      </select>
+
+      <label for="cbtCountInput" style="margin-top:18px;">Number of Questions</label>
+      <div class="count-row">
+        <input type="number" id="cbtCountInput" min="1" value="20" style="width:90px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <span class="val" id="cbtCountAvail" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);"></span>
+      </div>
+
+      <label style="margin-top:18px;">Time Limit</label>
+      <div class="timer-choice">
+        <label class="radio-opt"><input type="radio" name="cbtTimerMode" id="cbtTimerNone"> No timer — take your time</label>
+        <label class="radio-opt"><input type="radio" name="cbtTimerMode" id="cbtTimerOn" checked> Set a time limit</label>
+      </div>
+      <div class="count-row" id="cbtMinutesRow" style="gap:10px;">
+        <input type="number" id="cbtHoursInput" min="0" value="0" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">hr</span>
+        <input type="number" id="cbtMinutesInput" min="0" max="59" value="20" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min — for the whole test</span>
+      </div>
+
+      <label class="radio-opt" style="margin-top:18px;"><input type="checkbox" id="cbtReadingOn"> Add reading time (options locked while reading)</label>
+      <div class="count-row" id="cbtReadingRow" style="display:none;">
+        <input type="number" id="cbtReadingMinutes" min="1" max="15" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min reading time (capped at 15) — before the test clock starts</span>
+      </div>
     </div>
-  \`).join('') || '<div class="empty">No chapters here yet.</div>';
-  state.selectedChapters = [];
-  document.getElementById('mcqPickGo').addEventListener('click', ()=>{
-    if(!state.selectedChapters.length){ alert('Pick at least one chapter first.'); return; }
-    navigate(sp('/mcqpractice?ch='+state.selectedChapters.join(',')));
+    <div style="display:flex; justify-content:flex-end;">
+      <button class="btn" id="cbtSetupGo">Start Test →</button>
+    </div>
+  \`;
+
+  const diffSel = document.getElementById('cbtDiffSel');
+  const countInput = document.getElementById('cbtCountInput');
+  const countAvail = document.getElementById('cbtCountAvail');
+  async function refreshAvailable(){
+    try{
+      const counts = await Promise.all(state.cbtParts.map(p=>
+        fetch('/api/'+p.subject+'/mcq/pool-count', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds:p.chapterIds, difficulty: diffSel.value}) }).then(r=>r.json())
+      ));
+      const max = counts.reduce((sum,c)=>sum+(c.count||0),0);
+      countAvail.textContent = max + ' MCQ' + (max===1?'':'s') + ' available';
+      countInput.max = String(max || 1);
+      if(parseInt(countInput.value,10) > max) countInput.value = String(Math.max(1,max));
+    }catch(e){ countAvail.textContent=''; }
+  }
+  diffSel.addEventListener('change', refreshAvailable);
+  refreshAvailable();
+
+  document.getElementById('cbtTimerNone').addEventListener('change', ()=>{ document.getElementById('cbtMinutesRow').style.display='none'; });
+  document.getElementById('cbtTimerOn').addEventListener('change', ()=>{ document.getElementById('cbtMinutesRow').style.display='flex'; });
+  document.getElementById('cbtReadingOn').addEventListener('change', (e)=>{ document.getElementById('cbtReadingRow').style.display = e.target.checked ? 'flex':'none'; });
+
+  document.getElementById('cbtSetupGo').addEventListener('click', ()=>{
+    const count = Math.max(1, parseInt(countInput.value,10) || 20);
+    const difficulty = diffSel.value;
+    const noTimer = document.getElementById('cbtTimerNone').checked;
+    const hours = Math.max(0, parseInt(document.getElementById('cbtHoursInput').value,10)||0);
+    const minutes = Math.max(0, parseInt(document.getElementById('cbtMinutesInput').value,10)||0);
+    const totalSeconds = hours*3600+minutes*60;
+    const readingOn = document.getElementById('cbtReadingOn').checked;
+    const readingMinutes = Math.min(15, Math.max(1, parseInt(document.getElementById('cbtReadingMinutes').value,10)||15));
+    startCbtTest({
+      parts: state.cbtParts, count, difficulty,
+      timeLimitSeconds: (noTimer||totalSeconds<=0)?null:totalSeconds,
+      readingTimeSeconds: readingOn ? readingMinutes*60 : null
+    });
   });
 }
 
-async function renderMcqPractice(chapterIds){
+async function startCbtTest(opts){
   const main = document.getElementById('main');
-  if(!chapterIds || !chapterIds.length){ navigate(sp('/pick/mcqpractice')); return; }
-  replaceUrl(sp('/mcqpractice?ch='+chapterIds.join(',')));
-  main.innerHTML = '<div class="empty">Loading MCQs…</div>';
-  const res = await fetch('/api/'+state.subject+'/mcq/practice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds}) });
+  main.innerHTML = '<div class="empty">Building your test…</div>';
+  const parts = opts.parts.map(p=>({subject:p.subject, chapterIds:p.chapterIds}));
+  const res = await fetch('/api/mcq/cbt/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ parts, count: opts.count, difficulty: opts.difficulty }) });
   const data = await res.json();
-  if(data.error){
-    main.innerHTML = \`<div class="empty">${'$'}{esc(data.error)}</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp('/pick/mcqpractice'))">← Change Chapters</button></div>\`;
-    return;
-  }
+  if(data.error){ alert(data.error); navigate('/cbt/setup'); return; }
+  state.cbtParts = [];
+  state.cbtQuiz = data.questions.map(q=>({...q, given:null, marked:false, visited:false, skipped:false, shownAt:null, timeSec:0}));
+  state.cbtIdx = 0;
+  state.cbtChaptersLabel = data.chapters || [];
+  state.cbtTimeLimitSeconds = opts.timeLimitSeconds || null;
+  state.cbtReadingTimeSeconds = opts.readingTimeSeconds || null;
+  state.cbtReadingActive = !!state.cbtReadingTimeSeconds;
+  state.cbtReadingStart = state.cbtReadingActive ? Date.now() : null;
+  state.cbtStart = state.cbtReadingActive ? null : Date.now();
+  navigate('/run/cbt');
+}
+
+// Router entry point for /run/cbt — decides between the reading gate and the live runner so a
+// page reload mid-test lands back in the right place instead of erroring out.
+function renderCbtReadingGate(){
+  if(!state.cbtQuiz || !state.cbtQuiz.length){ navigate('/cbt/pick'); return; }
+  replaceUrl('/run/cbt');
+  if(state.cbtReadingActive) renderCbtReadingPhase();
+  else renderCbtQuestion();
+}
+
+function renderCbtReadingPhase(){
+  const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp('/pick/mcqpractice'))">← Change Chapters</button></div>
-    <div class="section-title">MCQ Practice</div>
-    <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">${'$'}{data.questions.length} question(s) loaded. Tap "Show correct answer" once you've made your pick.</p>
-    <div id="mcqPracticeList"></div>
+    <div class="cbt-header">
+      <div class="cbt-brand"><b>📖 Reading Time</b><span>Options are locked — test starts automatically</span></div>
+      <div class="cbt-right"><div class="cbt-timer" id="cbtReadTimer">00:00</div></div>
+    </div>
+    <div class="empty" style="padding:80px 20px;">
+      <div style="font-size:15px; color:var(--cream); margin-bottom:8px;">${'$'}{state.cbtQuiz.length} question(s) loaded — use this time to skim the paper.</div>
+      <button class="btn" id="cbtReadStartNow" style="margin-top:18px;">Start Answering Now →</button>
+    </div>
   \`;
-  document.getElementById('mcqPracticeList').innerHTML = data.questions.map(mcqPracticeItemHTML).join('');
+  clearInterval(state.cbtTimer);
+  state.cbtTimer = setInterval(()=>{
+    const t = document.getElementById('cbtReadTimer');
+    if(!t) return;
+    const remain = state.cbtReadingTimeSeconds - Math.floor((Date.now()-state.cbtReadingStart)/1000);
+    if(remain<=0){ t.textContent='00:00'; clearInterval(state.cbtTimer); finishCbtReadingPhase(); return; }
+    const mm=String(Math.floor(remain/60)).padStart(2,'0'), ss=String(remain%60).padStart(2,'0');
+    t.textContent = mm+':'+ss;
+  }, 500);
+  document.getElementById('cbtReadStartNow').addEventListener('click', ()=>{ clearInterval(state.cbtTimer); finishCbtReadingPhase(); });
+}
+function finishCbtReadingPhase(){
+  state.cbtReadingActive = false;
+  state.cbtStart = Date.now();
+  renderCbtQuestion();
+}
+
+function cbtDiffClass(diff){
+  const d = String(diff||'').toLowerCase();
+  if(d.includes('easy')) return 'diff-easy';
+  if(d.includes('hard')) return 'diff-hard';
+  if(d.includes('medium')||d.includes('moderate')) return 'diff-medium';
+  return '';
+}
+// Single status per question (mutually exclusive, so the palette legend and the live-stats totals
+// always add up to the same number) — "current" is layered on top as a separate CSS modifier.
+function cbtBaseStatus(item){
+  if(item.marked) return 'review';
+  if(item.given!=null) return 'attempted';
+  if(item.skipped) return 'skipped';
+  if(item.visited) return 'visited';
+  return 'not-visited';
+}
+function cbtStats(){
+  const total = state.cbtQuiz.length;
+  let attempted=0, skipped=0, review=0;
+  state.cbtQuiz.forEach(q=>{
+    const st = cbtBaseStatus(q);
+    if(st==='attempted') attempted++;
+    else if(st==='review') review++;
+    else if(st==='skipped') skipped++;
+  });
+  return { total, attempted, skipped, review, remaining: Math.max(0, total-attempted-skipped-review) };
+}
+// Banks elapsed seconds on the question being left — called before every navigation action so per-
+// question time is accurate no matter which door (Prev/Next/Skip/Review/palette jump) the student took.
+function cbtCaptureTime(){
+  const q = state.cbtQuiz[state.cbtIdx];
+  if(q && q.shownAt!=null){
+    q.timeSec += Math.max(0, Math.round((Date.now()-q.shownAt)/1000));
+    q.shownAt = null;
+  }
+}
+
+function renderCbtQuestion(){
+  state.activeRunner = renderCbtQuestion;
+  const main = document.getElementById('main');
+  const q = state.cbtQuiz[state.cbtIdx];
+  q.visited = true;
+  if(q.shownAt==null) q.shownAt = Date.now();
+  const stats = cbtStats();
+  const total = state.cbtQuiz.length;
+  const pct = Math.round(((state.cbtIdx+1)/total)*100);
+  const marks = q.marks || 1;
+  const stem = q.type==='assertion-reason'
+    ? \`<div class="ar-block"><p><b>Assertion (A):</b> ${'$'}{renderMedia(q.assertion||'')}</p><p><b>Reason (R):</b> ${'$'}{renderMedia(q.reason||'')}</p></div>\`
+    : \`<div class="qtext">${'$'}{renderMedia(q.question)}</div>\`;
+  const optsHtml = (q.options||[]).map((o,i)=>{
+    const letter = MCQ_LETTERS_PRACTICE[i];
+    const sel = q.given===letter ? ' selected' : '';
+    return \`<button type="button" class="mcq-opt cbt-opt${'$'}{sel}" onclick="selectCbtOption('${'$'}{letter}')"><span class="mcq-letter">${'$'}{letter}</span><span class="mcq-text">${'$'}{renderMedia(o)}</span></button>\`;
+  }).join('');
+  main.innerHTML = \`
+    <div class="cbt-header">
+      <div class="cbt-brand"><b>🎓 Study Mafia</b><span>${'$'}{esc(state.cbtChaptersLabel.length===1 ? state.cbtChaptersLabel[0] : 'Mixed Subjects — CBT Mock Test')}</span></div>
+      <div class="cbt-center">
+        <div class="cbt-qcount">Question ${'$'}{state.cbtIdx+1} of ${'$'}{total}</div>
+        <div class="cbt-progress-track"><div class="cbt-progress-fill" style="width:${'$'}{pct}%;"></div></div>
+      </div>
+      <div class="cbt-right">
+        <div class="cbt-timer" id="cbtRunTimer">00:00</div>
+        <button class="cbt-end-btn" id="cbtEndBtn">End Test</button>
+      </div>
+    </div>
+    <div class="cbt-layout">
+      <div>
+        <div class="q-card">
+          <div class="cbt-badges">
+            <span class="cbt-badge qnum">Q${'$'}{state.cbtIdx+1}</span>
+            ${'$'}{q.difficulty?\`<span class="cbt-badge ${'$'}{cbtDiffClass(q.difficulty)}">${'$'}{esc(q.difficulty)}</span>\`:''}
+            <span class="cbt-badge">${'$'}{q.type==='assertion-reason'?'Assertion-Reason':'MCQ'}</span>
+            <span class="cbt-badge">${'$'}{esc(q.subjectName?q.subjectName+' · ':'')}${'$'}{esc(q.chapterTitle||'')}</span>
+            <span class="cbt-badge">${'$'}{marks} mark${'$'}{marks===1?'':'s'}</span>
+          </div>
+          ${'$'}{stem}
+          <div class="mcq-options">${'$'}{optsHtml}</div>
+        </div>
+        <div class="cbt-nav-row">
+          <button class="cbt-prev" id="cbtPrevBtn" ${'$'}{state.cbtIdx===0?'disabled':''}>← Previous</button>
+          <button class="cbt-review" id="cbtReviewBtn">${'$'}{q.marked?'🚩 Unmark Review':'🚩 Mark for Review'}</button>
+          <button class="cbt-skip" id="cbtSkipBtn">Skip →</button>
+          <button class="cbt-next" id="cbtNextBtn">${'$'}{state.cbtIdx+1>=total?'Finish Test':'Next →'}</button>
+        </div>
+      </div>
+      <div>
+        <div class="cbt-side-box">
+          <div class="cbt-side-title">Question Palette</div>
+          <div class="cbt-legend">
+            <span><i style="background:var(--card-border);"></i>Not Visited</span>
+            <span><i style="background:#5A82DC;"></i>Visited</span>
+            <span><i style="background:#4CAF66;"></i>Attempted</span>
+            <span><i style="background:#E69632;"></i>Review</span>
+            <span><i style="background:#B0455A;"></i>Skipped</span>
+          </div>
+          <div class="cbt-palette-grid" id="cbtPaletteGrid"></div>
+        </div>
+        <div class="cbt-side-box">
+          <div class="cbt-side-title">Live Statistics</div>
+          <div class="cbt-stats-grid">
+            <div class="cbt-stat"><div class="n">${'$'}{stats.total}</div><div class="l">Total</div></div>
+            <div class="cbt-stat"><div class="n" style="color:#8FD19E;">${'$'}{stats.attempted}</div><div class="l">Attempted</div></div>
+            <div class="cbt-stat"><div class="n" style="color:#E39AA6;">${'$'}{stats.skipped}</div><div class="l">Skipped</div></div>
+            <div class="cbt-stat"><div class="n" style="color:#F0B871;">${'$'}{stats.review}</div><div class="l">Review</div></div>
+            <div class="cbt-stat" style="grid-column:1 / -1;"><div class="n">${'$'}{stats.remaining}</div><div class="l">Remaining</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  \`;
+  document.getElementById('cbtPaletteGrid').innerHTML = state.cbtQuiz.map((item,i)=>{
+    const base = cbtBaseStatus(item);
+    const cur = i===state.cbtIdx ? ' st-current' : '';
+    return \`<button type="button" class="cbt-pnum st-${'$'}{base}${'$'}{cur}" onclick="cbtGoTo(${'$'}{i})">${'$'}{i+1}</button>\`;
+  }).join('');
+
+  clearInterval(state.cbtTimer);
+  state.cbtTimer = setInterval(()=>{
+    const t = document.getElementById('cbtRunTimer');
+    if(!t) return;
+    if(state.cbtTimeLimitSeconds){
+      const remain = state.cbtTimeLimitSeconds - Math.floor((Date.now()-state.cbtStart)/1000);
+      if(remain<=0){ t.textContent='00:00'; clearInterval(state.cbtTimer); finishCbtTest(); return; }
+      const mm=String(Math.floor(remain/60)).padStart(2,'0'), ss=String(remain%60).padStart(2,'0');
+      t.textContent = mm+':'+ss;
+      t.classList.toggle('low', remain<=60);
+    } else {
+      const s = Math.floor((Date.now()-state.cbtStart)/1000);
+      const mm=String(Math.floor(s/60)).padStart(2,'0'), ss=String(s%60).padStart(2,'0');
+      t.textContent = mm+':'+ss;
+    }
+  }, 500);
+
+  document.getElementById('cbtPrevBtn').addEventListener('click', ()=>{ if(state.cbtIdx>0){ cbtCaptureTime(); state.cbtIdx--; renderCbtQuestion(); } });
+  document.getElementById('cbtReviewBtn').addEventListener('click', ()=>{ q.marked = !q.marked; cbtAdvanceOrRender(); });
+  document.getElementById('cbtSkipBtn').addEventListener('click', ()=>{ if(q.given==null) q.skipped = true; cbtAdvanceOrRender(); });
+  document.getElementById('cbtNextBtn').addEventListener('click', ()=>{
+    cbtCaptureTime();
+    if(state.cbtIdx+1>=total){ openCbtSubmitModal(); return; }
+    state.cbtIdx++;
+    renderCbtQuestion();
+  });
+  document.getElementById('cbtEndBtn').addEventListener('click', openCbtSubmitModal);
+}
+function cbtAdvanceOrRender(){
+  cbtCaptureTime();
+  if(state.cbtIdx+1 < state.cbtQuiz.length){ state.cbtIdx++; }
+  renderCbtQuestion();
+}
+function selectCbtOption(letter){
+  const q = state.cbtQuiz[state.cbtIdx];
+  q.given = letter;
+  q.skipped = false;
+  renderCbtQuestion();
+}
+function cbtGoTo(i){
+  if(i===state.cbtIdx) return;
+  cbtCaptureTime();
+  state.cbtIdx = i;
+  renderCbtQuestion();
+}
+// Keyboard shortcuts A–D (only live while a CBT question is actually on screen).
+document.addEventListener('keydown', (e)=>{
+  if(!state.cbtQuiz || !document.querySelector('.cbt-layout')) return;
+  const letter = e.key.toUpperCase();
+  const idx = MCQ_LETTERS_PRACTICE.indexOf(letter);
+  if(idx===-1) return;
+  const q = state.cbtQuiz[state.cbtIdx];
+  if(q && q.options && q.options[idx]!=null) selectCbtOption(letter);
+});
+
+function openCbtSubmitModal(){
+  cbtCaptureTime();
+  const stats = cbtStats();
+  const timeTaken = Math.floor((Date.now()-state.cbtStart)/1000);
+  const mm=String(Math.floor(timeTaken/60)).padStart(2,'0'), ss=String(timeTaken%60).padStart(2,'0');
+  const overlay = document.createElement('div');
+  overlay.className = 'cbt-modal-overlay';
+  overlay.innerHTML = \`
+    <div class="cbt-modal-box">
+      <h3>Submit Test?</h3>
+      <div class="cbt-modal-stats">
+        <div class="cbt-stat"><div class="n">${'$'}{stats.total}</div><div class="l">Total Questions</div></div>
+        <div class="cbt-stat"><div class="n" style="color:#8FD19E;">${'$'}{stats.attempted}</div><div class="l">Attempted</div></div>
+        <div class="cbt-stat"><div class="n" style="color:#E39AA6;">${'$'}{stats.skipped}</div><div class="l">Skipped</div></div>
+        <div class="cbt-stat"><div class="n" style="color:#F0B871;">${'$'}{stats.review}</div><div class="l">Review</div></div>
+        <div class="cbt-stat"><div class="n">${'$'}{stats.remaining}</div><div class="l">Remaining</div></div>
+        <div class="cbt-stat"><div class="n">${'$'}{mm}:${'$'}{ss}</div><div class="l">Time Taken</div></div>
+      </div>
+      <div class="cbt-modal-actions">
+        <button class="btn-outline" id="cbtModalContinue">Continue Test</button>
+        <button class="btn" id="cbtModalSubmit">Submit Anyway</button>
+      </div>
+    </div>
+  \`;
+  document.body.appendChild(overlay);
+  document.getElementById('cbtModalContinue').addEventListener('click', ()=>{ overlay.remove(); });
+  document.getElementById('cbtModalSubmit').addEventListener('click', ()=>{ overlay.remove(); finishCbtTest(); });
+}
+
+async function finishCbtTest(){
+  clearInterval(state.cbtTimer);
+  cbtCaptureTime();
+  const timeTaken = Math.floor((Date.now()-state.cbtStart)/1000);
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">Grading your test…</div>';
+  for(const q of state.cbtQuiz){
+    const res = await fetch('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:q.given||''}) });
+    const data = await res.json();
+    q.correct = data.correct; q.correctAnswer = data.correctAnswer;
+  }
+  renderCbtResult(timeTaken);
+}
+
+function renderCbtResult(timeTaken){
+  const main = document.getElementById('main');
+  const quiz = state.cbtQuiz;
+  const total = quiz.length;
+  const correct = quiz.filter(q=>q.correct).length;
+  const attempted = quiz.filter(q=>q.given!=null).length;
+  const wrong = attempted - correct;
+  const skipped = total - attempted;
+  const scorePct = total ? Math.round((correct/total)*100) : 0;
+  const accuracyPct = attempted ? Math.round((correct/attempted)*100) : 0;
+  const avgTime = total ? Math.round(quiz.reduce((s,q)=>s+(q.timeSec||0),0)/total) : 0;
+  const mm=String(Math.floor(timeTaken/60)).padStart(2,'0'), ss=String(timeTaken%60).padStart(2,'0');
+
+  const chapterMap = {};
+  quiz.forEach(q=>{
+    const key = (q.subjectName?q.subjectName+' · ':'')+(q.chapterTitle||'Unknown');
+    if(!chapterMap[key]) chapterMap[key] = { title:key, total:0, correct:0, wrong:0 };
+    chapterMap[key].total++;
+    if(q.given!=null){ if(q.correct) chapterMap[key].correct++; else chapterMap[key].wrong++; }
+  });
+  const chapterRows = Object.values(chapterMap).map(c=>({...c, accuracy: c.total? Math.round((c.correct/c.total)*100):0 })).sort((a,b)=>b.total-a.total);
+
+  const diffOrder = ['Easy','Medium','Hard'];
+  const diffMap = {};
+  quiz.forEach(q=>{
+    const d = q.difficulty || 'Unspecified';
+    if(!diffMap[d]) diffMap[d] = { label:d, attempted:0, correct:0, wrong:0, total:0 };
+    diffMap[d].total++;
+    if(q.given!=null){ diffMap[d].attempted++; if(q.correct) diffMap[d].correct++; else diffMap[d].wrong++; }
+  });
+  const diffRows = Object.values(diffMap).sort((a,b)=> diffOrder.indexOf(a.label)-diffOrder.indexOf(b.label));
+
+  const maxTime = Math.max(1, ...quiz.map(q=>q.timeSec||0));
+
+  const insights = [];
+  const chaptersWithEnoughData = chapterRows.filter(c=>c.total>=2);
+  let strongest=null, weakest=null;
+  if(chaptersWithEnoughData.length){
+    strongest = [...chaptersWithEnoughData].sort((a,b)=>b.accuracy-a.accuracy)[0];
+    weakest = [...chaptersWithEnoughData].sort((a,b)=>a.accuracy-b.accuracy)[0];
+    if(strongest && strongest.accuracy>=70) insights.push(\`✅ Strongest area: <b>${'$'}{esc(strongest.title)}</b> at ${'$'}{strongest.accuracy}% accuracy.\`);
+    if(weakest && weakest.accuracy<70 && (!strongest || weakest.title!==strongest.title)) insights.push(\`⚠️ Needs revision: <b>${'$'}{esc(weakest.title)}</b> at ${'$'}{weakest.accuracy}% accuracy.\`);
+  }
+  if(skipped>0) insights.push(\`⏭️ You left ${'$'}{skipped} question${'$'}{skipped===1?'':'s'} unattempted — every unattempted MCQ is a free point on the table.\`);
+  if(wrong>0 && attempted>0) insights.push(\`❌ ${'$'}{wrong} of your ${'$'}{attempted} attempted answers were incorrect — check those in the review list below.\`);
+  const revisionChapters = chapterRows.filter(c=>c.total>=2 && c.accuracy<50);
+  if(revisionChapters.length) insights.push(\`📚 Chapters under 50% accuracy: ${'$'}{revisionChapters.map(c=>esc(c.title)).join(', ')}.\`);
+  if(!insights.length) insights.push(\`🎯 Solid run — ${'$'}{correct}/${'$'}{total} correct with no major weak spot in this set.\`);
+
+  const ringR = 60, ringC = Math.round(2*Math.PI*ringR);
+  const ringOffset = Math.round(ringC - (ringC*scorePct/100));
+
+  main.innerHTML = \`
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Back to The Turf</button></div>
+    <div class="section-title">MCQ Test — Result</div>
+
+    <div class="cbt-score-wrap">
+      <div class="cbt-score-ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="${'$'}{ringR}" fill="none" stroke="var(--card-border)" stroke-width="10"/>
+          <circle cx="75" cy="75" r="${'$'}{ringR}" fill="none" stroke="var(--gold)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${'$'}{ringC}" stroke-dashoffset="${'$'}{ringOffset}"/>
+        </svg>
+        <div class="ring-mid"><div class="ring-pct">${'$'}{scorePct}%</div><div class="ring-frac">${'$'}{correct} / ${'$'}{total}</div></div>
+      </div>
+      <div class="cbt-score-meta">
+        <div><div class="m-label">Accuracy (of attempted)</div><div class="m-val">${'$'}{accuracyPct}%</div></div>
+        <div><div class="m-label">Time Taken</div><div class="m-val">${'$'}{mm}:${'$'}{ss}</div></div>
+        <div><div class="m-label">Avg Time / Question</div><div class="m-val">${'$'}{avgTime}s</div></div>
+        <div><div class="m-label">Questions</div><div class="m-val">${'$'}{total}</div></div>
+      </div>
+    </div>
+
+    <div class="cbt-summary-cards">
+      <div class="card correct"><div class="v">${'$'}{correct}</div><div class="k">Correct</div></div>
+      <div class="card wrong"><div class="v">${'$'}{wrong}</div><div class="k">Wrong</div></div>
+      <div class="card skipped"><div class="v">${'$'}{skipped}</div><div class="k">Skipped</div></div>
+      <div class="card accuracy"><div class="v">${'$'}{accuracyPct}%</div><div class="k">Accuracy</div></div>
+      <div class="card avgtime"><div class="v">${'$'}{avgTime}s</div><div class="k">Avg Time</div></div>
+    </div>
+
+    <div class="cbt-analysis-grid">
+      <div class="cbt-side-box">
+        <div class="cbt-side-title">Chapter Analysis</div>
+        ${'$'}{chapterRows.map(c=>\`
+          <div class="cbt-bar-row">
+            <div class="lbl" title="${'$'}{esc(c.title)}">${'$'}{esc(c.title)}</div>
+            <div class="cbt-bar-track"><div class="cbt-bar-fill" style="width:${'$'}{c.accuracy}%;"></div></div>
+            <div class="pct">${'$'}{c.correct}/${'$'}{c.total}</div>
+          </div>
+        \`).join('') || '<div class="empty">No data.</div>'}
+      </div>
+      <div class="cbt-side-box">
+        <div class="cbt-side-title">Difficulty Analysis</div>
+        ${'$'}{diffRows.map(d=>\`
+          <div class="cbt-diff-card">
+            <div class="dtitle">${'$'}{esc(d.label)}</div>
+            <div class="drow"><span>Attempted</span><span>${'$'}{d.attempted}/${'$'}{d.total}</span></div>
+            <div class="drow"><span>Correct</span><span style="color:#8FD19E;">${'$'}{d.correct}</span></div>
+            <div class="drow"><span>Wrong</span><span style="color:#E39AA6;">${'$'}{d.wrong}</span></div>
+            <div class="drow"><span>Accuracy</span><span>${'$'}{d.attempted? Math.round((d.correct/d.attempted)*100):0}%</span></div>
+          </div>
+        \`).join('') || '<div class="empty">No data.</div>'}
+      </div>
+    </div>
+
+    <div class="cbt-side-box" style="margin-bottom:24px;">
+      <div class="cbt-side-title">Time Analysis (per question) · slower-than-average highlighted</div>
+      <div class="cbt-time-bars">
+        ${'$'}{quiz.map((q,i)=>{
+          const h = Math.max(4, Math.round(((q.timeSec||0)/maxTime)*90));
+          const slow = avgTime>0 && (q.timeSec||0) > avgTime*1.6;
+          return \`<div class="cbt-time-bar" title="Q${'$'}{i+1}: ${'$'}{q.timeSec||0}s" style="height:${'$'}{h}px; background:${'$'}{slow?'#E39AA6':'var(--gold-soft)'};"></div>\`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="section-title">Performance Insights</div>
+    <ul class="cbt-insights">${'$'}{insights.map(i=>\`<li>${'$'}{i}</li>\`).join('')}</ul>
+
+    <div class="section-title">Question Review</div>
+    ${'$'}{quiz.map((q,i)=>{
+      const statusColor = q.given==null ? '#9BA69C' : (q.correct ? '#4CAF66' : '#B0455A');
+      const statusLabel = q.given==null ? 'Skipped' : (q.correct ? 'Correct' : 'Wrong');
+      const stem = q.type==='assertion-reason'
+        ? \`<div class="ar-block"><p><b>Assertion (A):</b> ${'$'}{renderMedia(q.assertion||'')}</p><p><b>Reason (R):</b> ${'$'}{renderMedia(q.reason||'')}</p></div>\`
+        : \`<div class="qtext" style="font-size:14.5px;">${'$'}{renderMedia(q.question)}</div>\`;
+      const shortStem = (q.question||'').slice(0,70) + ((q.question||'').length>70?'…':'');
+      return \`<details class="cbt-review-card">
+        <summary><span class="rstatus" style="background:${'$'}{statusColor};"></span>Q${'$'}{i+1}. ${'$'}{esc(shortStem)} <span style="margin-left:auto; color:${'$'}{statusColor}; font-size:11.5px; text-transform:uppercase;">${'$'}{statusLabel}</span></summary>
+        <div class="rbody">
+          ${'$'}{stem}
+          <div style="font-size:12.5px; color:var(--muted); margin-bottom:8px;">${'$'}{esc(q.subjectName?q.subjectName+' · ':'')}${'$'}{esc(q.chapterTitle||'')}${'$'}{q.difficulty?' · '+esc(q.difficulty):''} · ⏱ ${'$'}{q.timeSec||0}s</div>
+          <div style="font-size:13.5px; margin-bottom:4px;">Your Answer: <b style="color:${'$'}{statusColor};">${'$'}{q.given?esc(q.given):'(not attempted)'}</b></div>
+          <div style="font-size:13.5px;">Correct Answer: <b style="color:#8FD19E;">${'$'}{renderMedia(q.correctAnswer||'')}</b></div>
+        </div>
+      </details>\`;
+    }).join('')}
+
+    <div class="cbt-actions-grid">
+      <button class="btn-outline" id="cbtRetryWrong">Review Wrong Questions</button>
+      <button class="btn-outline" id="cbtRetrySkipped">Retry Skipped Questions</button>
+      <button class="btn-outline" id="cbtRetryEntire">Retry Entire Test</button>
+      <button class="btn" onclick="navigate(sp(''))">Back to Chapters</button>
+    </div>
+  \`;
+
+  document.getElementById('cbtRetryWrong').addEventListener('click', ()=>cbtRetrySubset(q=>q.given!=null && !q.correct, 'Nothing wrong to retry — nice.'));
+  document.getElementById('cbtRetrySkipped').addEventListener('click', ()=>cbtRetrySubset(q=>q.given==null, 'You did not skip anything.'));
+  document.getElementById('cbtRetryEntire').addEventListener('click', ()=>cbtRetrySubset(()=>true, 'Nothing to retry.'));
+}
+
+function cbtRetrySubset(filterFn, emptyMsg){
+  const subset = state.cbtQuiz.filter(filterFn);
+  if(!subset.length){ alert(emptyMsg||'Nothing to retry in that set.'); return; }
+  state.cbtQuiz = subset.map(q=>({
+    qid:q.qid, subject:q.subject, subjectName:q.subjectName, chapterTitle:q.chapterTitle, topic:q.topic,
+    difficulty:q.difficulty, question:q.question, source:q.source, options:q.options, type:q.type,
+    assertion:q.assertion, reason:q.reason, marks:q.marks,
+    given:null, marked:false, visited:false, skipped:false, shownAt:null, timeSec:0
+  }));
+  state.cbtIdx = 0;
+  state.cbtStart = Date.now();
+  state.cbtReadingActive = false;
+  navigate('/run/cbt');
 }
 
 // ---------- Chapter page (its own dedicated URL: /chapter/:id) ----------
@@ -2076,7 +2772,7 @@ async function renderTestSetup(mode, chapterIds){
 
       <label class="radio-opt" style="margin-top:18px;"><input type="checkbox" id="readingOn"> Add reading time (typing disabled while reading)</label>
       <div class="count-row" id="readingRow" style="display:none;">
-        <input type="number" id="readingMinutes" min="1" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <input type="number" id="readingMinutes" min="1" max="15" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
         <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min reading time, before the test clock starts</span>
       </div>
     </div>
@@ -2116,7 +2812,7 @@ async function renderTestSetup(mode, chapterIds){
     const minutes = Math.max(0, parseInt(document.getElementById('minutesInput').value,10) || 0);
     const totalSeconds = hours*3600 + minutes*60;
     const readingOn = document.getElementById('readingOn').checked;
-    const readingMinutes = Math.max(1, parseInt(document.getElementById('readingMinutes').value,10) || 15);
+    const readingMinutes = Math.min(15, Math.max(1, parseInt(document.getElementById('readingMinutes').value,10) || 15));
     const opts = { difficulty, count, timeLimitSeconds: (noTimer || totalSeconds<=0) ? null : totalSeconds, readingTimeSeconds: readingOn ? readingMinutes*60 : null };
     if(mode==='quiz') startQuiz(chapterIds, opts);
     else if(mode==='solo') startSoloTest(chapterIds, opts);
@@ -2264,7 +2960,7 @@ async function renderPypPaperSetup(id, mode){
       </div>
       <label class="radio-opt" style="margin-top:18px;"><input type="checkbox" id="paperReadingOn"> Add reading time (typing disabled while reading)</label>
       <div class="count-row" id="paperReadingRow" style="display:none;">
-        <input type="number" id="paperReadingMinutes" min="1" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <input type="number" id="paperReadingMinutes" min="1" max="15" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
         <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min reading time, before the test clock starts</span>
       </div>
     </div>
@@ -2278,7 +2974,7 @@ async function renderPypPaperSetup(id, mode){
     const minutes = Math.max(0, parseInt(document.getElementById('paperMinutesInput').value,10) || 0);
     const totalSeconds = Math.max(60, hours*3600 + minutes*60);
     const readingOn = document.getElementById('paperReadingOn').checked;
-    const readingMinutes = Math.max(1, parseInt(document.getElementById('paperReadingMinutes').value,10) || 15);
+    const readingMinutes = Math.min(15, Math.max(1, parseInt(document.getElementById('paperReadingMinutes').value,10) || 15));
     const opts = { paperId:id, timeLimitSeconds: totalSeconds, readingTimeSeconds: readingOn ? readingMinutes*60 : null, paperTotalMarks: data.totalMarks||null };
     if(mode==='solo') startPypSoloTest(opts);
     else createPypGangWar(opts);
@@ -2359,7 +3055,7 @@ async function renderPypTestSetup(mode, chapterIds){
 
       <label class="radio-opt" style="margin-top:18px;"><input type="checkbox" id="pypReadingOn"> Add reading time (typing disabled while reading)</label>
       <div class="count-row" id="pypReadingRow" style="display:none;">
-        <input type="number" id="pypReadingMinutes" min="1" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <input type="number" id="pypReadingMinutes" min="1" max="15" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
         <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min reading time, before the test clock starts</span>
       </div>
     </div>
@@ -2399,7 +3095,7 @@ async function renderPypTestSetup(mode, chapterIds){
     const minutes = Math.max(0, parseInt(document.getElementById('pypMinutesInput').value,10) || 0);
     const totalSeconds = hours*3600 + minutes*60;
     const readingOn = document.getElementById('pypReadingOn').checked;
-    const readingMinutes = Math.max(1, parseInt(document.getElementById('pypReadingMinutes').value,10) || 15);
+    const readingMinutes = Math.min(15, Math.max(1, parseInt(document.getElementById('pypReadingMinutes').value,10) || 15));
     const opts = { chapterIds, difficulty, count, timeLimitSeconds: (noTimer || totalSeconds<=0) ? null : totalSeconds, readingTimeSeconds: readingOn ? readingMinutes*60 : null };
     if(mode==='quiz') startPypQuiz(opts);
     else if(mode==='solo') startPypSoloTest(opts);
@@ -2909,7 +3605,7 @@ async function renderMixWarSetup(){
       </div>
       <label class="radio-opt" style="margin-top:18px;"><input type="checkbox" id="mixReadingOn"> Add reading time (typing disabled while reading)</label>
       <div class="count-row" id="mixReadingRow" style="display:none;">
-        <input type="number" id="mixReadingMinutes" min="1" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
+        <input type="number" id="mixReadingMinutes" min="1" max="15" value="15" style="width:70px; background:var(--bg); border:1.5px solid var(--card-border); color:var(--cream); padding:10px; border-radius:6px; font-size:15px;">
         <span class="val" style="width:auto; font-family:'IBM Plex Sans'; font-size:12.5px; color:var(--muted);">min reading time, before the test clock starts</span>
       </div>
     </div>
@@ -2931,7 +3627,7 @@ async function renderMixWarSetup(){
     const minutes = Math.max(0, parseInt(document.getElementById('mixMinutesInput').value,10)||0);
     const totalSeconds = hours*3600+minutes*60;
     const readingOn = document.getElementById('mixReadingOn').checked;
-    const readingMinutes = Math.max(1, parseInt(document.getElementById('mixReadingMinutes').value,10)||15);
+    const readingMinutes = Math.min(15, Math.max(1, parseInt(document.getElementById('mixReadingMinutes').value,10)||15));
     createMixGangWar({ parts, timeLimitSeconds: (noTimer||totalSeconds<=0)?null:totalSeconds, readingTimeSeconds: readingOn ? readingMinutes*60 : null });
   });
 }
