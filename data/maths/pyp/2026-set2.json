@@ -1,0 +1,625 @@
+{
+  "year": 2026,
+  "set": 2,
+  "board": "CBSE",
+  "totalMarks": 80,
+  "questions": [
+    {
+      "id": "1",
+      "chapter": 1,
+      "topic": "Real Numbers",
+      "marks": 1,
+      "difficulty": "easy",
+      "question": "The LCM of 960 and 240 is:",
+      "answer": "A",
+      "type": "mcq",
+      "options": [
+        "960",
+        "240",
+        "60",
+        "15"
+      ]
+    },
+    {
+      "id": "2",
+      "chapter": 1,
+      "topic": "Real Numbers",
+      "marks": 1,
+      "difficulty": "easy",
+      "question": "The natural number 1 is:",
+      "answer": "D",
+      "type": "mcq",
+      "options": [
+        "a prime number",
+        "a composite number",
+        "prime as well as composite",
+        "neither prime nor composite"
+      ]
+    },
+    {
+      "id": "3",
+      "chapter": 1,
+      "topic": "Real Numbers",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "For any natural number n, 5^n ends with the digit:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "0",
+        "5",
+        "3",
+        "2"
+      ]
+    },
+    {
+      "id": "4",
+      "chapter": 2,
+      "topic": "Polynomials",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "The graph of y = f(x) is given.\n[DIAGRAM: assets/maths/questions/2026-set2/q4.png]\nThe number of distinct zeroes of y = f(x) is:",
+      "answer": "C",
+      "type": "mcq",
+      "options": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    {
+      "id": "5",
+      "chapter": 2,
+      "topic": "Polynomials",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "If α and β are two zeroes of a polynomial f(x) = px² − 2x + 3p and α + β = αβ, then value of p is:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "−2/3",
+        "2/3",
+        "1/3",
+        "−1/3"
+      ]
+    },
+    {
+      "id": "6",
+      "chapter": 3,
+      "topic": "Pair of Linear Equations in Two Variables",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "If the pair of linear equations: a₁x + b₁y + c₁ = 0 and a₂x + b₂y + c₂ = 0 is consistent and dependent, then:",
+      "answer": "D",
+      "type": "mcq",
+      "options": [
+        "a1/a2 ≠ b1/b2",
+        "a1/a2 ≠ b1/b2 = c1/c2",
+        "a1/a2 = b1/b2 ≠ c1/c2",
+        "a1/a2 = b1/b2 = c1/c2"
+      ]
+    },
+    {
+      "id": "7",
+      "chapter": 5,
+      "topic": "Arithmetic Progressions",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "Which of the following sequence is not an A.P. ?",
+      "answer": "D",
+      "type": "mcq",
+      "options": [
+        "2, 5/2, 3, 7/2, ...",
+        "−1.2, −3.2, −5.2, −7.2, ...",
+        "√2, √8, √18, ...",
+        "1², 3², 5², 7², ..."
+      ]
+    },
+    {
+      "id": "8",
+      "chapter": 6,
+      "topic": "Triangles",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "In triangles ABC and PQR, ∠A = ∠Q and ∠B = ∠R, then AB : AC is equal to:",
+      "answer": "C",
+      "type": "mcq",
+      "options": [
+        "PQ : PR",
+        "PQ : QR",
+        "QR : QP",
+        "PR : QR"
+      ]
+    },
+    {
+      "id": "9",
+      "chapter": 7,
+      "topic": "Coordinate Geometry",
+      "marks": 1,
+      "difficulty": "easy",
+      "question": "The distance of the point A(4a, 3a) from x-axis is:",
+      "answer": "A",
+      "type": "mcq",
+      "options": [
+        "3a",
+        "−3a",
+        "4a",
+        "−4a"
+      ]
+    },
+    {
+      "id": "10",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "If cos A = 4/5, then the value of tan A is:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "3/5",
+        "3/4",
+        "4/3",
+        "5/3"
+      ]
+    },
+    {
+      "id": "11",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "If 2 sin A = 1, then the value of tan A + cot A is:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "√3",
+        "4/√3",
+        "√3/2",
+        "1"
+      ]
+    },
+    {
+      "id": "12",
+      "chapter": 9,
+      "topic": "Some Applications of Trigonometry",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "From a point on the ground, which is 60 m away from the foot of a vertical tower, the angle of elevation of the top of the tower is found to be 45°. The height (in metres) of the tower is:",
+      "answer": "C",
+      "type": "mcq",
+      "options": [
+        "10√3",
+        "30√3",
+        "60",
+        "30"
+      ]
+    },
+    {
+      "id": "13",
+      "chapter": 10,
+      "topic": "Circles",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "In the given figure, PA and PB are tangents to a circle centred at O.\n[DIAGRAM: assets/maths/questions/2026-set2/q13.png]\nIf ∠OAB = 15°, then ∠APB equals:",
+      "answer": "A",
+      "type": "mcq",
+      "options": [
+        "30°",
+        "15°",
+        "45°",
+        "10°"
+      ]
+    },
+    {
+      "id": "14",
+      "chapter": 10,
+      "topic": "Circles",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "In the given figure, PA and PB are tangents to a circle centred at O.\n[DIAGRAM: assets/maths/questions/2026-set2/q14.png]\nIf ∠AOB = 130°, then ∠APB is equal to:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "130°",
+        "50°",
+        "120°",
+        "90°"
+      ]
+    },
+    {
+      "id": "15",
+      "chapter": 11,
+      "topic": "Areas Related to Circles",
+      "marks": 1,
+      "difficulty": "hard",
+      "question": "Area of a segment of a circle of radius 'r' and central angle 60° is:",
+      "answer": "C",
+      "type": "mcq",
+      "options": [
+        "πr²/2 − r²/2",
+        "2πr/4 − (√3/4)r²",
+        "πr²/6 − (√3/4)r²",
+        "2πr/4 − r² sin 60°"
+      ]
+    },
+    {
+      "id": "16",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 1,
+      "difficulty": "hard",
+      "question": "A hemispherical bowl is made of steel of thickness 1 cm. The outer radius of the bowl is 6 cm. The volume of steel used (in cm³) is:",
+      "answer": "B",
+      "type": "mcq",
+      "options": [
+        "182π",
+        "182/3 π",
+        "682/3 π",
+        "364/3 π"
+      ]
+    },
+    {
+      "id": "17",
+      "chapter": 13,
+      "topic": "Statistics",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "The mean and median of a frequency distribution are 43 and 43.4 respectively. The mode of the distribution is:",
+      "answer": "C",
+      "type": "mcq",
+      "options": [
+        "43.4",
+        "42.4",
+        "44.2",
+        "49.3"
+      ]
+    },
+    {
+      "id": "18",
+      "chapter": 14,
+      "topic": "Probability",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "The probability for a randomly selected number out of 1, 2, 3, 4, ..., 25 to be a composite number is:",
+      "answer": "A",
+      "type": "mcq",
+      "options": [
+        "15/25",
+        "10/25",
+        "11/25",
+        "9/25"
+      ]
+    },
+    {
+      "id": "19",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "Assertion (A): The surface area of the cuboid formed by joining two cubes of sides 4 cm each, end-to-end, is 160 cm².\nReason (R): The surface area of a cuboid of dimensions l × b × h is (lb + bh + hl).",
+      "answer": "C",
+      "type": "assertion-reason",
+      "options": [
+        "Both Assertion (A) and Reason (R) are true and Reason (R) is the correct explanation of the Assertion (A).",
+        "Both Assertion (A) and Reason (R) are true, but Reason (R) is not the correct explanation of the Assertion (A).",
+        "Assertion (A) is true, but Reason (R) is false.",
+        "Assertion (A) is false, but Reason (R) is true."
+      ]
+    },
+    {
+      "id": "20",
+      "chapter": 13,
+      "topic": "Statistics",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "Assertion (A): The mean of first 'n' natural numbers is (n−1)/2.\nReason (R): The sum of first 'n' natural numbers is n(n+1)/2.",
+      "answer": "D",
+      "type": "assertion-reason",
+      "options": [
+        "Both Assertion (A) and Reason (R) are true and Reason (R) is the correct explanation of the Assertion (A).",
+        "Both Assertion (A) and Reason (R) are true, but Reason (R) is not the correct explanation of the Assertion (A).",
+        "Assertion (A) is true, but Reason (R) is false.",
+        "Assertion (A) is false, but Reason (R) is true."
+      ]
+    },
+    {
+      "id": "21",
+      "chapter": 2,
+      "topic": "Polynomials",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "If α, β are the zeroes of the quadratic polynomial px² + qx + r, then find the value of α³β + β³α.",
+      "answer": "(r/p³)(q² − 2pr)"
+    },
+    {
+      "id": "22a",
+      "chapter": 6,
+      "topic": "Triangles",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "In the given figure, Δ AHK ~ Δ ABC.\n[DIAGRAM: assets/maths/questions/2026-set2/q22a.png]\nIf AK = 10 cm, BC = 3.5 cm and HK = 7 cm, find the length of AC.",
+      "answer": "AC = 5 cm"
+    },
+    {
+      "id": "22b",
+      "chapter": 6,
+      "topic": "Triangles",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "In the given figure, XY ∥ QR,\n[DIAGRAM: assets/maths/questions/2026-set2/q22b.png]\nPQ/XQ = 7/3 and PR = 6.3 cm. Find the length of YR.",
+      "answer": "YR = 2.7 cm"
+    },
+    {
+      "id": "23",
+      "chapter": 7,
+      "topic": "Coordinate Geometry",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "If the points A(4, 5), B(m, 6), C(4, 3) and D(1, n) taken in this order are the vertices of a parallelogram ABCD, then find the values of m and n.",
+      "answer": "m = 7, n = 2"
+    },
+    {
+      "id": "24a",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "If tan θ + 1/tan θ = 2, find the value of tan² θ + 1/tan² θ.",
+      "answer": "2"
+    },
+    {
+      "id": "24b",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "Prove that: √[(1 − sin θ)/(1 + sin θ)] = sec θ − tan θ",
+      "answer": "assets/maths/answers/2026-set2/q24b.png"
+    },
+    {
+      "id": "25",
+      "chapter": 10,
+      "topic": "Circles",
+      "marks": 2,
+      "difficulty": "medium",
+      "question": "In the given figure, O is the centre of the circle.\n[DIAGRAM: assets/maths/questions/2026-set2/q25.png]\nPQ and PR are tangents. Show that the quadrilateral PQOR is cyclic.",
+      "answer": "assets/maths/answers/2026-set2/q25.png"
+    },
+    {
+      "id": "26",
+      "chapter": 1,
+      "topic": "Real Numbers",
+      "marks": 3,
+      "difficulty": "medium",
+      "question": "Prove that √5 is an irrational number.",
+      "answer": "assets/maths/answers/2026-set2/q26.png"
+    },
+    {
+      "id": "27",
+      "chapter": 7,
+      "topic": "Coordinate Geometry",
+      "marks": 3,
+      "difficulty": "medium",
+      "question": "Find the coordinates of the points of trisection of the line segment joining the points A(−1, 4) and B(−3, −2).",
+      "answer": "P(−5/3, 2), Q(−7/3, 0)"
+    },
+    {
+      "id": "28a",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 3,
+      "difficulty": "hard",
+      "question": "Prove that: sec³θ/(sec²θ − 1) + cosec³θ/(cosec²θ − 1) = sec θ · cosec θ (sec θ + cosec θ)",
+      "answer": "assets/maths/answers/2026-set2/q28a.png"
+    },
+    {
+      "id": "28b",
+      "chapter": 8,
+      "topic": "Introduction to Trigonometry",
+      "marks": 3,
+      "difficulty": "hard",
+      "question": "If sec α/cosec β = p and tan α/cosec β = q, then prove that (p² − q²) sec² α = p².",
+      "answer": "assets/maths/answers/2026-set2/q28b.png"
+    },
+    {
+      "id": "29a",
+      "chapter": 10,
+      "topic": "Circles",
+      "marks": 3,
+      "difficulty": "medium",
+      "question": "Prove that the lengths of tangents drawn from an external point to a circle are equal.",
+      "answer": "assets/maths/answers/2026-set2/q29a.png"
+    },
+    {
+      "id": "29b",
+      "chapter": 10,
+      "topic": "Circles",
+      "marks": 3,
+      "difficulty": "hard",
+      "question": "Two tangents TP and TQ are drawn to a circle with centre O from an external point T. Prove that ∠PTQ = 2∠OPQ.",
+      "answer": "assets/maths/answers/2026-set2/q29b.png"
+    },
+    {
+      "id": "30",
+      "chapter": 11,
+      "topic": "Areas Related to Circles",
+      "marks": 3,
+      "difficulty": "medium",
+      "question": "Find the area of the sector of a circle of radius 42 cm and of central angle 30°. Also, find the area of the corresponding major sector. [Use π = 22/7]",
+      "answer": "Minor sector = 462 cm², Major sector = 5082 cm²"
+    },
+    {
+      "id": "31",
+      "chapter": 14,
+      "topic": "Probability",
+      "marks": 3,
+      "difficulty": "medium",
+      "question": "Two dice are thrown at the same time. Determine the probability that the (i) sum of the numbers on the two dice is 5, and (ii) difference of the numbers on the two dice is 3.",
+      "answer": "(i) 1/9  (ii) 1/6"
+    },
+    {
+      "id": "32",
+      "chapter": 3,
+      "topic": "Pair of Linear Equations in Two Variables",
+      "marks": 5,
+      "difficulty": "hard",
+      "question": "Aarush bought 2 pencils and 3 chocolates for ₹11 and Tanish bought 1 pencil and 2 chocolates for ₹7 from the same shop. Represent this situation in the form of a pair of linear equations. Find the price of 1 pencil and 1 chocolate, graphically.",
+      "answer": "assets/maths/answers/2026-set2/q32.png"
+    },
+    {
+      "id": "33a",
+      "chapter": 4,
+      "topic": "Quadratic Equations",
+      "marks": 5,
+      "difficulty": "medium",
+      "question": "A person on a tour has ₹4,200 for expenses. If he extends his tour for 3 days, he has to cut down his daily expenses by ₹70. Find the original duration of the tour.",
+      "answer": "12 days"
+    },
+    {
+      "id": "33b",
+      "chapter": 4,
+      "topic": "Quadratic Equations",
+      "marks": 5,
+      "difficulty": "medium",
+      "question": "The area of a right-angled triangle is 600 cm². If the base of the triangle exceeds the altitude by 10 cm, find all the three dimensions of the triangle.",
+      "answer": "Altitude = 30 cm, Base = 40 cm, Hypotenuse = 50 cm"
+    },
+    {
+      "id": "34a",
+      "chapter": 6,
+      "topic": "Triangles",
+      "marks": 5,
+      "difficulty": "hard",
+      "question": "Prove that if a line is drawn parallel to one side of a triangle to intersect the other two sides in distinct points, then the other two sides are divided in the same ratio.",
+      "answer": "assets/maths/answers/2026-set2/q34a.png"
+    },
+    {
+      "id": "34b",
+      "chapter": 6,
+      "topic": "Triangles",
+      "marks": 5,
+      "difficulty": "hard",
+      "question": "As shown in the given figure, a girl of height 90 cm is walking away from the base of a lamp post at a speed of 1.2 m/s.\n[DIAGRAM: assets/maths/questions/2026-set2/q34b.png]\nIf the lamp is 3.6 m above the ground, find the length of her shadow after 4 seconds.",
+      "answer": "1.6 m"
+    },
+    {
+      "id": "35",
+      "chapter": 13,
+      "topic": "Statistics",
+      "marks": 5,
+      "difficulty": "hard",
+      "question": "An SBI health insurance agent found the following data for distribution of ages of 100 policy holders. The health insurance policies are given to persons of age 15 years and onwards, but less than 60 years.\n\n| Age (yrs) | Number of policy holders |\n|---|---|\n| 15-20 | 2 |\n| 20-25 | 4 |\n| 25-30 | 18 |\n| 30-35 | 21 |\n| 35-40 | 33 |\n| 40-45 | 11 |\n| 45-50 | 3 |\n| 50-55 | 6 |\n| 55-60 | 2 |\n\nFind the modal age and median age of the policy holders.",
+      "answer": "Mode ≈ 36.7 years, Median ≈ 35.7 years"
+    },
+    {
+      "id": "36i",
+      "chapter": 5,
+      "topic": "Arithmetic Progressions",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY: Your elder brother wants to buy a car and plans to take a loan from a bank for his car. He repays his total loan of ₹1,18,000 by paying every month, starting with the first instalment of ₹1,000 and he increases the instalment by ₹100 every month.\n(i) Find the amount paid by him in the 30th instalment.",
+      "answer": "₹3900"
+    },
+    {
+      "id": "36ii",
+      "chapter": 5,
+      "topic": "Arithmetic Progressions",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY (car loan, see Q36i for setup):\n(ii) If the total number of instalments is 40, what is the amount paid in the last instalment?",
+      "answer": "₹4900"
+    },
+    {
+      "id": "36iiia",
+      "chapter": 5,
+      "topic": "Arithmetic Progressions",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (car loan, see Q36i for setup):\n(iii) (a) What amount does he still have to pay after the 30th instalment?",
+      "answer": "₹44,500"
+    },
+    {
+      "id": "36iiib",
+      "chapter": 5,
+      "topic": "Arithmetic Progressions",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (car loan, see Q36i for setup):\n(iii) (b) Find the ratio of the tenth instalment to the last instalment.",
+      "answer": "19 : 49"
+    },
+    {
+      "id": "37i",
+      "chapter": 9,
+      "topic": "Some Applications of Trigonometry",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY: Tejas is standing at the top of a building and observes a car at an angle of depression of 30° as it approaches the base of the building at a uniform speed. 6 seconds later, the angle of depression increases to 60°, and at that moment, the car is 25 m away from the building.\n[DIAGRAM: assets/maths/questions/2026-set2/q37.png]\n(i) What is the height of the building?",
+      "answer": "25√3 m"
+    },
+    {
+      "id": "37ii",
+      "chapter": 9,
+      "topic": "Some Applications of Trigonometry",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY (building and car, see Q37i for setup):\n(ii) What is the distance between the two positions of the car?",
+      "answer": "50 m"
+    },
+    {
+      "id": "37iiia",
+      "chapter": 9,
+      "topic": "Some Applications of Trigonometry",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (building and car, see Q37i for setup):\n(iii) (a) What would be the total time taken by the car to reach the foot of the building from the starting point?",
+      "answer": "9 seconds"
+    },
+    {
+      "id": "37iiib",
+      "chapter": 9,
+      "topic": "Some Applications of Trigonometry",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (building and car, see Q37i for setup):\n(iii) (b) What is the distance of the observer from the car when it makes an angle of 60°?",
+      "answer": "50 m"
+    },
+    {
+      "id": "38i",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY: On a Sunday your parents took you to a fair. You could see lot of toys displayed and you wanted them to buy a Rubik's cube and a strawberry ice-cream for you.\n[DIAGRAM: assets/maths/questions/2026-set2/q38.png]\n(i) Find the length of the diagonal of Rubik's cube if each edge measures 6 cm.",
+      "answer": "6√3 cm"
+    },
+    {
+      "id": "38ii",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 1,
+      "difficulty": "medium",
+      "question": "CASE STUDY (Rubik's cube & ice-cream, see Q38i for setup):\n(ii) Find the volume of Rubik's cube if the length of the edge is 7 cm.",
+      "answer": "343 cm³"
+    },
+    {
+      "id": "38iiia",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (Rubik's cube & ice-cream, see Q38i for setup):\n(iii) (a) What is the curved surface area of hemisphere (ice-cream) if the base radius is 7 cm?",
+      "answer": "308 cm²"
+    },
+    {
+      "id": "38iiib",
+      "chapter": 12,
+      "topic": "Surface Areas and Volumes",
+      "marks": 2,
+      "difficulty": "hard",
+      "question": "CASE STUDY (Rubik's cube & ice-cream, see Q38i for setup):\n(iii) (b) If two cubes of edges 4 cm are joined end-to-end, then find the surface area of the resulting cuboid.",
+      "answer": "160 cm²"
+    }
+  ]
+}
