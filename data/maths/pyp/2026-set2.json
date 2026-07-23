@@ -298,9 +298,10 @@
       "topic": "Surface Areas and Volumes",
       "marks": 1,
       "difficulty": "medium",
-      "question": "Assertion (A): The surface area of the cuboid formed by joining two cubes of sides 4 cm each, end-to-end, is 160 cm².\nReason (R): The surface area of a cuboid of dimensions l × b × h is (lb + bh + hl).",
       "answer": "C",
       "type": "assertion-reason",
+      "assertion": "The surface area of the cuboid formed by joining two cubes of sides 4 cm each, end-to-end, is 160 cm².",
+      "reason": "The surface area of a cuboid of dimensions l × b × h is (lb + bh + hl).",
       "options": [
         "Both Assertion (A) and Reason (R) are true and Reason (R) is the correct explanation of the Assertion (A).",
         "Both Assertion (A) and Reason (R) are true, but Reason (R) is not the correct explanation of the Assertion (A).",
@@ -314,9 +315,10 @@
       "topic": "Statistics",
       "marks": 1,
       "difficulty": "medium",
-      "question": "Assertion (A): The mean of first 'n' natural numbers is (n−1)/2.\nReason (R): The sum of first 'n' natural numbers is n(n+1)/2.",
       "answer": "D",
       "type": "assertion-reason",
+      "assertion": "The mean of first 'n' natural numbers is (n−1)/2.",
+      "reason": "The sum of first 'n' natural numbers is n(n+1)/2.",
       "options": [
         "Both Assertion (A) and Reason (R) are true and Reason (R) is the correct explanation of the Assertion (A).",
         "Both Assertion (A) and Reason (R) are true, but Reason (R) is not the correct explanation of the Assertion (A).",
