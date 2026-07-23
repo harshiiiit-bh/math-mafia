@@ -329,7 +329,7 @@ function loadSubject(subjectId) {
       if (!counts[q.chapterId]) counts[q.chapterId] = { id: q.chapterId, chapterNum: q.chapter, title: q.chapterTitle, branch: q.branch || null, branchName: q.branch ? branchName(subjectId, q.branch) : null, mcqCount: 0 };
       counts[q.chapterId].mcqCount++;
     });
-    return Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.id.localeCompare(b.id));
+    return Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.chapterNum - b.chapterNum);
   }
 
   return {
@@ -642,7 +642,10 @@ app.get('/api/:subject/pyp/papers', (req, res) => {
       id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
       questionCount: qs.length,
       gradableCount: qs.filter(q => q.gradable).length,
-      chapters: [...new Set(qs.map(q => q.chapterId))].sort()
+      chapters: [...new Set(qs.map(q => q.chapterId))].sort((a, b) => {
+        const ca = qs.find(q => q.chapterId === a), cb = qs.find(q => q.chapterId === b);
+        return (ca.branch || '').localeCompare(cb.branch || '') || ca.chapter - cb.chapter;
+      })
     };
   }));
 });
@@ -654,7 +657,7 @@ app.get('/api/:subject/pyp/chapters', (req, res) => {
     if (!counts[q.chapterId]) counts[q.chapterId] = { id: q.chapterId, chapterNum: q.chapter, title: q.chapterTitle, branch: q.branch || null, branchName: q.branch ? branchName(req.subjectId, q.branch) : null, gradableCount: 0 };
     counts[q.chapterId].gradableCount++;
   });
-  res.json(Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.id.localeCompare(b.id)));
+  res.json(Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.chapterNum - b.chapterNum));
 });
 
 // Chapter Weightage — how often each chapter actually shows up across every unique (deduplicated)
@@ -1983,7 +1986,13 @@ function renderChapterView(ch, tab){
 function renderChBody(ch, tab){
   const body = document.getElementById('chBody');
   if(tab==='notes'){
-    body.innerHTML = (ch.notes||[]).map(n=>\`<div class="note-item">${'$'}{esc(n)}</div>\`).join('') || '<div class="empty">No notes yet for this chapter.</div>';
+    // A note that's a bare image path (a full scanned notes page) renders full-bleed,
+    // no padding/border-left — everything else stays plain escaped text as before.
+    const bareImg = /^assets\\/[\\w\\-\\/]+\\.(png|jpe?g|gif|webp)$/i;
+    body.innerHTML = (ch.notes||[]).map(n=>{
+      const isImg = bareImg.test(String(n).trim());
+      return \`<div class="note-item${'$'}{isImg?' img-note':''}">${'$'}{renderMedia(n)}</div>\`;
+    }).join('') || '<div class="empty">No notes yet for this chapter.</div>';
   } else if(tab==='formulas'){
     body.innerHTML = \`<div class="table-scroll"><table class="formula-table"><thead><tr><th>Formula</th><th>Name</th><th>Use</th></tr></thead><tbody>\` +
       (ch.formulas||[]).map(f=>\`<tr><td class="f">${'$'}{esc(f.formula)}</td><td>${'$'}{esc(f.name)}</td><td>${'$'}{esc(f.use)}</td></tr>\`).join('') +
@@ -2212,10 +2221,11 @@ async function renderPypPaperDetail(id){
   const gradable = data.questions.filter(q=>q.gradable);
   const chapterCounts = {};
   data.questions.forEach(q=>{
-    if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
+    if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, chapterNum:q.chapter, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
     chapterCounts[q.chapterId].count++;
     if(q.gradable) chapterCounts[q.chapterId].gradableCount++;
   });
+  const chapterCountsSorted = Object.values(chapterCounts).sort((a,b)=> (a.branch||'').localeCompare(b.branch||'') || a.chapterNum - b.chapterNum);
   const stats = pypPaperStats(id, gradable.length);
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
@@ -2230,7 +2240,7 @@ async function renderPypPaperDetail(id){
     <div class="section-title">Chapters Covered</div>
     <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter to practice just its questions from this paper.</p>
     <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+      ${'$'}{chapterCountsSorted.map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
     </div>
   \`;
   document.getElementById('pypPracticeBtn').addEventListener('click', ()=>startPypQuiz({paperId:id}));
