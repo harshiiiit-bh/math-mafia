@@ -10,8 +10,33 @@ app.use(express.json());
 // /assets/science/questions/2026-set1/q4.png -> <repo-root>/assets/science/questions/2026-set1/q4.png
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
+// Serve standalone notes pages (e.g. /notes/global-world.html) as plain static files.
+// This MUST come before the SPA catch-all below, otherwise every /notes/* URL would
+// get swallowed and return the Math Mafia app shell instead of the actual notes page.
+app.use('/notes', express.static(path.join(__dirname, 'notes')));
+
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_FILE = path.join(__dirname, 'db.json');
+const NOTES_DIR = path.join(__dirname, 'notes');
+
+// Turns a filename like "mughal-empire.html" into a display title "Mughal Empire"
+function prettifyNoteFileName(f) {
+  return f.replace(/\.html?$/i, '').replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+// Lists every .html file directly inside notes/<subject>[/<branch>], sorted alphabetically.
+// Returns [] if the folder doesn't exist yet (nothing uploaded there yet).
+function listNoteFiles(subjectId, branchId) {
+  const dir = branchId ? path.join(NOTES_DIR, subjectId, branchId) : path.join(NOTES_DIR, subjectId);
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.toLowerCase().endsWith('.html'))
+    .sort()
+    .map(f => ({
+      name: prettifyNoteFileName(f),
+      file: f,
+      url: '/notes/' + subjectId + (branchId ? '/' + branchId : '') + '/' + f
+    }));
+}
 
 // ---------- Subjects ----------
 // One folder per subject under data/<subjectId>/*.json for chapters, data/<subjectId>/pyp/*.json for
@@ -329,7 +354,7 @@ function loadSubject(subjectId) {
       if (!counts[q.chapterId]) counts[q.chapterId] = { id: q.chapterId, chapterNum: q.chapter, title: q.chapterTitle, branch: q.branch || null, branchName: q.branch ? branchName(subjectId, q.branch) : null, mcqCount: 0 };
       counts[q.chapterId].mcqCount++;
     });
-    return Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.chapterNum - b.chapterNum);
+    return Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.id.localeCompare(b.id));
   }
 
   return {
@@ -473,6 +498,15 @@ app.get('/api/:subject/branches', (req, res) => {
     ...b,
     chapterCount: req.subj.chapterList.filter(c => c.branch === b.id).length
   })));
+});
+
+// Short Notes: list uploaded static HTML notes files for a subject (no branch, e.g. Maths).
+app.get('/api/:subject/notes', (req, res) => {
+  res.json({ files: listNoteFiles(req.subjectId, null) });
+});
+// Short Notes: list uploaded static HTML notes files for one branch (e.g. sst/history).
+app.get('/api/:subject/notes/:branch', (req, res) => {
+  res.json({ files: listNoteFiles(req.subjectId, req.params.branch) });
 });
 
 // Metadata for setup pages (difficulty options, etc.)
@@ -642,10 +676,7 @@ app.get('/api/:subject/pyp/papers', (req, res) => {
       id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
       questionCount: qs.length,
       gradableCount: qs.filter(q => q.gradable).length,
-      chapters: [...new Set(qs.map(q => q.chapterId))].sort((a, b) => {
-        const ca = qs.find(q => q.chapterId === a), cb = qs.find(q => q.chapterId === b);
-        return (ca.branch || '').localeCompare(cb.branch || '') || ca.chapter - cb.chapter;
-      })
+      chapters: [...new Set(qs.map(q => q.chapterId))].sort()
     };
   }));
 });
@@ -657,7 +688,7 @@ app.get('/api/:subject/pyp/chapters', (req, res) => {
     if (!counts[q.chapterId]) counts[q.chapterId] = { id: q.chapterId, chapterNum: q.chapter, title: q.chapterTitle, branch: q.branch || null, branchName: q.branch ? branchName(req.subjectId, q.branch) : null, gradableCount: 0 };
     counts[q.chapterId].gradableCount++;
   });
-  res.json(Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.chapterNum - b.chapterNum));
+  res.json(Object.values(counts).sort((a, b) => (a.branch || '').localeCompare(b.branch || '') || a.id.localeCompare(b.id)));
 });
 
 // Chapter Weightage — how often each chapter actually shows up across every unique (deduplicated)
@@ -1320,7 +1351,7 @@ function route(){
     return ensureSubject(seg[1]).then(()=>{
       const sub = seg.slice(2);
       if(sub[0]==='chapter' && sub[1]) return openChapterPage(sub[1], qs.get('tab')||'notes');
-      if(sub[0]==='pick' && sub[1]==='notes') return renderPicker('notesPicker','The Intel','Pick a chapter to read its notes.',false,(ids)=>navigate(sp('/chapter/'+ids[0]+'?tab=notes')));
+      if(sub[0]==='pick' && sub[1]==='notes') return renderNotesPicker(sub[2]);
       if(sub[0]==='pick' && sub[1]==='quiz') return renderPicker('quizPicker','Quick Heist','Pick one or more chapters to mix questions from.',true,(ids)=>navigate(sp('/setup/quiz?ch='+ids.join(','))));
       if(sub[0]==='pick' && sub[1]==='solo') return renderPicker('soloPicker','Solo Job','Pick chapters for your timed test.',true,(ids)=>navigate(sp('/setup/solo?ch='+ids.join(','))));
       if(sub[0]==='pick' && sub[1]==='war') return renderPicker('createWar','Start a Gang War','Pick chapters — your crew will get the exact same questions.',true,(ids)=>navigate(sp('/setup/war?ch='+ids.join(','))));
@@ -1687,7 +1718,7 @@ function renderDashboard(){
     <div class="section-title">Choose your move</div>
     ${'$'}{isMcqOnlySubject(state.subject) ? \`<p style="color:var(--gold-soft); margin:-10px 0 18px; font-size:13px;">📌 Quick Heist, Solo Job and Gang War pull MCQ / Assertion-Reason questions only for this subject — long/short answers vary too much to auto-grade. Use MCQ Practice below for the full bank.</p>\` : ''}
     <div class="mode-grid">
-      <button class="mode-card" onclick="goto('notesPicker')"><span class="icon">📒</span><h3>The Intel</h3><p>Chapter-wise short notes, straight to the point.</p></button>
+      <button class="mode-card" onclick="goto('notesPicker')"><span class="icon">📒</span><h3>Short Notes</h3><p>Chapter-wise short notes, straight to the point.</p></button>
       <button class="mode-card" onclick="goto('quizPicker')"><span class="icon">⚡</span><h3>Quick Heist</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Instant-feedback MCQ practice, no pressure, no leaderboard.' : 'Instant-feedback practice quiz, no pressure, no leaderboard.'}</p></button>
       <button class="mode-card" onclick="goto('soloPicker')"><span class="icon">🎯</span><h3>Solo Job</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Timed MCQ test on one or many chapters. Just you and the clock.' : 'Timed test on one or many chapters. Just you and the clock.'}</p></button>
       <button class="mode-card" onclick="goto('createWar')"><span class="icon">🤝</span><h3>Start a Gang War</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Pick chapters, get a code, challenge your crew on MCQs.' : 'Pick chapters, get a code, challenge your crew. Leaderboard included.'}</p></button>
@@ -1738,6 +1769,42 @@ function renderPicker(key,title,sub,multi,onGo){
     if(!state.selectedChapters.length){ alert('Pick at least one chapter first.'); return; }
     onGo(state.selectedChapters);
   });
+}
+
+// ---------- Short Notes: browse uploaded static HTML notes ----------
+// /pick/notes            -> if this subject has branches (Science/SST), show branch cards
+// /pick/notes/<branch>   -> list uploaded .html files for that branch, opens in a new tab
+// Maths has no branches, so /pick/notes goes straight to its file list.
+async function renderNotesPicker(branchId){
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">Loading…</div>';
+  const subj = state.subject;
+  const sInfo = state.subjects.find(s=>s.id===subj) || { name: subj };
+  const branches = state.branchesCache[subj] || [];
+
+  if(branches.length && !branchId){
+    main.innerHTML = \`
+      <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+      <div class="section-title">Short Notes — ${'$'}{esc(sInfo.name)}</div>
+      <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Pick a section to read its notes.</p>
+      <div class="mode-grid">
+        ${'$'}{branches.map(b=>\`<button class="mode-card" onclick="navigate(sp('/pick/notes/${'$'}{b.id}'))"><span class="icon">📒</span><h3>${'$'}{esc(b.name)}</h3></button>\`).join('')}
+      </div>
+    \`;
+    return;
+  }
+
+  const res = await fetch('/api/'+subj+'/notes'+(branchId?('/'+branchId):''));
+  const data = await res.json();
+  const files = data.files || [];
+  const crumbLabel = branchId ? branchName(subj, branchId) : sInfo.name;
+  main.innerHTML = \`
+    <div class="crumbs"><button onclick="navigate(${'$'}{branchId ? \`sp('/pick/notes')\` : \`sp('')\`})">← ${'$'}{branchId ? 'Sections' : 'The Turf'}</button></div>
+    <div class="section-title">Short Notes — ${'$'}{esc(crumbLabel)}</div>
+    ${'$'}{files.length
+      ? \`<div class="mode-grid">${'$'}{files.map(f=>\`<button class="mode-card" onclick="window.open('${'$'}{f.url}','_blank')"><span class="icon">📒</span><h3>${'$'}{esc(f.name)}</h3></button>\`).join('')}</div>\`
+      : '<div class="empty">No notes uploaded here yet — check back soon.</div>'}
+  \`;
 }
 
 function toggleChapter(el,id,multi){
@@ -1986,13 +2053,7 @@ function renderChapterView(ch, tab){
 function renderChBody(ch, tab){
   const body = document.getElementById('chBody');
   if(tab==='notes'){
-    // A note that's a bare image path (a full scanned notes page) renders full-bleed,
-    // no padding/border-left — everything else stays plain escaped text as before.
-    const bareImg = /^assets\\/[\\w\\-\\/]+\\.(png|jpe?g|gif|webp)$/i;
-    body.innerHTML = (ch.notes||[]).map(n=>{
-      const isImg = bareImg.test(String(n).trim());
-      return \`<div class="note-item${'$'}{isImg?' img-note':''}">${'$'}{renderMedia(n)}</div>\`;
-    }).join('') || '<div class="empty">No notes yet for this chapter.</div>';
+    body.innerHTML = (ch.notes||[]).map(n=>\`<div class="note-item">${'$'}{esc(n)}</div>\`).join('') || '<div class="empty">No notes yet for this chapter.</div>';
   } else if(tab==='formulas'){
     body.innerHTML = \`<div class="table-scroll"><table class="formula-table"><thead><tr><th>Formula</th><th>Name</th><th>Use</th></tr></thead><tbody>\` +
       (ch.formulas||[]).map(f=>\`<tr><td class="f">${'$'}{esc(f.formula)}</td><td>${'$'}{esc(f.name)}</td><td>${'$'}{esc(f.use)}</td></tr>\`).join('') +
@@ -2221,11 +2282,10 @@ async function renderPypPaperDetail(id){
   const gradable = data.questions.filter(q=>q.gradable);
   const chapterCounts = {};
   data.questions.forEach(q=>{
-    if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, chapterNum:q.chapter, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
+    if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
     chapterCounts[q.chapterId].count++;
     if(q.gradable) chapterCounts[q.chapterId].gradableCount++;
   });
-  const chapterCountsSorted = Object.values(chapterCounts).sort((a,b)=> (a.branch||'').localeCompare(b.branch||'') || a.chapterNum - b.chapterNum);
   const stats = pypPaperStats(id, gradable.length);
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
@@ -2240,7 +2300,7 @@ async function renderPypPaperDetail(id){
     <div class="section-title">Chapters Covered</div>
     <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter to practice just its questions from this paper.</p>
     <div class="chapter-grid">
-      ${'$'}{chapterCountsSorted.map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+      ${'$'}{Object.values(chapterCounts).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
     </div>
   \`;
   document.getElementById('pypPracticeBtn').addEventListener('click', ()=>startPypQuiz({paperId:id}));
