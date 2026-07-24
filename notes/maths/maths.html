@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>find X — Class 10 Maths Short Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   FIND X — DESIGN SYSTEM
+   Palette: chalkboard slate + chalk pigments
+   ============================================================ */
+:root{
+  --board-0:#0e1a16;
+  --board-1:#122420;
+  --board-2:#16302a;
+  --chalk-white:#f2efe3;
+  --chalk-dim:#b9c4bd;
+  --chalk-yellow:#ffcf56;
+  --chalk-teal:#5fd9c7;
+  --chalk-coral:#ff7a6b;
+  --chalk-blue:#7ec8ff;
+  --chalk-violet:#c9a6ff;
+  --rule-line: rgba(242,239,227,0.09);
+  --wood:#4a3423;
+  --wood-dark:#2f2013;
+  --shadow: rgba(0,0,0,0.45);
+  --radius: 14px;
+  --serif-display:'Kalam', cursive;
+  --sans:'Space Grotesk', sans-serif;
+  --mono:'JetBrains Mono', monospace;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:var(--sans);
+  color:var(--chalk-white);
+  background:var(--board-0);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--chalk-yellow); color:var(--board-0); }
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+}
+
+/* ---------- chalkboard texture ---------- */
+.board-texture{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255,255,255,0.035), transparent 40%),
+    radial-gradient(ellipse at 80% 85%, rgba(255,255,255,0.03), transparent 45%),
+    repeating-linear-gradient(0deg, transparent, transparent 38px, var(--rule-line) 39px),
+    repeating-linear-gradient(90deg, transparent, transparent 38px, var(--rule-line) 39px),
+    linear-gradient(160deg, var(--board-1), var(--board-0) 60%, var(--board-2));
+  opacity:0.9;
+}
+.board-texture::after{
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    radial-gradient(circle at 12% 30%, rgba(255,255,255,0.05) 0.5px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04) 0.5px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255,255,255,0.05) 0.5px, transparent 1px);
+  background-size: 180px 180px, 220px 220px, 260px 260px;
+  mix-blend-mode:screen;
+}
+
+/* wooden frame edge */
+.frame-edge{
+  position:fixed; inset:0; z-index:5; pointer-events:none;
+  box-shadow: inset 0 0 0 14px var(--wood), inset 0 0 0 20px var(--wood-dark), inset 0 0 60px 20px rgba(0,0,0,0.55);
+}
+@media (max-width:700px){
+  .frame-edge{ box-shadow: inset 0 0 0 8px var(--wood), inset 0 0 0 12px var(--wood-dark), inset 0 0 40px 14px rgba(0,0,0,0.5); }
+}
+
+/* floating symbols background */
+#symbolField{ position:fixed; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.sym{
+  position:absolute; top:110%; font-family:var(--mono); color:var(--chalk-white);
+  opacity:0.09; animation-name:floatUp; animation-timing-function:linear; animation-iteration-count:infinite;
+  user-select:none;
+}
+@keyframes floatUp{
+  0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+  8%{ opacity:0.12; }
+  92%{ opacity:0.1; }
+  100%{ transform:translateY(-130vh) rotate(25deg); opacity:0; }
+}
+
+/* ---------- layout shell ---------- */
+#app{ position:relative; z-index:2; min-height:100vh; }
+.screen{ display:none; min-height:100vh; }
+.screen.active{ display:block; animation:screenIn 0.55s cubic-bezier(.2,.8,.2,1); }
+@keyframes screenIn{
+  from{ opacity:0; transform:translateY(14px) scale(0.995); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* scroll progress bar */
+#progressBar{
+  position:fixed; top:0; left:0; height:3px; width:0%; z-index:50;
+  background:linear-gradient(90deg,var(--chalk-teal),var(--chalk-yellow),var(--chalk-coral));
+  transition:width 0.12s linear;
+}
+
+/* ---------- top nav ---------- */
+.topnav{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 28px; gap:16px;
+  background:linear-gradient(180deg, rgba(14,26,22,0.92), rgba(14,26,22,0.55) 80%, transparent);
+  backdrop-filter:blur(6px);
+}
+.brand{
+  display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;
+  font-family:var(--serif-display); font-size:1.7rem; color:var(--chalk-white);
+  letter-spacing:0.5px;
+}
+.brand .x-mark{ color:var(--chalk-yellow); position:relative; }
+.brand .x-mark::after{
+  content:""; position:absolute; left:-4px; right:-4px; bottom:-3px; height:6px;
+  border-bottom:2px dashed var(--chalk-coral); opacity:0.6; border-radius:50%;
+}
+.nav-actions{ display:flex; align-items:center; gap:14px; }
+.chip{
+  font-family:var(--mono); font-size:0.72rem; color:var(--chalk-dim);
+  border:1px solid var(--rule-line); padding:5px 10px; border-radius:20px;
+}
+.backbtn{
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  font-family:var(--sans); font-weight:500; font-size:0.9rem; color:var(--chalk-teal);
+  background:rgba(95,217,199,0.08); border:1px solid rgba(95,217,199,0.35);
+  padding:8px 14px; border-radius:30px; transition:all 0.25s ease;
+}
+.backbtn:hover{ background:rgba(95,217,199,0.18); transform:translateX(-3px); }
+
+/* ---------- HERO / TOC ---------- */
+.hero{ padding:40px 6vw 10px; text-align:center; position:relative; }
+.hero h1{
+  font-family:var(--serif-display); font-size:clamp(3rem,9vw,6.2rem); margin:0 0 6px;
+  line-height:0.95; color:var(--chalk-white);
+}
+.hero h1 .find{ display:block; font-size:0.32em; letter-spacing:8px; color:var(--chalk-dim); font-family:var(--mono); font-weight:500; margin-bottom:6px; }
+.hero h1 .xx{ color:var(--chalk-yellow); text-shadow:0 0 30px rgba(255,207,86,0.35); }
+.hero p.sub{
+  font-family:var(--mono); color:var(--chalk-dim); max-width:620px; margin:14px auto 0; font-size:0.95rem; line-height:1.7;
+}
+.hero-mascot-wrap{ display:flex; justify-content:center; margin:10px 0 -10px; }
+.fight-anim{ display:block; width:min(360px,82vw); height:auto; margin:20px auto 4px; }
+.fight-caption{ text-align:center; font-size:0.78rem; opacity:0.7; margin-top:2px; }
+
+/* underline squiggle */
+.squiggle{ width:220px; height:18px; margin:18px auto; opacity:0.7; }
+
+/* class stat strip */
+.stat-strip{
+  display:flex; justify-content:center; gap:34px; flex-wrap:wrap; margin:26px auto 6px;
+  font-family:var(--mono); font-size:0.78rem; color:var(--chalk-dim);
+}
+.stat-strip b{ color:var(--chalk-teal); font-size:1.05rem; display:block; font-family:var(--sans); }
+
+/* ---------- chapter grid ---------- */
+.toc-wrap{ padding:20px 6vw 90px; max-width:1280px; margin:0 auto; }
+.toc-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:22px; margin-top:20px;
+}
+.tile{
+  position:relative; border-radius:var(--radius); padding:22px 20px 20px;
+  background:linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  border:1px solid var(--rule-line);
+  cursor:pointer; overflow:hidden; opacity:0; transform:translateY(24px);
+  transition:transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s, border-color 0.35s, background 0.35s;
+}
+.tile.reveal{ animation:tileIn 0.6s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes tileIn{ to{ opacity:1; transform:translateY(0);} }
+.tile:hover{
+  transform:translateY(-6px);
+  border-color:var(--accent,var(--chalk-yellow));
+  box-shadow:0 18px 40px -12px var(--shadow), 0 0 0 1px var(--accent,var(--chalk-yellow)) inset;
+  background:linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+}
+.tile .num{
+  font-family:var(--mono); font-size:0.72rem; color:var(--accent,var(--chalk-yellow)); opacity:0.85;
+  letter-spacing:1px;
+}
+.tile h3{
+  font-family:var(--serif-display); font-size:1.5rem; margin:6px 0 8px; color:var(--chalk-white); line-height:1.15;
+}
+.tile p{ font-family:var(--sans); font-size:0.82rem; color:var(--chalk-dim); margin:0 0 14px; line-height:1.5; min-height:38px;}
+.tile .icon-slot{
+  position:absolute; right:14px; top:14px; width:50px; height:50px; opacity:0.85;
+  color:var(--accent,var(--chalk-yellow));
+  transition:transform 0.4s ease;
+}
+.tile:hover .icon-slot{ transform:rotate(8deg) scale(1.08); }
+.tile .goto{
+  display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:0.72rem;
+  color:var(--accent,var(--chalk-yellow)); opacity:0.9;
+}
+.tile .goto svg{ width:14px; height:14px; transition:transform 0.3s; }
+.tile:hover .goto svg{ transform:translateX(4px); }
+.tile .chalk-dust{ position:absolute; inset:0; pointer-events:none; opacity:0; }
+.tile:hover .chalk-dust{ opacity:1; }
+
+/* footer */
+.site-footer{
+  text-align:center; padding:30px 20px 50px; font-family:var(--mono); font-size:0.72rem; color:var(--chalk-dim); opacity:0.75;
+}
+.site-footer .credit{ color:var(--chalk-yellow); }
+
+/* ---------- CHAPTER PAGE ---------- */
+.chapter-head{
+  padding:26px 6vw 20px; position:relative;
+}
+.chapter-head .kicker{
+  font-family:var(--mono); font-size:0.78rem; letter-spacing:2px; color:var(--accent,var(--chalk-yellow)); text-transform:uppercase;
+}
+.chapter-head h1{
+  font-family:var(--serif-display); font-size:clamp(2.2rem,6vw,3.6rem); margin:8px 0 10px; color:var(--chalk-white);
+}
+.chapter-head .tagline{ font-family:var(--sans); color:var(--chalk-dim); max-width:680px; font-size:1rem; line-height:1.6;}
+.chapter-hero-icon{ position:absolute; right:6vw; top:14px; width:110px; height:110px; opacity:0.18; color:var(--accent,var(--chalk-yellow)); }
+@media (max-width:820px){ .chapter-hero-icon{ display:none; } }
+
+.chapter-nav-strip{
+  display:flex; gap:10px; flex-wrap:wrap; padding:0 6vw 10px; font-family:var(--mono); font-size:0.72rem;
+}
+.chapter-nav-strip a{
+  color:var(--chalk-dim); text-decoration:none; border:1px solid var(--rule-line); padding:5px 11px; border-radius:20px;
+  transition:all 0.25s;
+}
+.chapter-nav-strip a:hover{ color:var(--accent,var(--chalk-yellow)); border-color:var(--accent,var(--chalk-yellow)); }
+
+.chapter-body{ max-width:900px; margin:0 auto; padding:10px 6vw 100px; }
+
+.section-block{
+  margin:34px 0; opacity:0; transform:translateY(18px);
+}
+.section-block.reveal{ animation:tileIn 0.6s cubic-bezier(.2,.8,.2,1) forwards; }
+
+.section-block h2{
+  font-family:var(--serif-display); font-size:1.7rem; color:var(--chalk-white);
+  display:flex; align-items:center; gap:10px; margin-bottom:14px;
+  border-bottom:2px dashed var(--rule-line); padding-bottom:10px;
+}
+.section-block h2 .tag{
+  font-family:var(--mono); font-size:0.65rem; color:var(--board-0); background:var(--accent,var(--chalk-yellow));
+  padding:3px 9px; border-radius:20px; letter-spacing:1px; text-transform:uppercase;
+}
+.section-block ul{ padding-left:22px; margin:10px 0; }
+.section-block li{ margin:8px 0; line-height:1.65; color:var(--chalk-white); font-size:0.98rem; }
+.section-block li b, .section-block p b{ color:var(--accent,var(--chalk-yellow)); font-weight:600; }
+.section-block p{ line-height:1.75; color:var(--chalk-white); font-size:0.98rem; }
+.mathf{ font-family:var(--mono); background:rgba(255,255,255,0.06); padding:1px 7px; border-radius:5px; color:var(--chalk-teal); font-size:0.92em; white-space:nowrap;}
+
+/* callout boxes */
+.callout{
+  border-radius:12px; padding:18px 20px; margin:14px 0; position:relative;
+  border:1px solid var(--rule-line); background:rgba(255,255,255,0.03);
+}
+.callout.theorem{ border-left:4px solid var(--chalk-blue); }
+.callout.theorem .label{ color:var(--chalk-blue); }
+.callout.extra{ border-left:4px solid var(--chalk-violet); background:rgba(201,166,255,0.05); }
+.callout.extra .label{ color:var(--chalk-violet); }
+.callout.trick{ border-left:4px solid var(--chalk-coral); background:rgba(255,122,107,0.05); }
+.callout.trick .label{ color:var(--chalk-coral); }
+.callout .label{
+  font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; display:block; font-weight:600;
+}
+.callout ol{ padding-left:20px; margin:6px 0 0; }
+.callout li{ margin:6px 0; line-height:1.6; font-size:0.94rem; }
+
+/* formula sheet */
+.formula-sheet{
+  margin:40px 0 10px; border-radius:16px; padding:26px 24px;
+  background:linear-gradient(160deg, rgba(255,207,86,0.07), rgba(255,255,255,0.02));
+  border:1px solid rgba(255,207,86,0.28);
+  position:relative; overflow:hidden;
+}
+.formula-sheet::before{
+  content:"⌘ FORMULA SHEET"; display:none;
+}
+.formula-sheet h2{
+  font-family:var(--serif-display); font-size:1.7rem; color:var(--chalk-yellow); margin:0 0 4px;
+  display:flex; align-items:center; gap:10px;
+}
+.formula-sheet .fs-sub{ font-family:var(--mono); font-size:0.72rem; color:var(--chalk-dim); margin-bottom:16px; display:block;}
+.formula-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+.formula-card{
+  background:rgba(0,0,0,0.22); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px;
+  transition:transform 0.25s, border-color 0.25s;
+}
+.formula-card:hover{ transform:translateY(-3px); border-color:var(--chalk-yellow); }
+.formula-card .fname{ font-family:var(--sans); font-size:0.74rem; color:var(--chalk-dim); margin-bottom:5px; }
+.formula-card .fexpr{ font-family:var(--mono); font-size:1rem; color:var(--chalk-white); }
+
+/* ratio / reference table */
+.ratio-table-wrap{ overflow-x:auto; margin:14px 0; border-radius:12px; border:1px solid var(--rule-line); }
+table.ratio-table{ border-collapse:collapse; width:100%; min-width:520px; font-family:var(--mono); }
+table.ratio-table th, table.ratio-table td{ padding:11px 14px; text-align:center; border-bottom:1px solid var(--rule-line); font-size:0.92rem; white-space:nowrap; }
+table.ratio-table thead th{ background:rgba(255,207,86,0.1); color:var(--chalk-yellow); font-family:var(--sans); font-weight:600; }
+table.ratio-table td.rowlabel{ text-align:left; color:var(--chalk-teal); font-weight:600; background:rgba(255,255,255,0.03); }
+table.ratio-table tbody tr:last-child td{ border-bottom:none; }
+table.ratio-table tbody tr:hover td{ background:rgba(255,255,255,0.04); }
+
+/* shape reference cards */
+.shape-sheet{ background:linear-gradient(160deg, rgba(126,200,255,0.07), rgba(255,255,255,0.02)); border-color:rgba(126,200,255,0.28); }
+.shape-sheet h2{ color:var(--chalk-blue); }
+.shape-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:16px; }
+.shape-card{
+  background:rgba(0,0,0,0.22); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:16px 16px 14px;
+  transition:transform 0.25s, border-color 0.25s;
+}
+.shape-card:hover{ transform:translateY(-4px); border-color:var(--chalk-blue); }
+.shape-icon{ width:38px; height:38px; color:var(--chalk-blue); margin-bottom:6px; }
+.shape-name{ font-family:var(--serif-display); font-size:1.15rem; color:var(--chalk-white); margin-bottom:8px; }
+.shape-rows{ display:flex; flex-direction:column; gap:6px; }
+.shape-row{ display:flex; justify-content:space-between; gap:8px; font-family:var(--mono); font-size:0.82rem; border-top:1px dashed var(--rule-line); padding-top:6px; }
+.shape-row .srk{ color:var(--chalk-dim); flex-shrink:0; }
+.shape-row .srv{ color:var(--chalk-white); text-align:right; }
+
+/* chapter prev/next footer */
+.chapter-pager{
+  display:flex; justify-content:space-between; gap:14px; max-width:900px; margin:40px auto 0; padding:0 6vw;
+  flex-wrap:wrap;
+}
+.pager-btn{
+  flex:1; min-width:150px; cursor:pointer; padding:16px 18px; border-radius:12px;
+  background:rgba(255,255,255,0.03); border:1px solid var(--rule-line);
+  transition:all 0.3s; font-family:var(--sans);
+}
+.pager-btn:hover{ border-color:var(--chalk-yellow); background:rgba(255,207,86,0.06); transform:translateY(-2px); }
+.pager-btn .plabel{ font-family:var(--mono); font-size:0.65rem; color:var(--chalk-dim); text-transform:uppercase; letter-spacing:1px; }
+.pager-btn .ptitle{ font-family:var(--serif-display); font-size:1.15rem; color:var(--chalk-white); margin-top:4px; }
+.pager-btn.next{ text-align:right; }
+
+/* mascot */
+.mascot{ width:150px; height:150px; }
+.mascot-float{ position:fixed; bottom:22px; right:22px; width:64px; height:64px; z-index:15; opacity:0.9; cursor:pointer; transition:transform 0.3s; filter:drop-shadow(0 6px 14px rgba(0,0,0,0.5)); }
+.mascot-float:hover{ transform:scale(1.12) rotate(-4deg); }
+@media (max-width:700px){ .mascot-float{ width:48px; height:48px; bottom:14px; right:14px; } }
+
+.magnifier{ transform-origin:70% 70%; animation:magSwing 3.2s ease-in-out infinite; }
+@keyframes magSwing{ 0%,100%{ transform:rotate(-6deg);} 50%{ transform:rotate(8deg);} }
+.blink{ animation:blinkEye 4.5s infinite; transform-origin:center; }
+@keyframes blinkEye{ 0%,92%,100%{ transform:scaleY(1);} 95%{ transform:scaleY(0.1);} }
+.bob{ animation:bobY 3.6s ease-in-out infinite; }
+@keyframes bobY{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+
+/* scrollbar */
+::-webkit-scrollbar{ width:10px; }
+::-webkit-scrollbar-track{ background:var(--board-0); }
+::-webkit-scrollbar-thumb{ background:var(--wood); border-radius:10px; }
+
+.reveal-io{ opacity:0; transform:translateY(18px); transition:opacity 0.7s ease, transform 0.7s ease; }
+.reveal-io.in{ opacity:1; transform:translateY(0); }
+
+@media (max-width:600px){
+  .topnav{ padding:12px 16px; }
+  .toc-wrap{ padding:16px 5vw 70px; }
+  .chapter-body{ padding:6px 5vw 80px; }
+}
+</style>
+</head>
+<body>
+
+<div class="board-texture"></div>
+<div class="frame-edge"></div>
+<div id="symbolField"></div>
+<div id="progressBar"></div>
+
+<div id="app">
+
+  <nav class="topnav">
+    <div class="brand" onclick="goHome()">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><path d="M6 6L24 24M24 6L6 24" stroke="#ffcf56" stroke-width="3.4" stroke-linecap="round"/></svg>
+      find <span class="x-mark">X</span>
+    </div>
+    <div class="nav-actions">
+      <span class="chip" id="chapCounter">14 chapters</span>
+      <div class="backbtn" id="homeBtn" onclick="goHome()" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Table of Contents
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ TOC SCREEN ============ -->
+  <section class="screen active" id="screen-toc">
+    <header class="hero">
+      <h1><span class="find">CLASS 10 · CBSE MATHEMATICS</span>find <span class="xx">X</span></h1>
+      <svg class="squiggle" viewBox="0 0 220 18"><path d="M2 9 Q 20 2, 38 9 T 74 9 T 110 9 T 146 9 T 182 9 T 218 9" stroke="#ff7a6b" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+      <svg class="fight-anim" viewBox="0 0 400 130" xmlns="http://www.w3.org/2000/svg">
+        <line x1="24" y1="118" x2="376" y2="118" stroke="var(--rule-line)" stroke-width="2"/>
+        <ellipse cx="90" cy="120" rx="26" ry="5" fill="black" opacity="0.28"/>
+        <ellipse cx="310" cy="120" rx="26" ry="5" fill="black" opacity="0.28"/>
+        <!-- left stickman : addition sign -->
+        <g stroke="#7ec8ff" stroke-width="4.4" stroke-linecap="round" fill="none">
+          <circle cx="90" cy="34" r="13" />
+          <line x1="90" y1="47" x2="90" y2="88" />
+          <line x1="90" y1="88" x2="70" y2="118" />
+          <line x1="90" y1="88" x2="104" y2="116" />
+          <line x1="90" y1="58" x2="70" y2="72" />
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 90 58;-38 90 58;0 90 58" dur="1.4s" repeatCount="indefinite"/>
+          <line x1="90" y1="58" x2="134" y2="50" stroke="#7ec8ff" stroke-width="4.4" stroke-linecap="round"/>
+          <text x="136" y="48" font-family="'JetBrains Mono',monospace" font-size="20" font-weight="700" fill="#7ec8ff">+</text>
+        </g>
+        <!-- right stickman : root sign -->
+        <g stroke="#ff7a6b" stroke-width="4.4" stroke-linecap="round" fill="none">
+          <circle cx="310" cy="34" r="13" />
+          <line x1="310" y1="47" x2="310" y2="88" />
+          <line x1="310" y1="88" x2="330" y2="118" />
+          <line x1="310" y1="88" x2="296" y2="116" />
+          <line x1="310" y1="58" x2="330" y2="72" />
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="rotate" values="0 310 58;38 310 58;0 310 58" dur="1.4s" begin="0.7s" repeatCount="indefinite"/>
+          <line x1="310" y1="58" x2="266" y2="50" stroke="#ff7a6b" stroke-width="4.4" stroke-linecap="round"/>
+          <text x="238" y="48" font-family="'JetBrains Mono',monospace" font-size="20" font-weight="700" fill="#ff7a6b">√</text>
+        </g>
+        <!-- clash spark -->
+        <g transform="translate(200,50)">
+          <path d="M0 -10 L2.8 -2.8 L10 0 L2.8 2.8 L0 10 L-2.8 2.8 L-10 0 L-2.8 -2.8 Z" fill="#ffcf56" opacity="0">
+            <animate attributeName="opacity" keyTimes="0;0.05;0.12;0.5;0.55;0.62;1" values="1;0.3;0;0;1;0.3;0" dur="1.4s" repeatCount="indefinite"/>
+          </path>
+        </g>
+      </svg>
+      <p class="sub fight-caption">+ vs √ — the eternal operator rivalry.</p>
+      <div class="hero-mascot-wrap">
+        <svg class="mascot bob" viewBox="0 0 160 160" fill="none">
+          <ellipse cx="80" cy="148" rx="46" ry="7" fill="black" opacity="0.25"/>
+          <!-- body: the letter X as a character -->
+          <g stroke="#f2efe3" stroke-width="9" stroke-linecap="round">
+            <line x1="45" y1="55" x2="95" y2="115"/>
+            <line x1="95" y1="55" x2="45" y2="115"/>
+          </g>
+          <circle cx="70" cy="72" r="4.5" fill="#0e1a16" class="blink"/>
+          <circle cx="70" cy="72" r="4.5" fill="#f2efe3" opacity="0" />
+          <!-- face plate -->
+          <circle cx="70" cy="80" r="26" fill="#16302a" stroke="#f2efe3" stroke-width="3"/>
+          <circle cx="61" cy="76" r="3.2" fill="#f2efe3" class="blink"/>
+          <circle cx="79" cy="76" r="3.2" fill="#f2efe3" class="blink"/>
+          <path d="M60 90 Q70 97 80 90" stroke="#ffcf56" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- magnifier -->
+          <g class="magnifier">
+            <circle cx="112" cy="55" r="17" fill="rgba(126,200,255,0.15)" stroke="#7ec8ff" stroke-width="4"/>
+            <line x1="124" y1="67" x2="140" y2="83" stroke="#7ec8ff" stroke-width="5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <div class="stat-strip">
+        <div><b>14</b>chapters</div>
+        <div><b>100%</b>exam-mapped</div>
+        <div><b>50+</b>formulas indexed</div>
+        <div><b>∞</b>curiosity added</div>
+      </div>
+    </header>
+
+    <div class="toc-wrap">
+      <div class="toc-grid" id="tocGrid"></div>
+    </div>
+
+    <footer class="site-footer">
+      find <span style="color:var(--chalk-yellow)">X</span> — CBSE Class 10 Mathematics, short notes edition.<br>
+      Designed by: <span class="credit">Harshit Chaubey</span>
+    </footer>
+  </section>
+
+  <!-- ============ CHAPTER SCREEN ============ -->
+  <section class="screen" id="screen-chapter">
+    <div id="chapterContent"></div>
+  </section>
+
+</div>
+
+<svg class="mascot-float" id="mascotFloat" viewBox="0 0 160 160" fill="none" onclick="goHome()" title="Back to Table of Contents">
+  <g stroke="#f2efe3" stroke-width="9" stroke-linecap="round">
+    <line x1="45" y1="55" x2="95" y2="115"/>
+    <line x1="95" y1="55" x2="45" y2="115"/>
+  </g>
+  <circle cx="70" cy="80" r="26" fill="#16302a" stroke="#f2efe3" stroke-width="3"/>
+  <circle cx="61" cy="76" r="3.2" fill="#f2efe3" class="blink"/>
+  <circle cx="79" cy="76" r="3.2" fill="#f2efe3" class="blink"/>
+  <path d="M60 90 Q70 97 80 90" stroke="#ffcf56" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <g class="magnifier">
+    <circle cx="112" cy="55" r="17" fill="rgba(126,200,255,0.15)" stroke="#7ec8ff" stroke-width="4"/>
+    <line x1="124" y1="67" x2="140" y2="83" stroke="#7ec8ff" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>
+
+<script>
+/* ============================================================
+   FIND X — DATA + ENGINE
+   ============================================================ */
+const ICONS = {
+  realnumbers: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="50" r="30" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="50" r="18" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="50" r="6" stroke="currentColor" stroke-width="2.5"/></svg>`,
+  polynomials: `<svg viewBox="0 0 100 100" fill="none"><path d="M8 70 Q 30 10, 50 55 T 92 30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="5" y1="80" x2="95" y2="80" stroke="currentColor" stroke-width="2" opacity="0.5"/><circle cx="28" cy="80" r="3" fill="currentColor"/><circle cx="63" cy="80" r="3" fill="currentColor"/></svg>`,
+  linear2v: `<svg viewBox="0 0 100 100" fill="none"><line x1="10" y1="90" x2="90" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="20" x2="80" y2="90" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="52" cy="50" r="5" fill="currentColor"/></svg>`,
+  quadratic: `<svg viewBox="0 0 100 100" fill="none"><path d="M8 20 Q 50 100, 92 20" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/><line x1="5" y1="82" x2="95" y2="82" stroke="currentColor" stroke-width="2" opacity="0.5"/><circle cx="50" cy="82" r="3.4" fill="currentColor"/></svg>`,
+  ap: `<svg viewBox="0 0 100 100" fill="none"><circle cx="15" cy="82" r="6" fill="currentColor"/><circle cx="38" cy="65" r="6" fill="currentColor"/><circle cx="61" cy="48" r="6" fill="currentColor"/><circle cx="84" cy="31" r="6" fill="currentColor"/><path d="M15 82 L38 65 L61 48 L84 31" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4"/></svg>`,
+  triangles: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 10 L90 88 L10 88 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><line x1="30" y1="58" x2="70" y2="58" stroke="currentColor" stroke-width="2.5" stroke-dasharray="3 4"/></svg>`,
+  coord: `<svg viewBox="0 0 100 100" fill="none"><line x1="10" y1="90" x2="10" y2="10" stroke="currentColor" stroke-width="2.5"/><line x1="10" y1="90" x2="92" y2="90" stroke="currentColor" stroke-width="2.5"/><circle cx="35" cy="60" r="4.5" fill="currentColor"/><circle cx="70" cy="30" r="4.5" fill="currentColor"/><line x1="35" y1="60" x2="70" y2="30" stroke="currentColor" stroke-width="2" stroke-dasharray="3 4"/></svg>`,
+  trig: `<svg viewBox="0 0 100 100" fill="none"><path d="M10 90 L10 20 L85 90 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M28 90 A 18 18 0 0 1 22 74" stroke="currentColor" stroke-width="2.3"/></svg>`,
+  trigapp: `<svg viewBox="0 0 100 100" fill="none"><line x1="70" y1="90" x2="70" y2="15" stroke="currentColor" stroke-width="3"/><line x1="10" y1="90" x2="90" y2="90" stroke="currentColor" stroke-width="2.5"/><line x1="10" y1="90" x2="70" y2="15" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 4"/><path d="M28 90 A 42 42 0 0 1 34 77" stroke="currentColor" stroke-width="2"/></svg>`,
+  circles: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="34" stroke="currentColor" stroke-width="3"/><line x1="12" y1="84" x2="88" y2="84" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="84" r="3.2" fill="currentColor"/></svg>`,
+  circleareas: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="currentColor" stroke-width="2.5"/><path d="M50 50 L50 12 A 38 38 0 0 1 82 68 Z" fill="currentColor" opacity="0.25"/><line x1="50" y1="50" x2="50" y2="12" stroke="currentColor" stroke-width="2"/><line x1="50" y1="50" x2="82" y2="68" stroke="currentColor" stroke-width="2"/></svg>`,
+  surfaceareas: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="30" cy="25" rx="18" ry="7" stroke="currentColor" stroke-width="2.3"/><line x1="12" y1="25" x2="12" y2="65" stroke="currentColor" stroke-width="2.3"/><line x1="48" y1="25" x2="48" y2="65" stroke="currentColor" stroke-width="2.3"/><path d="M12 65 A 18 7 0 0 0 48 65" stroke="currentColor" stroke-width="2.3"/><path d="M65 85 L80 25 L95 85 Z" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/></svg>`,
+  statistics: `<svg viewBox="0 0 100 100" fill="none"><line x1="10" y1="90" x2="90" y2="90" stroke="currentColor" stroke-width="2.3"/><rect x="18" y="55" width="12" height="35" fill="currentColor" opacity="0.7"/><rect x="38" y="35" width="12" height="55" fill="currentColor" opacity="0.7"/><rect x="58" y="65" width="12" height="25" fill="currentColor" opacity="0.7"/><path d="M18 50 L44 30 L64 60 L84 20" stroke="currentColor" stroke-width="2.3" fill="none"/></svg>`,
+  probability: `<svg viewBox="0 0 100 100" fill="none"><rect x="10" y="10" width="38" height="38" rx="6" stroke="currentColor" stroke-width="2.5"/><circle cx="21" cy="21" r="3" fill="currentColor"/><circle cx="37" cy="37" r="3" fill="currentColor"/><circle cx="29" cy="29" r="3" fill="currentColor"/><circle cx="70" cy="66" r="24" stroke="currentColor" stroke-width="2.5"/><path d="M70 42 V66 L86 78" stroke="currentColor" stroke-width="2.3"/></svg>`,
+  sq2d: `<svg viewBox="0 0 100 100" fill="none"><rect x="18" y="18" width="64" height="64" stroke="currentColor" stroke-width="3"/></svg>`,
+  rect2d: `<svg viewBox="0 0 100 100" fill="none"><rect x="10" y="28" width="80" height="44" stroke="currentColor" stroke-width="3"/></svg>`,
+  tri2d: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 14 L88 84 L12 84 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><line x1="50" y1="84" x2="50" y2="14" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/></svg>`,
+  circ2d: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="3"/><line x1="50" y1="50" x2="86" y2="50" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 3"/></svg>`,
+  cube3d: `<svg viewBox="0 0 100 100" fill="none"><path d="M20 34 L50 20 L80 34 L80 68 L50 82 L20 68 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 34 L50 48 L80 34 M50 48 L50 82" stroke="currentColor" stroke-width="2.4"/></svg>`,
+  cuboid3d: `<svg viewBox="0 0 100 100" fill="none"><path d="M14 38 L40 26 L90 38 L90 66 L64 78 L14 66 Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M14 38 L64 50 L90 38 M64 50 L64 78" stroke="currentColor" stroke-width="2.4"/></svg>`,
+  cyl3d: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="24" rx="30" ry="10" stroke="currentColor" stroke-width="2.6"/><line x1="20" y1="24" x2="20" y2="72" stroke="currentColor" stroke-width="2.6"/><line x1="80" y1="24" x2="80" y2="72" stroke="currentColor" stroke-width="2.6"/><path d="M20 72 A 30 10 0 0 0 80 72" stroke="currentColor" stroke-width="2.6"/></svg>`,
+  cone3d: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="76" rx="32" ry="10" stroke="currentColor" stroke-width="2.6"/><path d="M50 12 L18 76 M50 12 L82 76" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  sphere3d: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="2.6"/><ellipse cx="50" cy="50" rx="36" ry="12" stroke="currentColor" stroke-width="1.6" opacity="0.6"/></svg>`,
+  hemi3d: `<svg viewBox="0 0 100 100" fill="none"><path d="M14 55 A 36 36 0 0 1 86 55" stroke="currentColor" stroke-width="2.6"/><ellipse cx="50" cy="55" rx="36" ry="10" stroke="currentColor" stroke-width="2.6"/></svg>`,
+  frustum3d: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="22" rx="18" ry="7" stroke="currentColor" stroke-width="2.4"/><ellipse cx="50" cy="80" rx="34" ry="9" stroke="currentColor" stroke-width="2.4"/><line x1="32" y1="22" x2="16" y2="80" stroke="currentColor" stroke-width="2.4"/><line x1="68" y1="22" x2="84" y2="80" stroke="currentColor" stroke-width="2.4"/></svg>`
+};
+
+/* CHAPTERS DATA — populated below */
+const CHAPTERS = [
+{
+  id:1, title:"Real Numbers", icon:"realnumbers", color:"#7ec8ff",
+  tagline:"Where every number problem in Class 10 secretly begins — divisibility, primes, and why √2 refuses to be a fraction.",
+  sections:[
+    {type:'concept', heading:"The Number Family Tree", intro:"Real numbers (<span class='mathf'>R</span>) are built from smaller nested families — every number you compute with lives in one of these boxes.",
+      items:[
+        "<b>Natural numbers (N):</b> 1, 2, 3, ... — the counting numbers.",
+        "<b>Whole numbers (W):</b> 0, 1, 2, 3, ... — naturals plus zero.",
+        "<b>Integers (Z):</b> ..., -2, -1, 0, 1, 2, ... — whole numbers plus negatives.",
+        "<b>Rational numbers (Q):</b> any number expressible as <span class='mathf'>p/q</span>, q ≠ 0. Their decimal form always <b>terminates</b> or <b>repeats</b>.",
+        "<b>Irrational numbers:</b> can't be written as p/q — decimal expansion is non-terminating and non-repeating. e.g. √2, √3, π, e.",
+        "Nesting: <span class='mathf'>N ⊂ W ⊂ Z ⊂ Q ⊂ R</span>."
+      ]},
+    {type:'concept', heading:"Euclid's Division Lemma & Algorithm",
+      items:[
+        "<b>Euclid's Division Lemma:</b> for positive integers a and b, there exist unique whole numbers q and r such that <span class='mathf'>a = bq + r</span>, where <span class='mathf'>0 ≤ r &lt; b</span>.",
+        "This is just 'long division' written formally — a is dividend, b is divisor, q is quotient, r is remainder.",
+        "<b>Euclid's Division Algorithm</b> uses the lemma repeatedly to find the <b>HCF</b> of two positive integers: divide the larger by the smaller, replace larger with divisor and divisor with remainder, repeat until remainder is 0. The last non-zero divisor is the HCF.",
+        "The algorithm works because <span class='mathf'>HCF(a, b) = HCF(b, r)</span> — a slick fact you can prove using the lemma itself."
+      ]},
+    {type:'theorem', heading:"The Fundamental Theorem of Arithmetic",
+      items:[
+        "Every composite number can be expressed as a product of primes, and this factorisation is <b>unique</b>, apart from the order of the prime factors. This is why it's sometimes called the 'Unique Factorisation Theorem'.",
+        "Used to find <b>HCF and LCM by prime factorisation:</b> HCF = product of <i>smallest</i> powers of common primes; LCM = product of <i>greatest</i> powers of all primes involved.",
+        "<b>Golden product rule:</b> for any two positive integers a, b — <span class='mathf'>HCF(a,b) × LCM(a,b) = a × b</span>. Extremely high-yield for direct questions."
+      ]},
+    {type:'concept', heading:"Decimal Expansions — the p/q Test",
+      items:[
+        "Let <span class='mathf'>x = p/q</span> be a rational number in lowest terms (p, q coprime). Write q's prime factorisation as <span class='mathf'>2^m × 5^n</span>.",
+        "If q has <b>only 2s and/or 5s</b> as prime factors → decimal expansion <b>terminates</b>.",
+        "If q has <b>any other prime factor</b> → decimal expansion is <b>non-terminating repeating</b>.",
+        "Trick to find where it terminates: multiply numerator and denominator to make the denominator a power of 10; the number of digits after the decimal equals max(m, n)."
+      ]},
+    {type:'theorem', heading:"Irrationality Proofs",
+      items:[
+        "√2, √3, √5, √p (p prime) are all irrational — proved by <b>contradiction</b>: assume √p = a/b in lowest terms, square both sides, show p divides a, then p divides b too — contradicting that a/b was in lowest terms.",
+        "Sum or difference of a rational and an irrational number is always irrational (e.g. 3 + √2 is irrational).",
+        "Product of a non-zero rational and an irrational number is irrational (e.g. 5√3 is irrational)."
+      ]},
+    {type:'extra', items:[
+        "The Fundamental Theorem of Arithmetic is exactly why <b>RSA encryption</b> (the backbone of internet security) works — multiplying two large primes is easy, but reversing it (factorising) is computationally brutal. Your bank's HTTPS connection leans on this chapter.",
+        "The proof that √2 is irrational is credited to the <b>Pythagoreans</b> around 500 BCE, and legend says the discovery was so unsettling to their belief that 'all is number' (meaning rational number) that it was kept secret.",
+        "Euclid's algorithm (300 BCE) is considered one of the <b>oldest algorithms still in active use</b> — it's a direct ancestor of the GCD functions in every modern programming language."
+      ]},
+    {type:'trick', items:[
+        "For HCF/LCM word problems ('find the largest number that divides...', 'find the smallest number divisible by...'), the phrase <b>'divides exactly'</b> signals HCF, and <b>'exactly divisible by'</b> or 'least number' signals LCM.",
+        "To prove a number is irrational, always start with <b>'Let us assume, to the contrary, that it is rational.'</b> — this exact phrasing is what CBSE examiners look for in the first step.",
+        "Don't recompute HCF and LCM separately if a question gives you one and the two numbers — just use <span class='mathf'>HCF × LCM = product of numbers</span>."
+      ]}
+  ],
+  formulas:[
+    ["Euclid's Division Lemma","a = bq + r, 0 ≤ r < b"],
+    ["HCF × LCM relation","HCF(a,b) × LCM(a,b) = a × b"],
+    ["HCF (prime factorisation)","product of smallest powers of common primes"],
+    ["LCM (prime factorisation)","product of greatest powers of all primes"],
+    ["Terminating decimal condition","q = 2^m × 5^n"],
+    ["√p is irrational","for any prime p"],
+    ["Sum/difference: rational + irrational","always irrational"],
+    ["Product: (non-zero rational) × irrational","always irrational"]
+  ]
+},
+{
+  id:2, title:"Polynomials", icon:"polynomials", color:"#5fd9c7",
+  tagline:"Algebraic expressions with a shape — where zeros, graphs, and coefficients start talking to each other.",
+  sections:[
+    {type:'concept', heading:"Basics & Degree",
+      items:[
+        "A <b>polynomial</b> in one variable x is an expression of the form <span class='mathf'>aₙxⁿ + ... + a₁x + a₀</span>, where exponents are whole numbers and coefficients are real numbers.",
+        "<b>Degree</b> = highest power of the variable. Degree 1 → <b>linear</b>, degree 2 → <b>quadratic</b>, degree 3 → <b>cubic</b>, degree 4 → <b>biquadratic</b>.",
+        "A <b>zero</b> (or root) of polynomial p(x) is a value k such that p(k) = 0. Geometrically, zeros are exactly the x-coordinates where the graph <b>crosses or touches the x-axis</b>.",
+        "Number of zeros of a polynomial ≤ its degree. A quadratic has at most 2 zeros, a cubic at most 3.",
+        "A polynomial with all coefficients zero except the constant term (degree 0, e.g. p(x)=5) is a <b>constant polynomial</b> — it has no zero unless the constant itself is 0."
+      ]},
+    {type:'concept', heading:"Reading the Graph",
+      items:[
+        "<b>Linear polynomial</b> graph → a straight line, exactly 1 zero.",
+        "<b>Quadratic polynomial</b> graph → a <b>parabola</b>. If it opens upward (a &gt; 0) or downward (a &lt; 0), it can cross the x-axis at 0, 1 (touching), or 2 points — matching 0, 1, or 2 real zeros.",
+        "<b>Cubic polynomial</b> graph → an S-shaped curve, crossing the x-axis at up to 3 points.",
+        "<b>Counting zeros from a graph</b> is a standalone skill CBSE tests directly — just count how many times the curve meets the x-axis; a curve that only touches (doesn't cross) still counts as one zero, but a repeated (double) one."
+      ]},
+    {type:'theorem', heading:"Relationship Between Zeros and Coefficients",
+      items:[
+        "<b>Quadratic</b> p(x) = ax² + bx + c with zeros α, β: <span class='mathf'>α + β = −b/a</span> and <span class='mathf'>αβ = c/a</span>.",
+        "<b>Cubic</b> p(x) = ax³ + bx² + cx + d with zeros α, β, γ: <span class='mathf'>α+β+γ = −b/a</span>, <span class='mathf'>αβ+βγ+γα = c/a</span>, <span class='mathf'>αβγ = −d/a</span>.",
+        "Reverse skill (very testable): given the sum and product of zeros, you can <b>build</b> the quadratic: <span class='mathf'>x² − (sum)x + (product)</span>.",
+        "Useful derived identities worth memorising for 'find α²+β²' type questions: <span class='mathf'>α²+β² = (α+β)² − 2αβ</span>, and <span class='mathf'>(α−β)² = (α+β)² − 4αβ</span>."
+      ]},
+    {type:'concept', heading:"Division Algorithm for Polynomials",
+      items:[
+        "For polynomials p(x) and g(x) with g(x) ≠ 0: <span class='mathf'>p(x) = g(x) × q(x) + r(x)</span>, where r(x) = 0 or degree of r(x) &lt; degree of g(x).",
+        "This mirrors Euclid's division lemma from Chapter 1, but for algebraic expressions instead of integers.",
+        "Used to verify given zeros, or to find all zeros of a cubic when one or two are already known — divide out the known factors first.",
+        "Step-by-step approach for 'find all zeros of the cubic given two of its zeros': form the quadratic factor from the two known zeros (using sum/product), divide the cubic by that quadratic factor, and the quotient gives the remaining zero(s)."
+      ]},
+    {type:'extra', items:[
+        "The word 'polynomial' comes from Greek/Latin roots meaning 'many terms' (poly = many, nomen = name/term). A one-term expression is a <b>monomial</b>, two terms a <b>binomial</b>, three terms a <b>trinomial</b>.",
+        "The relationship between zeros and coefficients generalises far beyond Class 10 — for a degree-n polynomial, these are called <b>Vieta's Formulas</b>, named after the 16th-century French mathematician François Viète, and they're used heavily in higher algebra and even in cryptographic algorithms.",
+        "Every polynomial curve you graph is continuous and smooth (no breaks, no sharp corners) — this is exactly why root-finding software (like the ones inside calculators and engineering tools) can reliably zoom in on a zero once it detects a sign change."
+      ]},
+    {type:'trick', items:[
+        "For splitting the middle term in a quadratic ax²+bx+c, find two numbers whose <b>product is a×c</b> and whose <b>sum is b</b> — this two-second mental check saves guesswork.",
+        "If a question gives you 'sum of zeros = 0', it's hinting the quadratic has no x-term (of the form ax²+c) — a common shortcut in MCQs.",
+        "When asked to verify the relationship between zeros and coefficients, always compute α+β and αβ from the actual roots first, then separately compute −b/a and c/a, and show both match — examiners give marks for showing both sides explicitly."
+      ]}
+  ],
+  formulas:[
+    ["Quadratic: sum of zeros","α + β = −b/a"],
+    ["Quadratic: product of zeros","αβ = c/a"],
+    ["Build quadratic from zeros","x² − (α+β)x + αβ"],
+    ["Cubic: sum of zeros","α+β+γ = −b/a"],
+    ["Cubic: sum of products (pairs)","αβ+βγ+γα = c/a"],
+    ["Cubic: product of zeros","αβγ = −d/a"],
+    ["Division algorithm","p(x) = g(x)·q(x) + r(x)"],
+    ["Sum of squares of zeros","α²+β² = (α+β)² − 2αβ"],
+    ["Difference squared","(α−β)² = (α+β)² − 4αβ"]
+  ]
+},
+{
+  id:3, title:"Pair of Linear Equations in Two Variables", icon:"linear2v", color:"#ffcf56",
+  tagline:"Two lines, one plane — three possible love stories: they meet once, never, or are the same line forever.",
+  sections:[
+    {type:'concept', heading:"Forms & Graphical Meaning",
+      items:[
+        "General form: <span class='mathf'>a₁x + b₁y + c₁ = 0</span> and <span class='mathf'>a₂x + b₂y + c₂ = 0</span>.",
+        "Each equation represents a straight line. A <b>solution</b> to the pair is the point where both lines meet.",
+        "Graphically there are exactly three possibilities — this is the single most important idea of the chapter.",
+        "A pair of linear equations is called a <b>linear system</b>; solving it 'graphically' just means plotting both lines accurately (using at least two points each) and reading off the intersection."
+      ]},
+    {type:'theorem', heading:"The Consistency Conditions",
+      items:[
+        "<b>Unique solution (intersecting lines):</b> <span class='mathf'>a₁/a₂ ≠ b₁/b₂</span> — consistent, independent.",
+        "<b>Infinite solutions (coincident lines):</b> <span class='mathf'>a₁/a₂ = b₁/b₂ = c₁/c₂</span> — consistent, dependent.",
+        "<b>No solution (parallel lines):</b> <span class='mathf'>a₁/a₂ = b₁/b₂ ≠ c₁/c₂</span> — inconsistent.",
+        "Memory anchor: if the first two ratios are unequal, the lines <i>must</i> cross somewhere; if all three ratios are equal, the two equations are secretly the same line scaled by a constant."
+      ]},
+    {type:'concept', heading:"Algebraic Solution Methods",
+      items:[
+        "<b>Substitution method:</b> express one variable in terms of the other from one equation, substitute into the second. Best when one equation already has a variable with coefficient 1.",
+        "<b>Elimination method:</b> multiply equations so a variable's coefficients match, then add/subtract to eliminate it. Best for symmetric-looking equations.",
+        "<b>Cross-multiplication method:</b> a direct formula-based shortcut — powerful once memorised, saves time in long word problems, especially when substitution would create messy fractions.",
+        "For word problems: always define variables clearly first (e.g. let present age = x), form two equations from the two given conditions, then solve. Common families: ages, fraction (numerator/denominator swaps), speed–distance–time (boats & streams), and cost-of-items problems."
+      ]},
+    {type:'theorem', heading:"Equations Reducible to a Pair of Linear Equations",
+      items:[
+        "Some equations look non-linear (e.g. containing 1/x, 1/y) but become linear after a clever <b>substitution</b> — commonly u = 1/x and v = 1/y.",
+        "After substituting, solve the resulting pair of linear equations in u and v normally, then convert back: <span class='mathf'>x = 1/u</span>, <span class='mathf'>y = 1/v</span>.",
+        "This 'substitute to linearise' idea reappears constantly in higher mathematics — it's the earliest example students see of transforming a hard problem into a familiar one."
+      ]},
+    {type:'extra', items:[
+        "Systems of linear equations are the backbone of <b>GPS positioning</b> — your phone solves several simultaneous equations (from distances to different satellites) to pin down your exact location.",
+        "Large real-world systems can have hundreds or millions of variables — economists, engineers, and computer graphics programs solve these using matrix methods that are a direct extension of the elimination method you're learning here.",
+        "The word 'linear' refers to the fact that every term is degree 1 — no x², no xy, no √x. The moment any term breaks that rule, the graph stops being a straight line."
+      ]},
+    {type:'trick', items:[
+        "Before choosing a method, glance at the coefficients — if any variable already has coefficient 1 in either equation, substitution will be faster than elimination.",
+        "In word problems, always double-check units before forming equations (e.g. convert 'km/h' consistently) — most marks lost in this chapter are due to equation-formation errors, not solving errors.",
+        "If a question only asks you to check consistency (not actually solve), don't fully solve the system — just compare the three ratios a₁/a₂, b₁/b₂, c₁/c₂ directly and save time."
+      ]}
+  ],
+  formulas:[
+    ["Unique solution condition","a₁/a₂ ≠ b₁/b₂"],
+    ["Infinite solutions condition","a₁/a₂ = b₁/b₂ = c₁/c₂"],
+    ["No solution condition","a₁/a₂ = b₁/b₂ ≠ c₁/c₂"],
+    ["Cross-multiplication","x/(b₁c₂−b₂c₁) = y/(c₁a₂−c₂a₁) = 1/(a₁b₂−a₂b₁)"],
+    ["Substitution for 1/x, 1/y type","u = 1/x, v = 1/y, then solve linearly"],
+    ["Slope of a₁x+b₁y+c₁=0","m = −a₁/b₁"],
+    ["y-intercept of a line","c = −c₁/b₁ (from a₁x+b₁y+c₁=0)"]
+  ]
+},
+{
+  id:4, title:"Quadratic Equations", icon:"quadratic", color:"#ff7a6b",
+  tagline:"The parabola's algebra — solve for x when a curve decides to touch, cross, or completely avoid the x-axis.",
+  sections:[
+    {type:'concept', heading:"Standard Form & Roots",
+      items:[
+        "Standard form: <span class='mathf'>ax² + bx + c = 0</span>, a ≠ 0.",
+        "A real number α is a <b>root</b> if aα² + bα + c = 0 — equivalently, x = α is a zero of the corresponding polynomial from Chapter 2.",
+        "A quadratic equation has at most 2 real roots.",
+        "Recognising a quadratic in disguise is a skill in itself — expressions like (x+1)(x−2) = x² − 5, or equations involving x and 1/x, often simplify down to the standard ax²+bx+c=0 form after expansion."
+      ]},
+    {type:'concept', heading:"Solving Methods",
+      items:[
+        "<b>Factorisation:</b> split the middle term so the quadratic breaks into two linear factors, then set each to zero.",
+        "<b>Completing the square:</b> rewrite ax² + bx + c as a perfect square plus a constant — this is literally where the quadratic formula comes from, and CBSE sometimes asks you to solve 'by completing the square' explicitly.",
+        "<b>Quadratic formula:</b> <span class='mathf'>x = [−b ± √(b² − 4ac)] / 2a</span> — works for every quadratic, always your fallback when factorisation isn't obvious.",
+        "Worked outline for completing the square: divide throughout by a, move the constant to the other side, add (half the x-coefficient)² to both sides to form a perfect square trinomial, then take the square root of both sides."
+      ]},
+    {type:'theorem', heading:"The Discriminant — Nature of Roots",
+      items:[
+        "Discriminant <span class='mathf'>D = b² − 4ac</span> decides everything about the roots without solving the equation.",
+        "<b>D &gt; 0</b> → two distinct real roots (parabola cuts the x-axis at 2 points).",
+        "<b>D = 0</b> → two equal real roots (parabola just touches the x-axis — this is the vertex).",
+        "<b>D &lt; 0</b> → no real roots (parabola never meets the x-axis).",
+        "This single computation is a favourite 1-mark and 2-mark question: 'find the value of k for which the equation has equal roots' simply means setting D = 0 and solving for k."
+      ]},
+    {type:'concept', heading:"Applications & Word Problems",
+      items:[
+        "Typical CBSE word-problem families: consecutive numbers, ages, speed–distance–time with a changed speed/time condition, area/perimeter of rectangles, and work-and-time (pipes filling a tank).",
+        "Workflow: define the variable clearly, translate the word condition into a quadratic equation, solve using the formula or factorisation, and — crucially — <b>reject any root that doesn't make physical sense</b> (like a negative length, age, or time)."
+      ]}
+  ],
+  formulas:[
+    ["Standard form","ax² + bx + c = 0"],
+    ["Quadratic formula","x = [−b ± √(b²−4ac)] / 2a"],
+    ["Discriminant","D = b² − 4ac"],
+    ["Sum of roots","−b/a"],
+    ["Product of roots","c/a"],
+    ["Real & distinct roots condition","D > 0"],
+    ["Real & equal roots condition","D = 0"],
+    ["No real roots condition","D < 0"],
+    ["Completing the square form","a(x + b/2a)² + (c − b²/4a)"]
+  ]
+},
+{
+  id:5, title:"Arithmetic Progressions", icon:"ap", color:"#c9a6ff",
+  tagline:"Patterns that add the same step every time — ladders, salaries, seating rows, and Gauss's famous shortcut.",
+  sections:[
+    {type:'concept', heading:"What Makes a Sequence an AP",
+      items:[
+        "An <b>Arithmetic Progression</b> is a list of numbers where each term (after the first) is obtained by adding a fixed number, the <b>common difference (d)</b>, to the previous term.",
+        "<span class='mathf'>d = a₂ − a₁ = a₃ − a₂ = ...</span> — if this difference isn't constant, it's not an AP.",
+        "First term is denoted <span class='mathf'>a</span> (or a₁). d can be positive (increasing AP), negative (decreasing AP), or zero (constant AP)."
+      ]},
+    {type:'theorem', heading:"Core Formulas",
+      items:[
+        "<b>nth term:</b> <span class='mathf'>aₙ = a + (n−1)d</span> — lets you jump directly to any term without listing all previous ones.",
+        "<b>Sum of first n terms:</b> <span class='mathf'>Sₙ = n/2 [2a + (n−1)d]</span>, also written as <span class='mathf'>Sₙ = n/2 [a + l]</span> where l is the last term.",
+        "<b>nth term from Sₙ:</b> <span class='mathf'>aₙ = Sₙ − Sₙ₋₁</span> — very handy when a question gives only the sum formula."
+      ]},
+    {type:'extra', items:[
+        "The sum formula is essentially <b>Gauss's trick</b> — as a schoolboy, Carl Friedrich Gauss allegedly summed 1 to 100 instantly by pairing the first and last term (1+100, 2+99, ...) — exactly the logic behind Sₙ = n/2[a+l].",
+        "AP shows up constantly outside exams: simple interest growth, stadium seating rows, straight-line depreciation of assets, and even the spacing of rungs on a ladder.",
+        "An AP with common difference 0 is technically still an AP (a constant sequence) — don't assume d must be non-zero when a question says 'the numbers are in AP'."
+      ]},
+    {type:'trick', items:[
+        "If three numbers are in AP, represent them as <span class='mathf'>a−d, a, a+d</span> — the middle term is automatically their average, and this trick massively simplifies algebra.",
+        "For 'which term is the first negative term' type questions, set <span class='mathf'>aₙ &lt; 0</span> and solve the inequality for n, then round up to the next integer.",
+        "For four numbers in AP, use <span class='mathf'>a−3d, a−d, a+d, a+3d</span> (common difference 2d between consecutive terms) — this symmetric trick avoids messy fractions."
+      ]}
+  ],
+  formulas:[
+    ["nth term","aₙ = a + (n−1)d"],
+    ["Sum of n terms","Sₙ = n/2[2a + (n−1)d]"],
+    ["Sum (using last term)","Sₙ = n/2[a + l]"],
+    ["nth term from sums","aₙ = Sₙ − Sₙ₋₁"],
+    ["Three terms in AP","a−d, a, a+d"],
+    ["Four terms in AP","a−3d, a−d, a+d, a+3d"],
+    ["Common difference","d = aₙ − aₙ₋₁"],
+    ["Sum of first n natural numbers","n(n+1)/2"]
+  ]
+},
+{
+  id:6, title:"Triangles", icon:"triangles", color:"#7ec8ff",
+  tagline:"Same shape, different size — the geometry of similarity that underpins maps, shadows, and camera lenses.",
+  sections:[
+    {type:'concept', heading:"Similar Figures vs Congruent Figures",
+      items:[
+        "<b>Congruent</b> figures are identical in shape AND size. <b>Similar</b> figures have the <b>same shape but not necessarily the same size</b> — corresponding angles equal, corresponding sides proportional.",
+        "All congruent figures are similar, but similar figures need not be congruent."
+      ]},
+    {type:'theorem', heading:"The Basic Proportionality Theorem (Thales)",
+      items:[
+        "<b>BPT / Thales' Theorem:</b> If a line is drawn parallel to one side of a triangle intersecting the other two sides at distinct points, the other two sides are divided in the <b>same ratio</b>.",
+        "<b>Converse of BPT:</b> if a line divides two sides of a triangle in the same ratio, it is parallel to the third side.",
+        "These two together are the most heavily tested proof-based results in this chapter."
+      ]},
+    {type:'theorem', heading:"Similarity Criteria for Triangles",
+      items:[
+        "<b>AAA:</b> if corresponding angles of two triangles are equal, the triangles are similar (in fact AA is enough — the third angle is automatically equal).",
+        "<b>SSS:</b> if corresponding sides of two triangles are in the same ratio, the triangles are similar.",
+        "<b>SAS:</b> if one pair of corresponding sides is proportional and the included angles are equal, the triangles are similar."
+      ]},
+    {type:'theorem', heading:"Areas of Similar Triangles & Pythagoras",
+      items:[
+        "<b>Area ratio theorem:</b> the ratio of areas of two similar triangles equals the <b>square</b> of the ratio of their corresponding sides.",
+        "<b>Pythagoras Theorem:</b> in a right triangle, the square of the hypotenuse equals the sum of the squares of the other two sides — provable directly using similar triangles formed by the altitude to the hypotenuse.",
+        "<b>Converse of Pythagoras:</b> if the square of one side of a triangle equals the sum of squares of the other two, the angle opposite the first side is a right angle."
+      ]},
+    {type:'extra', items:[
+        "Similar triangles are the mathematical reason a <b>pinhole camera</b> and your eye's lens can project a scaled image of the real world onto a small surface — the object, the lens, and the image form similar triangles.",
+        "Surveyors historically measured the height of mountains and pyramids using shadows and similar triangles, centuries before laser rangefinders existed — this is the exact 'height and distance' logic reused in Chapter 9.",
+        "Pythagoras theorem has over 350 known distinct proofs, including one published by future U.S. President <b>James Garfield</b> in 1876, using nothing but a trapezium built from two copies of the same right triangle."
+      ]},
+    {type:'trick', items:[
+        "When a question shows a triangle with a line parallel to one side, immediately check if it's a BPT (ratio) question or a similar-triangles (AA) question — look for whether you need a ratio of segments or a ratio of full sides.",
+        "Common Pythagorean triples worth memorising to save calculation time: <span class='mathf'>(3,4,5)</span>, <span class='mathf'>(5,12,13)</span>, <span class='mathf'>(8,15,17)</span>, <span class='mathf'>(7,24,25)</span> — and their multiples (6,8,10 etc).",
+        "For 'ratio of areas' questions, never compute both areas separately if you already know the ratio of corresponding sides — just square that ratio directly."
+      ]}
+  ],
+  formulas:[
+    ["BPT ratio","AD/DB = AE/EC (DE ∥ BC)"],
+    ["Area ratio of similar triangles","Area₁/Area₂ = (side₁/side₂)²"],
+    ["Pythagoras theorem","(hypotenuse)² = (base)² + (perp)²"],
+    ["Similarity criteria","AAA, SSS, SAS"],
+    ["Common Pythagorean triples","(3,4,5), (5,12,13), (8,15,17), (7,24,25)"],
+    ["Midpoint theorem (special BPT case)","line joining midpoints of two sides ∥ third side, and = half of it"]
+  ]
+},
+{
+  id:7, title:"Coordinate Geometry", icon:"coord", color:"#5fd9c7",
+  tagline:"Algebra meets the graph paper — pin down any point, distance, or ratio using nothing but two numbers.",
+  sections:[
+    {type:'concept', heading:"The Coordinate Plane Refresher",
+      items:[
+        "Any point in a plane is uniquely located by an ordered pair <span class='mathf'>(x, y)</span> relative to two perpendicular axes — the x-axis (horizontal) and y-axis (vertical), meeting at the <b>origin (0,0)</b>.",
+        "This chapter is really 'algebra applied to geometry' — every geometric idea (distance, midpoint, ratio, collinearity, area) gets a clean formula, so you rarely need to actually draw an accurate graph to solve a problem.",
+        "The plane is divided into 4 <b>quadrants</b>: signs of (x,y) go (+,+), (−,+), (−,−), (+,−) going anticlockwise from the top-right."
+      ]},
+    {type:'theorem', heading:"Distance & Section Formulas",
+      items:[
+        "<b>Distance formula:</b> distance between A(x₁,y₁) and B(x₂,y₂) is <span class='mathf'>√[(x₂−x₁)² + (y₂−y₁)²]</span> — a direct application of Pythagoras theorem, treating the horizontal and vertical gaps as the two legs of a right triangle.",
+        "<b>Section formula:</b> the point P dividing segment AB internally in ratio m:n has coordinates <span class='mathf'>[(mx₂+nx₁)/(m+n), (my₂+ny₁)/(m+n)]</span>.",
+        "<b>Midpoint formula</b> is just the section formula with ratio 1:1 → <span class='mathf'>[(x₁+x₂)/2, (y₁+y₂)/2]</span>.",
+        "<b>Points of trisection:</b> to divide a segment into three equal parts, apply the section formula twice, once with ratio 1:2 and once with ratio 2:1."
+      ]},
+    {type:'concept', heading:"Area of a Triangle",
+      items:[
+        "Area of triangle with vertices (x₁,y₁), (x₂,y₂), (x₃,y₃): <span class='mathf'>½ |x₁(y₂−y₃) + x₂(y₃−y₁) + x₃(y₁−y₂)|</span>.",
+        "If the computed area is 0, the three points are <b>collinear</b> (they lie on a single straight line) — a frequently tested condition.",
+        "The same formula extends to quadrilaterals by splitting them into two triangles using a diagonal, then adding the two areas."
+      ]},
+    {type:'theorem', heading:"Using the Formulas Together",
+      items:[
+        "<b>Finding the centroid</b> of a triangle (the point where medians meet) with vertices (x₁,y₁),(x₂,y₂),(x₃,y₃): <span class='mathf'>[(x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3]</span> — a direct extension of the midpoint idea.",
+        "<b>Proving a shape is a specific quadrilateral</b> (square, rectangle, rhombus, parallelogram) combines multiple tools: use the distance formula to check side lengths, and check diagonals for equality (rectangle/square) or perpendicular bisection (rhombus/square).",
+        "<b>Ratio in which the x-axis or y-axis divides a segment</b> is a specific section-formula application: for the x-axis, set the y-coordinate of the dividing point to 0 and solve for the ratio k:1."
+      ]}
+  ],
+  formulas:[
+    ["Distance formula","√[(x₂−x₁)² + (y₂−y₁)²]"],
+    ["Distance from origin","√(x² + y²)"],
+    ["Section formula","[(mx₂+nx₁)/(m+n), (my₂+ny₁)/(m+n)]"],
+    ["Midpoint formula","[(x₁+x₂)/2, (y₁+y₂)/2]"],
+    ["Centroid of a triangle","[(x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3]"],
+    ["Area of triangle","½|x₁(y₂−y₃)+x₂(y₃−y₁)+x₃(y₁−y₂)|"],
+    ["Collinearity condition","Area = 0"],
+    ["Ratio in which x-axis divides AB","k = −y₁/y₂"]
+  ]
+},
+{
+  id:8, title:"Introduction to Trigonometry", icon:"trig", color:"#ffcf56",
+  tagline:"The three-way relationship between a right triangle's angle and the ratio of its sides.",
+  sections:[
+    {type:'concept', heading:"Trigonometric Ratios",
+      items:[
+        "For a right triangle with an acute angle θ: <span class='mathf'>sin θ = opposite/hypotenuse</span>, <span class='mathf'>cos θ = adjacent/hypotenuse</span>, <span class='mathf'>tan θ = opposite/adjacent</span>.",
+        "Reciprocal ratios: <span class='mathf'>cosec θ = 1/sin θ</span>, <span class='mathf'>sec θ = 1/cos θ</span>, <span class='mathf'>cot θ = 1/tan θ</span>.",
+        "Core relation: <span class='mathf'>tan θ = sin θ / cos θ</span> and <span class='mathf'>cot θ = cos θ / sin θ</span>.",
+        "The ratios depend only on the <b>angle</b>, never on the actual size of the triangle — this is exactly why similar right triangles (Chapter 6) all share the same trig ratios for a given angle."
+      ]},
+    {type:'table', heading:"Standard Angle Values (0° to 90°)",
+      intro:"The single most-used reference table in this chapter — memorise it cold, it's used in almost every problem here and in Chapter 9.",
+      headers:["Ratio","0°","30°","45°","60°","90°"],
+      rows:[
+        ["sin θ","0","1/2","1/√2","√3/2","1"],
+        ["cos θ","1","√3/2","1/√2","1/2","0"],
+        ["tan θ","0","1/√3","1","√3","not defined"],
+        ["cosec θ","not defined","2","√2","2/√3","1"],
+        ["sec θ","1","2/√3","√2","2","not defined"],
+        ["cot θ","not defined","√3","1","1/√3","0"]
+      ]},
+    {type:'concept', heading:"Reading the Table Instantly",
+      items:[
+        "Pattern trick: sin values at 0°,30°,45°,60°,90° are <span class='mathf'>√0/2, √1/2, √2/2, √3/2, √4/2</span> — cos is exactly the same list, reversed.",
+        "tan θ is simply sin θ ÷ cos θ at each angle — you can rebuild the whole tan row from the sin and cos rows if you forget it.",
+        "cosec, sec, and cot are just the reciprocals of sin, cos, and tan respectively — no separate memorisation needed if you know the top three rows well.",
+        "tan 90° and cot 0° are undefined because they'd require dividing by zero (cos 90° = 0 and sin 0° = 0 respectively) — a classic 'why' that examiners like to ask."
+      ]},
+    {type:'theorem', heading:"Trigonometric Identities",
+      items:[
+        "<b>Identity 1:</b> <span class='mathf'>sin²θ + cos²θ = 1</span>.",
+        "<b>Identity 2:</b> <span class='mathf'>1 + tan²θ = sec²θ</span>.",
+        "<b>Identity 3:</b> <span class='mathf'>1 + cot²θ = cosec²θ</span>.",
+        "All three come from Pythagoras theorem applied to a right triangle with hypotenuse 1 — they're not independent facts, they're one geometric fact seen three ways.",
+        "Proving identities generally means picking one side (usually the more complex one), converting everything to sin θ and cos θ, and simplifying algebraically until it matches the other side."
+      ]},
+    {type:'concept', heading:"Complementary Angles",
+      items:[
+        "Two angles are complementary if they add to 90°. Key swaps: <span class='mathf'>sin(90°−θ) = cos θ</span>, <span class='mathf'>cos(90°−θ) = sin θ</span>, <span class='mathf'>tan(90°−θ) = cot θ</span>, <span class='mathf'>sec(90°−θ) = cosec θ</span> (and vice versa)."
+      ]},
+    {type:'extra', items:[
+        "'Trigonometry' comes from Greek: <i>trigonon</i> (triangle) + <i>metron</i> (measure) — literally 'triangle measurement'. The subject dates back to ancient Greek and Indian astronomers charting the stars.",
+        "The Indian mathematician <b>Aryabhata</b> (5th century CE) is credited with some of the earliest known sine-like tables, calling the ratio 'jya' — a term that, through translation chains via Arabic and Latin, eventually became the modern word 'sine'.",
+        "Modern GPS, sound engineering, and computer graphics all run on trigonometric functions constantly — every rotation you see in a video game or 3D animation is computed using sin and cos."
+      ]},
+    {type:'trick', items:[
+        "When simplifying a trig expression, converting everything to <b>sin θ and cos θ</b> first is almost always the fastest route, even if the question is stated in tan, cot, sec, or cosec.",
+        "For 'evaluate' questions mixing multiple standard angles, group terms so complementary-angle pairs cancel neatly before you substitute numeric values.",
+        "If a value like sin θ = 2 or cos θ = 1.5 appears in a question, it's impossible — sin and cos always lie between −1 and 1, so such a question is testing whether you catch the contradiction."
+      ]}
+  ],
+  formulas:[
+    ["sin θ","opposite / hypotenuse"],
+    ["cos θ","adjacent / hypotenuse"],
+    ["tan θ","opposite / adjacent = sin θ / cos θ"],
+    ["cosec θ","1 / sin θ"],
+    ["sec θ","1 / cos θ"],
+    ["cot θ","1 / tan θ = cos θ / sin θ"],
+    ["Pythagorean identity","sin²θ + cos²θ = 1"],
+    ["Identity with tan","1 + tan²θ = sec²θ"],
+    ["Identity with cot","1 + cot²θ = cosec²θ"],
+    ["Complementary swap (sin/cos)","sin(90°−θ) = cos θ"],
+    ["Complementary swap (tan/cot)","tan(90°−θ) = cot θ"],
+    ["Range of sin θ, cos θ","−1 ≤ sin θ, cos θ ≤ 1"]
+  ]
+},
+{
+  id:9, title:"Some Applications of Trigonometry", icon:"trigapp", color:"#ff7a6b",
+  tagline:"Heights and distances — using an angle and a tape measure to size up towers, kites, and clifftops without climbing them.",
+  sections:[
+    {type:'concept', heading:"Line of Sight, Elevation & Depression",
+      items:[
+        "<b>Line of sight:</b> the imaginary line from the observer's eye to the object being viewed.",
+        "<b>Angle of elevation:</b> angle between the horizontal and the line of sight when the object is <b>above</b> the observer's eye level — you tilt your head up to see it.",
+        "<b>Angle of depression:</b> angle between the horizontal and the line of sight when the object is <b>below</b> the observer's eye level — you tilt your head down to see it.",
+        "Key relationship: the angle of depression from the top of an object equals the angle of elevation from the bottom, because the horizontal lines at both positions are parallel and the line of sight is a transversal (alternate interior angles)."
+      ]},
+    {type:'concept', heading:"Setting Up the Right Triangle",
+      items:[
+        "Every problem in this chapter reduces to a right triangle — the object's height/distance is one leg, the known distance is another leg, and the angle connects them via sin, cos, or tan.",
+        "Standard workflow: draw a clear labelled diagram, mark the right angle, label the given angle and side, choose the trig ratio that connects the <b>known side</b> to the <b>unknown side</b>, then solve.",
+        "A very common setup: the height of the object is the <b>opposite</b> side to the angle of elevation, and the horizontal distance from the observer is the <b>adjacent</b> side — so <span class='mathf'>tan θ</span> connects them directly.",
+        "Always keep the observer's height (if given, e.g. 'a person 1.5 m tall') in mind — add or subtract it correctly from the final answer if the question asks for the total height of a structure."
+      ]},
+    {type:'theorem', heading:"Two-Observation & Multi-Triangle Problems",
+      items:[
+        "For two-observation problems (e.g. angle changes as someone walks toward a tower, or two angles are measured from two different points), form two separate right-triangle equations and solve them simultaneously — this is where Chapter 3's algebra skills return.",
+        "For problems involving two objects of different heights (e.g. a building and a tower on the same ground level, or a bird and its reflection in a lake), draw one combined diagram with a single common horizontal line, then form multiple right triangles sharing sides.",
+        "When a distance is 'increased' or 'decreased' by walking towards/away from an object, represent the change algebraically (e.g. original distance = d, new distance = d − x) so both equations share the correct unknowns."
+      ]},
+    {type:'extra', items:[
+        "This exact technique — combining a known baseline distance with two angles of elevation — is called <b>triangulation</b>, and it's how 19th-century surveyors calculated the height of Mount Everest without ever climbing it, using theodolites from miles away.",
+        "Air traffic controllers and coast guard rescue teams still use angle-of-elevation/depression calculations (now automated by radar software) to estimate the altitude and distance of aircraft or ships.",
+        "The Great Trigonometric Survey of India (started 1802) used these same height-and-distance principles to map the entire Indian subcontinent and first accurately measured the height of the Himalayan peaks."
+      ]},
+    {type:'trick', items:[
+        "If a question mentions 'the angle of elevation changes from θ₁ to θ₂ as the observer walks a distance d towards the tower', always let the final unknown distance be x, express the original distance as (x + d), and use tan θ₁ and tan θ₂ to form two equations in h and x.",
+        "For 'top of a tower' vs 'top of a building' comparisons, sketch both structures on the <b>same</b> horizontal ground line before writing any equation — a rushed diagram is the #1 cause of setup errors in this chapter.",
+        "Answers should almost always come out to 'nice' numbers when using 30°, 45°, or 60° — if your tan value produces an ugly decimal, it's worth rechecking whether you picked the correct side as opposite vs adjacent."
+      ]}
+  ],
+  formulas:[
+    ["Height using elevation angle","h = d · tan θ"],
+    ["Distance using elevation angle","d = h / tan θ"],
+    ["Angle of depression = angle of elevation","(from the two ends of the same line of sight)"],
+    ["Opposite side (general)","opposite = hypotenuse · sin θ"],
+    ["Adjacent side (general)","adjacent = hypotenuse · cos θ"],
+    ["Line of sight length (hypotenuse)","hypotenuse = h / sin θ  =  d / cos θ"],
+    ["Total height with observer's eye-level","Total height = h(object) + observer's height"]
+  ]
+},
+{
+  id:10, title:"Circles", icon:"circles", color:"#c9a6ff",
+  tagline:"Where a straight line touches a curve at exactly one point — the geometry of tangents.",
+  sections:[
+    {type:'concept', heading:"Tangent vs Secant vs Chord",
+      items:[
+        "A <b>tangent</b> to a circle is a line that touches the circle at exactly <b>one point</b> (the point of contact). A <b>secant</b> intersects the circle at two points. A <b>chord</b> is the line segment joining any two points on the circle.",
+        "A tangent is the limiting case of a secant, as the two intersection points of the secant merge into one — imagine rotating a secant line until it just grazes the circle.",
+        "At any point on a circle, there is exactly <b>one</b> tangent line — this is a useful fact when a question asks you to justify uniqueness."
+      ]},
+    {type:'theorem', heading:"The Two Core Theorems",
+      items:[
+        "<b>Theorem 1:</b> the tangent at any point of a circle is <b>perpendicular</b> to the radius through the point of contact. This single fact is the key to almost every numerical problem in the chapter — it instantly gives you a right angle to work with.",
+        "<b>Theorem 2 (Equal tangents):</b> the lengths of the two tangents drawn from an external point to a circle are <b>equal</b>.",
+        "Combining both theorems: the line joining the external point to the centre <b>bisects the angle</b> between the two tangents, and also bisects the angle between the two radii to the points of contact — this creates two congruent right triangles, which is the standard proof technique for this chapter."
+      ]},
+    {type:'concept', heading:"Number of Tangents From a Point",
+      items:[
+        "From a point <b>inside</b> the circle: <b>no tangent</b> can be drawn (every line through it is a secant or passes through the circle).",
+        "From a point <b>on</b> the circle: exactly <b>one</b> tangent can be drawn (Theorem 1 applies directly).",
+        "From a point <b>outside</b> the circle: exactly <b>two</b> tangents can be drawn, and they are equal in length (Theorem 2)."
+      ]},
+    {type:'concept', heading:"Solving Tangent-Length Problems",
+      items:[
+        "Whenever a tangent and radius meet at the point of contact, immediately mark a <b>90° angle</b> there — this converts the problem into a right-triangle (Pythagoras) calculation involving the radius, the tangent length, and the distance from the external point to the centre.",
+        "<b>Quadrilateral circumscribing a circle:</b> if a quadrilateral's all four sides touch a circle (the circle is inscribed in it), then the sums of its opposite sides are equal — a direct, elegant consequence of the equal-tangents theorem applied to all four vertices.",
+        "For problems combining a triangle and its inscribed circle (incircle), use the equal-tangents property at each vertex to set up equations connecting the side lengths and the tangent segments."
+      ]},
+    {type:'extra', items:[
+        "Tangent-circle geometry isn't just theoretical — <b>gear design</b> in mechanical engineering relies on circles that are tangent to each other so that rotating gears mesh smoothly without slipping.",
+        "The equal-opposite-sides property of a tangential quadrilateral is called the <b>Pitot theorem</b>, named after the French engineer Henri Pitot, and is used in some structural and pipe-network design problems.",
+        "Bicycle wheels, ball bearings, and even planetary orbits (to a first approximation) all rely on tangent-line and circular-motion relationships explored first in this simple chapter."
+      ]},
+    {type:'trick', items:[
+        "The moment you see the word 'tangent' in a problem, draw the radius to the point of contact and mark the right angle — this single habit solves most numerical problems here almost automatically.",
+        "For 'two tangents from an external point' diagrams, look for the <b>kite shape</b> formed by the two radii and two tangents (two pairs of adjacent equal sides) — its diagonal (joining the external point to the centre) is always an axis of symmetry.",
+        "If a quadrilateral is described as circumscribing a circle, immediately write down <b>AB + CD = BC + AD</b> (sum of opposite sides equal) — this is often the fastest route to the answer without drawing any tangent lengths explicitly."
+      ]}
+  ],
+  formulas:[
+    ["Tangent–radius relation","tangent ⟂ radius at point of contact"],
+    ["Equal tangents from external point","PA = PB"],
+    ["Right triangle from tangent","OP² = OA² + PA²  (O=centre, A=point of contact, P=external point)"],
+    ["Tangent length formula","PA = √(OP² − r²)"],
+    ["Tangential quadrilateral property","AB + CD = BC + AD"],
+    ["Number of tangents (inside/on/outside)","0 / 1 / 2"]
+  ]
+},
+{
+  id:11, title:"Areas Related to Circles", icon:"circleareas", color:"#7ec8ff",
+  tagline:"Slicing the circle — perimeter, sectors, segments, and everything you can measure on a round shape.",
+  sections:[
+    {type:'concept', heading:"Core Measurements",
+      items:[
+        "<b>Circumference</b> of a circle: <span class='mathf'>2πr</span>. <b>Area:</b> <span class='mathf'>πr²</span>.",
+        "<b>Sector:</b> the pie-slice region enclosed by two radii and an arc. <b>Segment:</b> the region enclosed by a chord and an arc (minor or major).",
+        "A sector with angle 360° is the whole circle — every sector/arc formula is just that fraction <span class='mathf'>θ/360°</span> applied.",
+        "<b>Minor sector/segment</b> corresponds to the smaller region (angle &lt; 180°); <b>major sector/segment</b> is the remaining larger region."
+      ]},
+    {type:'theorem', heading:"Sector & Segment Formulas",
+      items:[
+        "<b>Arc length:</b> <span class='mathf'>l = (θ/360°) × 2πr</span>.",
+        "<b>Area of sector:</b> <span class='mathf'>(θ/360°) × πr²</span>, also equal to <span class='mathf'>½ × l × r</span>.",
+        "<b>Area of minor segment</b> = Area of sector − Area of the triangle formed by the two radii and the chord.",
+        "<b>Area of major segment</b> = Area of circle − Area of minor segment.",
+        "For a <b>semicircular</b> sector (θ = 180°), the 'triangle' collapses into a straight line, so the segment area formula isn't needed — area is simply half the circle's area."
+      ]},
+    {type:'extra', items:[
+        "The area-of-a-sector idea is exactly how a <b>pizza slice's</b> area is calculated, and it's also the basis for the design of pie charts used everywhere in statistics and business reporting.",
+        "Ancient mathematician <b>Archimedes</b> estimated π by inscribing and circumscribing regular polygons with increasing numbers of sides around a circle — essentially using sectors to squeeze in on the true value of π from both sides, over 2000 years before calculators existed.",
+        "Windshield wipers, radar sweep displays, and rotating sprinklers all trace out sector-shaped regions — the area they cover is a direct real-world sector calculation."
+      ]},
+    {type:'trick', items:[
+        "Combination questions (circle + square, circle + triangle) are just addition/subtraction of areas — sketch the figure first and mentally isolate each individual shape before writing formulas.",
+        "For 'find the area of the shaded region' problems, always identify whether the shaded part is a straightforward difference of two known regions — 90% of the time it is.",
+        "When θ = 90° (a quarter circle), area of the triangle part is simply ½ × r × r = r²/2 — memorising this special case saves time since it appears constantly in 'square with quarter-circles at corners' problems."
+      ]}
+  ],
+  formulas:[
+    ["Circumference","2πr"],
+    ["Area of circle","πr²"],
+    ["Arc length","(θ/360°) × 2πr"],
+    ["Area of sector","(θ/360°) × πr²  =  ½ l r"],
+    ["Area of minor segment","Area of sector − Area of triangle"],
+    ["Area of major segment","Area of circle − Area of minor segment"],
+    ["Area of semicircle","½ πr²"],
+    ["Perimeter of semicircle","πr + 2r"],
+    ["Area of quarter circle","¼ πr²"],
+    ["Value of π (common approximations)","22/7 or 3.14"]
+  ]
+},
+{
+  id:12, title:"Surface Areas and Volumes", icon:"surfaceareas", color:"#5fd9c7",
+  tagline:"When 2D shapes grow a third dimension — combining solids to find how much material wraps them and how much they hold.",
+  sections:[
+    {type:'concept', heading:"The Building-Block Idea",
+      items:[
+        "Almost every question in this chapter is about a <b>combination</b> of basic solids (cube, cuboid, cylinder, cone, sphere, hemisphere) joined together — an ice-cream cone with a hemispherical top, a cylindrical tank with hemispherical ends, etc.",
+        "<b>Golden rule:</b> when solids are joined, the <b>surface area hidden at the joint disappears</b> from the total surface area (it's now inside the solid), but <b>volumes simply add up</b>.",
+        "Before combining anything, it always helps to know the basic 2D area/perimeter formulas and the basic 3D TSA/CSA/Volume formulas cold — see the full shape-by-shape reference below."
+      ]},
+    {type:'theorem', heading:"Combining Solids — Method",
+      items:[
+        "Step 1: Identify each basic solid making up the combination, and note which dimension (radius, height) is shared between them.",
+        "Step 2: For <b>surface area</b> questions, add up only the <b>outer, visible</b> curved/flat surfaces — never include a face that is now hidden inside the joint.",
+        "Step 3: For <b>volume</b> questions, simply add (or subtract, for a solid with a cavity carved out) the individual volumes — no hidden-surface adjustment is needed since volume is unaffected by joining.",
+        "<b>Conversion of solids (recasting):</b> when one solid is melted and recast into another shape, the <b>volume stays constant</b> — set the two volume expressions equal and solve for the unknown dimension. This is one of the highest-yield question types in the chapter."
+      ]},
+    {type:'trick', items:[
+        "When two solids are joined end-to-end, the flat circular faces at the joint are <b>not part of the outer surface</b> — don't add those areas by mistake; this is the single most common mark-losing error in this chapter.",
+        "For 'melting and recasting' problems, sketch both solids, write both volume formulas, and set them equal <b>before</b> plugging in numbers — solving symbolically first avoids arithmetic slips.",
+        "Frustum questions (a cone with the top cut off) reduce to Volume = ⅓πh(r₁²+r₂²+r₁r₂); for its slant height, use the height and the <b>difference</b> of the two radii — always draw the trapezium cross-section first to see the right triangle clearly."
+      ]},
+    {type:'extra', items:[
+        "The word 'frustum' comes from Latin, meaning 'a piece cut off' — think of it as a cone with its pointy top sliced away, exactly like a lampshade or a bucket.",
+        "Volume-conservation (recasting) problems mirror real manufacturing processes — metal foundries genuinely melt scrap metal shaped one way and recast it into rods, spheres, or coins of a completely different shape, using precisely this volume-equality principle.",
+        "A sphere has the <b>smallest surface area for a given volume</b> of any 3D shape — this is exactly why soap bubbles, water droplets, and planets are naturally spherical: nature minimises surface energy."
+      ]}
+  ],
+  shapeSheet:[
+    { name:"Square", icon:"sq2d", rows:[["Perimeter","4a"],["Area","a²"]] },
+    { name:"Rectangle", icon:"rect2d", rows:[["Perimeter","2(l+b)"],["Area","l × b"]] },
+    { name:"Triangle", icon:"tri2d", rows:[["Perimeter","a+b+c"],["Area","½ × base × height"]] },
+    { name:"Circle", icon:"circ2d", rows:[["Circumference","2πr"],["Area","πr²"]] },
+    { name:"Cube", icon:"cube3d", rows:[["TSA","6a²"],["LSA / CSA","4a²"],["Volume","a³"]] },
+    { name:"Cuboid", icon:"cuboid3d", rows:[["TSA","2(lb+bh+hl)"],["LSA / CSA","2h(l+b)"],["Volume","l × b × h"]] },
+    { name:"Cylinder", icon:"cyl3d", rows:[["CSA","2πrh"],["TSA","2πr(r+h)"],["Volume","πr²h"]] },
+    { name:"Cone", icon:"cone3d", rows:[["Slant height","l = √(r²+h²)"],["CSA","πrl"],["TSA","πr(l+r)"],["Volume","⅓ πr²h"]] },
+    { name:"Sphere", icon:"sphere3d", rows:[["Surface Area","4πr²"],["Volume","(4/3) πr³"]] },
+    { name:"Hemisphere", icon:"hemi3d", rows:[["CSA","2πr²"],["TSA","3πr²"],["Volume","(2/3) πr³"]] },
+    { name:"Frustum of a Cone", icon:"frustum3d", rows:[["Slant height","l = √[h²+(r₁−r₂)²]"],["CSA","π(r₁+r₂)l"],["TSA","πl(r₁+r₂) + πr₁² + πr₂²"],["Volume","⅓ πh(r₁²+r₂²+r₁r₂)"]] }
+  ],
+  formulas:[
+    ["Volume conservation (recasting)","Volume before melting = Volume after recasting"],
+    ["Cube diagonal","a√3"],
+    ["Cuboid diagonal","√(l²+b²+h²)"],
+    ["Hollow cylinder volume","πh(R² − r²)   (R=outer, r=inner radius)"],
+    ["Number of solids melted & recast","Volume of big solid ÷ Volume of one small solid"]
+  ]
+},
+{
+  id:13, title:"Statistics", icon:"statistics", color:"#ffcf56",
+  tagline:"Turning a pile of raw data into one honest number — mean, median, mode, and the ogive that finds them visually.",
+  sections:[
+    {type:'concept', heading:"Measures of Central Tendency (Grouped Data)",
+      items:[
+        "<b>Mean:</b> the 'balance point' of the data. For grouped data, three methods exist — <b>Direct Method</b>, <b>Assumed Mean Method</b>, and <b>Step-Deviation Method</b> — all give the same answer; step-deviation is fastest for large class widths.",
+        "<b>Median:</b> the middle value once data is ordered — for grouped data it's found via the <b>cumulative frequency</b> table and a formula pinpointing the median class.",
+        "<b>Mode:</b> the most frequently occurring value — for grouped data it's found by identifying the <b>modal class</b> (highest frequency) and applying a formula."
+      ]},
+    {type:'theorem', heading:"Key Formulas",
+      items:[
+        "<b>Direct mean:</b> <span class='mathf'>x̄ = Σfᵢxᵢ / Σfᵢ</span>.",
+        "<b>Assumed mean:</b> <span class='mathf'>x̄ = a + (Σfᵢdᵢ/Σfᵢ)</span>, where dᵢ = xᵢ − a (a = any assumed mean, usually the class mark closest to the centre of the data).",
+        "<b>Step-deviation mean:</b> <span class='mathf'>x̄ = a + h·(Σfᵢuᵢ/Σfᵢ)</span>, where uᵢ = (xᵢ−a)/h.",
+        "<b>Median:</b> <span class='mathf'>l + [(n/2 − cf)/f] × h</span>, where l = lower limit of median class, cf = cumulative frequency before it, f = frequency of median class, h = class width.",
+        "<b>Mode:</b> <span class='mathf'>l + [(f₁−f₀)/(2f₁−f₀−f₂)] × h</span>, where f₁ = modal class frequency, f₀ = preceding class frequency, f₂ = succeeding class frequency.",
+        "<b>Empirical relationship</b> (a fast cross-check): <span class='mathf'>Mode = 3 Median − 2 Mean</span>."
+      ]},
+    {type:'concept', heading:"Cumulative Frequency & Ogive",
+      items:[
+        "A cumulative frequency table adds up frequencies as you move through classes — 'less than' type or 'more than' type.",
+        "Plotting cumulative frequency against upper (or lower) class boundaries gives an <b>ogive</b> — a smooth S-shaped curve. The x-coordinate where the 'less than' and 'more than' ogives <b>intersect</b> gives the <b>median directly</b>, without any formula.",
+        "Class marks (xᵢ) are always the <b>midpoint</b> of each class interval: <span class='mathf'>xᵢ = (upper limit + lower limit)/2</span> — needed for both the direct and assumed-mean methods."
+      ]},
+    {type:'extra', items:[
+        "The step-deviation method is essentially a scaling trick — dividing every deviation by the common class width h shrinks the numbers you multiply, then you scale back up at the end by multiplying by h. It's the same 'simplify, solve, rescale' idea used throughout mathematics.",
+        "Modern data science tools (spreadsheets, Python's pandas library, R) compute mean/median/mode instantly, but the underlying grouped-data formulas you're learning here are exactly what those tools use internally when your dataset is 'binned' into ranges, like age groups or income brackets.",
+        "The word 'ogive' comes from architecture — it originally described the pointed arch shape seen in Gothic cathedral windows, later borrowed by statisticians because the cumulative frequency curve has a similar elongated S/arch profile."
+      ]},
+    {type:'trick', items:[
+        "Always choose the <b>assumed mean (a)</b> as the class mark of the class with the highest frequency, or simply the middle-most class — this keeps the deviations dᵢ small and arithmetic clean.",
+        "For step-deviation, the class width h must be the <b>same</b> for every class — if class intervals are unequal, you must use the direct or assumed-mean method instead.",
+        "In median/mode formulas, always double check whether the class intervals given are <b>continuous</b> (e.g. 10–20, 20–30) or need conversion from <b>inclusive form</b> (e.g. 10–19, 20–29) by adjusting boundaries by 0.5 before applying the formula."
+      ]}
+  ],
+  formulas:[
+    ["Direct mean","x̄ = Σfᵢxᵢ / Σfᵢ"],
+    ["Assumed mean","x̄ = a + (Σfᵢdᵢ/Σfᵢ), dᵢ = xᵢ−a"],
+    ["Step-deviation mean","x̄ = a + h(Σfᵢuᵢ/Σfᵢ), uᵢ=(xᵢ−a)/h"],
+    ["Median (grouped)","l + [(n/2 − cf)/f] × h"],
+    ["Mode (grouped)","l + [(f₁−f₀)/(2f₁−f₀−f₂)] × h"],
+    ["Empirical relation","Mode = 3 Median − 2 Mean"],
+    ["Class mark","xᵢ = (upper limit + lower limit)/2"],
+    ["Class width","h = upper limit − lower limit"]
+  ]
+},
+{
+  id:14, title:"Probability", icon:"probability", color:"#ff7a6b",
+  tagline:"The mathematics of 'how likely' — coins, dice, and cards, measured on a scale from impossible to certain.",
+  sections:[
+    {type:'concept', heading:"Classical (Theoretical) Probability",
+      items:[
+        "The <b>experimental</b> probability from Class 9 depended on trial data. Class 10 focuses on <b>theoretical probability</b>, based on equally likely outcomes.",
+        "<b>Theoretical probability</b> of an event E: <span class='mathf'>P(E) = (number of favourable outcomes) / (total number of possible outcomes)</span> — valid only when all outcomes are <b>equally likely</b>.",
+        "Probability always lies between 0 and 1 inclusive: <span class='mathf'>0 ≤ P(E) ≤ 1</span>. P(E)=0 means impossible, P(E)=1 means certain."
+      ]},
+    {type:'theorem', heading:"Complementary Events",
+      items:[
+        "For any event E, the <b>complement</b> Ē ('not E') satisfies <span class='mathf'>P(E) + P(Ē) = 1</span>.",
+        "This is the fastest route to solving 'at least one' type problems: find P(none), then subtract from 1."
+      ]},
+    {type:'concept', heading:"Classic Sample Spaces to Memorise",
+      items:[
+        "<b>One coin:</b> {H, T} — 2 outcomes. <b>Two coins:</b> {HH, HT, TH, TT} — 4 outcomes.",
+        "<b>One die:</b> {1,2,3,4,5,6} — 6 outcomes. <b>Two dice:</b> 36 equally likely ordered pairs — draw the 6×6 grid mentally (or on paper) before counting favourable outcomes for sums, differences, etc.",
+        "<b>Deck of cards:</b> 52 cards, 4 suits (♠♣ black, ♥♦ red) of 13 cards each, including 4 kings, 4 queens, 4 jacks, 4 aces, and 12 face cards total."
+      ]},
+    {type:'trick', items:[
+        "For two-dice sum problems, remember the frequency pattern: sums 2 and 12 have 1 way each, sum 7 has the most (6 ways) — the counts rise then fall symmetrically around 7.",
+        "'At least one' or 'at most one' phrasing is the strongest signal to use the complement rule <span class='mathf'>P(E) = 1 − P(Ē)</span> instead of directly counting."
+      ]},
+    {type:'extra', items:[
+        "Modern applications of probability built directly on these ideas include <b>weather forecasting</b> ('70% chance of rain'), <b>insurance premium calculation</b>, and the shuffling algorithms used in every card game app.",
+        "The formal mathematical study of probability began with a real gambling dispute in the 1650s between <b>Blaise Pascal and Pierre de Fermat</b>, who exchanged letters trying to fairly split stakes in an interrupted game of chance."
+      ]}
+  ],
+  formulas:[
+    ["Theoretical probability","P(E) = favourable outcomes / total outcomes"],
+    ["Range of probability","0 ≤ P(E) ≤ 1"],
+    ["Complement rule","P(E) + P(not E) = 1"],
+    ["Impossible event","P(E) = 0"],
+    ["Sure / certain event","P(E) = 1"],
+    ["Total outcomes — 1 coin / 2 coins","2 / 4"],
+    ["Total outcomes — 1 die / 2 dice","6 / 36"],
+    ["Total outcomes — deck of cards","52 (26 red, 26 black)"],
+    ["Face cards in a deck","12 (4 each of J, Q, K)"]
+  ]
+}
+];
+
+
+/* ---------------- render helpers ---------------- */
+function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+
+function renderTOC(){
+  const grid = document.getElementById('tocGrid');
+  grid.innerHTML='';
+  CHAPTERS.forEach((c,i)=>{
+    const tile = el(`
+      <div class="tile" style="--accent:${c.color}" onclick="openChapter(${c.id})">
+        <div class="icon-slot">${ICONS[c.icon]||''}</div>
+        <div class="num">CH ${String(c.id).padStart(2,'0')}</div>
+        <h3>${c.title}</h3>
+        <p>${c.tagline}</p>
+        <span class="goto">Open notes <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    `);
+    grid.appendChild(tile);
+  });
+  document.getElementById('chapCounter').textContent = CHAPTERS.length + ' chapters';
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.tile').forEach((t,i)=>{
+      setTimeout(()=>t.classList.add('reveal'), i*55);
+    });
+  });
+}
+
+function sectionHTML(sec){
+  if(sec.type==='concept'){
+    return `<div class="section-block">
+      <h2><span class="tag">Core</span> ${sec.heading}</h2>
+      ${sec.intro?`<p>${sec.intro}</p>`:''}
+      <ul>${sec.items.map(it=>`<li>${it}</li>`).join('')}</ul>
+    </div>`;
+  }
+  if(sec.type==='theorem'){
+    return `<div class="section-block">
+      <h2><span class="tag">Results</span> ${sec.heading}</h2>
+      <div class="callout theorem"><span class="label">◆ Theorem / Result</span>
+        <ol>${sec.items.map(it=>`<li>${it}</li>`).join('')}</ol>
+      </div>
+    </div>`;
+  }
+  if(sec.type==='extra'){
+    return `<div class="section-block">
+      <div class="callout extra"><span class="label">🔭 Beyond the Textbook</span>
+        <ol>${sec.items.map(it=>`<li>${it}</li>`).join('')}</ol>
+      </div>
+    </div>`;
+  }
+  if(sec.type==='trick'){
+    return `<div class="section-block">
+      <div class="callout trick"><span class="label">⚡ Exam Shortcuts</span>
+        <ol>${sec.items.map(it=>`<li>${it}</li>`).join('')}</ol>
+      </div>
+    </div>`;
+  }
+  if(sec.type==='table'){
+    return `<div class="section-block">
+      <h2><span class="tag">Reference</span> ${sec.heading}</h2>
+      ${sec.intro?`<p>${sec.intro}</p>`:''}
+      <div class="ratio-table-wrap">
+        <table class="ratio-table">
+          <thead><tr>${sec.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${sec.rows.map(r=>`<tr>${r.map((cell,ci)=>ci===0?`<td class="rowlabel">${cell}</td>`:`<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function shapeSheetHTML(c){
+  if(!c.shapeSheet) return '';
+  return `<div class="formula-sheet shape-sheet" id="shapes">
+    <h2>🔷 ${c.title} — Shape Reference</h2>
+    <span class="fs-sub">Every shape, every formula, split out clearly — no more squinting at slashes.</span>
+    <div class="shape-grid">
+      ${c.shapeSheet.map(s=>`
+        <div class="shape-card">
+          <div class="shape-icon">${ICONS[s.icon]||''}</div>
+          <div class="shape-name">${s.name}</div>
+          <div class="shape-rows">
+            ${s.rows.map(r=>`<div class="shape-row"><span class="srk">${r[0]}</span><span class="srv">${r[1]}</span></div>`).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function renderChapter(id){
+  const idx = CHAPTERS.findIndex(c=>c.id===id);
+  const c = CHAPTERS[idx];
+  if(!c) return;
+  const prev = CHAPTERS[idx-1];
+  const next = CHAPTERS[idx+1];
+  const html = `
+    <header class="chapter-head" style="--accent:${c.color}">
+      <div class="chapter-hero-icon">${ICONS[c.icon]||''}</div>
+      <div class="kicker">Chapter ${String(c.id).padStart(2,'0')} / 14</div>
+      <h1>${c.title}</h1>
+      <p class="tagline">${c.tagline}</p>
+    </header>
+    <nav class="chapter-nav-strip">
+      ${c.sections.filter(s=>s.type!=='extra'&&s.type!=='trick').map(s=>`<a href="#s-${slug(s.heading)}">${s.heading}</a>`).join('')}
+      ${c.shapeSheet?'<a href="#shapes">Shape Reference</a>':''}
+      <a href="#formulas">Formula Sheet</a>
+    </nav>
+    <div class="chapter-body">
+      ${c.sections.map(s=>`<div id="s-${slug(s.heading||'')}">${sectionHTML(s)}</div>`).join('')}
+      ${shapeSheetHTML(c)}
+      <div class="formula-sheet" id="formulas">
+        <h2>📐 ${c.shapeSheet? 'Other Useful Formulas & Results' : c.title + ' — Formula Sheet'}</h2>
+        <span class="fs-sub">${c.shapeSheet? 'Extra relations worth remembering, beyond the shape-by-shape sheet above.' : 'Everything you need at your fingertips before the exam.'}</span>
+        <div class="formula-grid">
+          ${c.formulas.map(f=>`<div class="formula-card"><div class="fname">${f[0]}</div><div class="fexpr">${f[1]}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="chapter-pager">
+      ${prev?`<div class="pager-btn" onclick="openChapter(${prev.id})"><div class="plabel">← Previous</div><div class="ptitle">${prev.title}</div></div>`:'<div></div>'}
+      ${next?`<div class="pager-btn next" onclick="openChapter(${next.id})"><div class="plabel">Next →</div><div class="ptitle">${next.title}</div></div>`:`<div class="pager-btn next" onclick="goHome()"><div class="plabel">Done →</div><div class="ptitle">Back to Contents</div></div>`}
+    </div>
+  `;
+  document.getElementById('chapterContent').innerHTML = html;
+  document.getElementById('screen-toc').classList.remove('active');
+  document.getElementById('screen-chapter').classList.add('active');
+  document.getElementById('homeBtn').style.display='inline-flex';
+  window.scrollTo({top:0,behavior:'instant'});
+  observeReveals();
+  location.hash = 'ch' + id;
+}
+
+function slug(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+function openChapter(id){ renderChapter(id); }
+
+function goHome(){
+  document.getElementById('screen-chapter').classList.remove('active');
+  document.getElementById('screen-toc').classList.add('active');
+  document.getElementById('homeBtn').style.display='none';
+  window.scrollTo({top:0,behavior:'instant'});
+  history.replaceState(null,'',location.pathname);
+}
+
+/* scroll progress */
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop)/(h.scrollHeight-h.clientHeight || 1) * 100;
+  document.getElementById('progressBar').style.width = scrolled+'%';
+});
+
+/* intersection reveal for section blocks */
+function observeReveals(){
+  const els = document.querySelectorAll('.section-block:not(.reveal)');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('reveal'); io.unobserve(e.target);} });
+  },{threshold:0.12});
+  els.forEach(el=>io.observe(el));
+}
+
+/* floating background symbols */
+function initSymbolField(){
+  const field = document.getElementById('symbolField');
+  const syms = ['∑','π','∞','√','÷','×','θ','Δ','∫','α','β','%','∠','∴'];
+  const count = window.innerWidth<700 ? 14 : 26;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('span');
+    s.className='sym';
+    s.textContent = syms[Math.floor(Math.random()*syms.length)];
+    s.style.left = Math.random()*100+'vw';
+    s.style.fontSize = (14+Math.random()*26)+'px';
+    s.style.animationDuration = (18+Math.random()*22)+'s';
+    s.style.animationDelay = (-Math.random()*30)+'s';
+    field.appendChild(s);
+  }
+}
+
+/* router init */
+function initRouter(){
+  const h = location.hash;
+  if(h && h.startsWith('#ch')){
+    const id = parseInt(h.replace('#ch',''));
+    if(!isNaN(id)) { renderChapter(id); return; }
+  }
+  renderTOC();
+}
+
+initSymbolField();
+renderTOC();
+initRouter();
+</script>
+</body>
+</html>
