@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>India & the Contemporary World II — Book Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132022; --parchment:#F4ECD8; --parchment2:#EADFC4;
+    --navy:#0A2A30; --navy2:#123C43; --gold:#D6A339; --gold-bright:#F0C25E;
+    --line: rgba(244,236,216,0.16);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:radial-gradient(ellipse at top, var(--navy2) 0%, var(--navy) 55%, #071B1F 100%);
+    color:var(--parchment); font-family:'Inter',sans-serif; line-height:1.55; overflow-x:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;} }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; letter-spacing:.18em; text-transform:uppercase; font-size:.66rem; color:var(--gold-bright); opacity:.9;}
+
+  .stars{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;}
+  .stars span{position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; animation:twinkle 4s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.12;}50%{opacity:.85;}}
+
+  /* ---- hero / cover ---- */
+  .hero{position:relative; z-index:1; padding:4rem 1.2rem 2.4rem; text-align:center; border-bottom:1px solid var(--line);}
+  .book{width:96px; height:96px; margin:0 auto 1.1rem; font-size:3rem; display:flex; align-items:center; justify-content:center; animation:flip 3.4s ease-in-out infinite; filter:drop-shadow(0 0 18px rgba(240,194,94,.4));}
+  @keyframes flip{0%,100%{transform:rotateY(0deg);}50%{transform:rotateY(180deg);}}
+  .hero h1{font-size:clamp(1.9rem,6.4vw,3rem); font-weight:900; background:linear-gradient(100deg,var(--gold-bright),#fff 45%,var(--gold-bright)); background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:sheen 5s linear infinite; line-height:1.08;}
+  @keyframes sheen{to{background-position:200% center;}}
+  .hero p.sub{max-width:540px; margin:.9rem auto 0; color:var(--parchment2); font-size:.95rem;}
+  .book-chips{display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; margin-top:1.6rem;}
+  .book-chips a{
+    text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--navy);
+    background:var(--gold-bright); padding:.42rem .8rem; border-radius:99px; font-weight:700;
+    transition:.2s; box-shadow:0 4px 10px rgba(0,0,0,.25);
+  }
+  .book-chips a:hover{transform:translateY(-2px);}
+
+  /* ---- sticky nav ---- */
+  .nav{position:sticky; top:0; z-index:30; display:flex; gap:.4rem; overflow-x:auto; padding:.65rem 1rem; background:rgba(10,42,48,.94); backdrop-filter:blur(6px); border-bottom:1px solid var(--line);}
+  .nav a{flex:0 0 auto; text-decoration:none; color:var(--parchment2); font-family:'JetBrains Mono',monospace; font-size:.68rem; padding:.38rem .65rem; border-radius:99px; border:1px solid var(--line); transition:.2s;}
+  .nav a:hover{background:var(--gold); color:var(--navy); border-color:var(--gold);}
+
+  main{position:relative; z-index:1; max-width:940px; margin:0 auto; padding:2.2rem 1rem 4rem;}
+
+  /* ---- chapter shell ---- */
+  section.chapter{margin-bottom:4rem; scroll-margin-top:66px;}
+  .ch-head{display:flex; align-items:center; gap:.9rem; margin-bottom:.5rem; opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease;}
+  .ch-head.show{opacity:1; transform:translateY(0);}
+  .ch-num{font-family:'Fraunces',serif; font-weight:900; font-size:1.9rem; color:#fff; background:var(--accent); width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; box-shadow:0 6px 16px color-mix(in srgb, var(--accent) 50%, transparent);}
+  .ch-head h2{font-size:clamp(1.25rem,4vw,1.65rem); color:#fff;}
+  .ch-head span.range{display:block; font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--accent-bright); margin-top:.15rem;}
+
+  /* per-chapter timeline */
+  .timeline{display:flex; overflow-x:auto; gap:0; padding:1.2rem 0 1rem; margin-bottom:1.2rem; border-bottom:1px dashed var(--line);}
+  .timeline::-webkit-scrollbar{height:5px;} .timeline::-webkit-scrollbar-thumb{background:var(--accent); border-radius:4px;}
+  .tl-item{flex:0 0 auto; width:118px; text-align:center; position:relative; padding-top:1.1rem;}
+  .tl-item::before{content:""; position:absolute; top:0; left:0; width:100%; height:2px; background:var(--line);}
+  .tl-dot{width:10px; height:10px; border-radius:50%; background:var(--accent-bright); margin:0 auto -6px; position:relative; top:-6px; box-shadow:0 0 0 4px color-mix(in srgb, var(--accent-bright) 25%, transparent); animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px color-mix(in srgb, var(--accent-bright) 25%, transparent);}50%{box-shadow:0 0 0 8px transparent;}}
+  .tl-date{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.7rem; color:var(--accent-bright); margin-top:.3rem;}
+  .tl-label{font-size:.66rem; color:var(--parchment2); margin-top:.15rem; padding:0 .2rem;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:.85rem;}
+  .card{background:linear-gradient(165deg,var(--parchment),var(--parchment2)); color:var(--ink); border-radius:16px; padding:1.05rem 1.1rem 1.15rem; position:relative; overflow:hidden; box-shadow:0 10px 24px rgba(0,0,0,.28); opacity:0; transform:translateY(20px) scale(.98); transition:opacity .5s ease, transform .5s ease; border-top:4px solid var(--accent);}
+  .card.show{opacity:1; transform:translateY(0) scale(1);}
+  .card:hover{transform:translateY(-4px);}
+  .card::before{content:attr(data-emoji); position:absolute; right:-8px; top:-12px; font-size:3.2rem; opacity:.15; animation:float 5s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-8px) rotate(6deg);}}
+  .card h3{font-size:.98rem; margin-bottom:.5rem; color:var(--accent); display:flex; align-items:center; gap:.4rem;}
+  .card h3 .sticker{font-size:1.15rem; animation:wiggle 3s ease-in-out infinite; display:inline-block;}
+  @keyframes wiggle{0%,100%{transform:rotate(-6deg);}50%{transform:rotate(6deg);}}
+  .card ul{margin:0; padding-left:1.05rem;} .card li{margin-bottom:.4rem; font-size:.83rem;} .card li:last-child{margin-bottom:0;}
+  .card b{color:var(--accent);}
+  .date{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.7rem; color:#fff; background:var(--accent); padding:.04rem .38rem; border-radius:5px; white-space:nowrap;}
+
+  .divider{grid-column:1/-1; display:flex; align-items:center; gap:.6rem; margin:.5rem 0 -.15rem;}
+  .divider .tag{font-family:'JetBrains Mono',monospace; font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--accent-bright); background:rgba(255,255,255,.06); border:1px solid var(--line); padding:.32rem .75rem; border-radius:99px; white-space:nowrap;}
+  .divider::after{content:""; flex:1; height:1px; background:var(--line);}
+
+  .subgrid{display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-top:.3rem;}
+  @media (max-width:520px){.subgrid{grid-template-columns:1fr;}}
+  .subcard{background:rgba(255,255,255,.5); border-radius:10px; padding:.6rem .7rem;}
+  .subcard h4{margin:0 0 .3rem; font-size:.78rem; color:var(--accent); font-family:'JetBrains Mono',monospace; letter-spacing:.03em;}
+  .subcard ul{margin:0; padding-left:1rem;} .subcard li{font-size:.79rem; margin-bottom:.3rem;}
+
+  .callout{grid-column:1/-1; background:linear-gradient(120deg, color-mix(in srgb, var(--accent) 22%, var(--navy)), var(--navy)); border:1px solid color-mix(in srgb, var(--accent-bright) 45%, transparent); border-radius:16px; padding:1rem 1.15rem; display:flex; gap:.8rem; align-items:flex-start; opacity:0; transform:translateY(20px); transition:opacity .5s ease, transform .5s ease;}
+  .callout.show{opacity:1; transform:translateY(0);}
+  .callout .icon{font-size:1.5rem; animation:pulseIcon 2s ease-in-out infinite;}
+  @keyframes pulseIcon{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
+  .callout p{margin:0; font-size:.83rem; color:var(--parchment2);}
+  .callout b{color:var(--accent-bright);}
+
+  .glossary{grid-column:1/-1; background:rgba(255,255,255,.04); border:1px dashed var(--line); border-radius:16px; padding:1rem 1.15rem; opacity:0; transform:translateY(20px); transition:opacity .5s ease, transform .5s ease;}
+  .glossary.show{opacity:1; transform:translateY(0);}
+  .glossary h4{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--accent-bright); letter-spacing:.08em; text-transform:uppercase; margin-bottom:.6rem;}
+  .glossary .terms{display:flex; flex-wrap:wrap; gap:.5rem;}
+  .glossary .term{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:9px; padding:.4rem .6rem; font-size:.77rem;}
+  .glossary .term b{color:var(--gold-bright); display:block; font-size:.74rem; margin-bottom:.1rem;}
+
+  /* ---- key figures ---- */
+  .fig-title{grid-column:1/-1; font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-bright); margin:.6rem 0 -.1rem; display:flex; align-items:center; gap:.5rem;}
+  .fig-title::after{content:""; flex:1; height:1px; background:var(--line);}
+  .figure-grid{grid-column:1/-1; display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:.7rem;}
+  .fig-card{background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02)); border:1px solid var(--line); border-radius:14px; padding:.8rem .85rem; display:flex; gap:.7rem; align-items:flex-start; opacity:0; transform:translateY(16px); transition:opacity .5s ease, transform .5s ease, background .2s;}
+  .fig-card.show{opacity:1; transform:translateY(0);}
+  .fig-card:hover{background:linear-gradient(160deg,rgba(255,255,255,.11),rgba(255,255,255,.03));}
+  .fig-avatar{flex:0 0 auto; width:44px; height:44px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent-bright), var(--accent)); display:flex; align-items:center; justify-content:center; font-size:1.3rem; box-shadow:0 4px 10px rgba(0,0,0,.3); animation:float 6s ease-in-out infinite;}
+  .fig-body h4{margin:0; font-size:.86rem; color:#fff; font-family:'Fraunces',serif; font-weight:700;}
+  .fig-body .role{font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--accent-bright); text-transform:uppercase; letter-spacing:.06em; margin:.15rem 0 .3rem;}
+  .fig-body p{margin:0; font-size:.76rem; color:var(--parchment2); line-height:1.4;}
+
+  /* ---- table of contents ---- */
+  .toc{position:relative; z-index:1; max-width:940px; margin:0 auto; padding:2rem 1rem 1rem;}
+  .toc-title{text-align:center; margin-bottom:1.4rem;}
+  .toc-title h2{font-size:1.15rem; color:var(--gold-bright);}
+  .toc-title p{font-size:.78rem; color:var(--parchment2); margin-top:.3rem;}
+  .toc-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:.9rem;}
+  .toc-card{
+    display:flex; align-items:center; gap:.9rem; text-decoration:none;
+    background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    border:1px solid var(--line); border-radius:16px; padding:1rem 1.1rem;
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    position:relative; overflow:hidden;
+  }
+  .toc-card:hover{transform:translateY(-4px) scale(1.015); box-shadow:0 14px 28px rgba(0,0,0,.35); border-color:var(--tc-accent, var(--gold));}
+  .toc-num{flex:0 0 auto; width:46px; height:46px; border-radius:12px; background:var(--tc-accent, var(--gold)); color:#0A2A30; font-family:'Fraunces',serif; font-weight:900; font-size:1.35rem; display:flex; align-items:center; justify-content:center;}
+  .toc-body h3{color:#fff; font-size:1rem; margin-bottom:.2rem;}
+  .toc-body p{margin:0; font-size:.74rem; color:var(--parchment2);}
+  .toc-arrow{margin-left:auto; font-size:1.1rem; color:var(--tc-accent, var(--gold-bright)); transition:transform .25s ease; flex:0 0 auto;}
+  .toc-card:hover .toc-arrow{transform:translateX(5px);}
+
+
+  /* ---- mind map ---- */
+  .mm-wrap{margin-top:2rem; text-align:center;}
+  .mm-title{font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-bright); margin-bottom:1rem;}
+  .mindmap{position:relative; width:100%; max-width:560px; aspect-ratio:1/1; margin:0 auto;}
+  .mm-center{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(.6); width:34%; aspect-ratio:1/1; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent-bright), var(--accent)); color:#fff; display:flex; align-items:center; justify-content:center; text-align:center; font-family:'Fraunces',serif; font-weight:700; font-size:.85rem; padding:.6rem; z-index:5; box-shadow:0 0 0 6px rgba(255,255,255,.06), 0 10px 26px rgba(0,0,0,.4); opacity:0;}
+  .mindmap.show .mm-center{animation:popIn .6s ease forwards;}
+  @keyframes popIn{to{opacity:1; transform:translate(-50%,-50%) scale(1);}}
+  .mm-branch{position:absolute; top:50%; left:50%; width:34%; height:2px; background:linear-gradient(90deg, var(--accent-bright), transparent); transform-origin:0% 50%; transform:rotate(var(--a)) scaleX(0); opacity:0; z-index:1;}
+  .mindmap.show .mm-branch{animation:growLine .6s ease forwards;}
+  @keyframes growLine{to{transform:rotate(var(--a)) scaleX(1); opacity:1;}}
+  .mm-node{position:absolute; left:100%; top:50%; width:118px; transform:translate(-50%,-50%) rotate(calc(-1 * var(--a))) scale(0); background:var(--parchment); color:var(--ink); border-radius:10px; padding:.45rem .55rem; font-size:.66rem; line-height:1.3; text-align:center; box-shadow:0 6px 14px rgba(0,0,0,.35); z-index:4; opacity:0; border:2px solid var(--accent);}
+  .mindmap.show .mm-node{animation:popNode .5s ease forwards;}
+  @keyframes popNode{to{opacity:1; transform:translate(-50%,-50%) rotate(calc(-1 * var(--a))) scale(1);}}
+  @media (max-width:480px){ .mm-node{width:92px; font-size:.6rem;} }
+
+  .stickers{display:flex; justify-content:center; gap:1.3rem; margin:2rem 0 .2rem; flex-wrap:wrap;}
+  .stickers span{font-size:1.6rem; display:inline-block; animation:bob 2.6s ease-in-out infinite; filter:drop-shadow(0 4px 6px rgba(0,0,0,.35));}
+  .stickers span:nth-child(2){animation-delay:.3s;} .stickers span:nth-child(3){animation-delay:.6s;} .stickers span:nth-child(4){animation-delay:.9s;} .stickers span:nth-child(5){animation-delay:1.2s;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px) rotate(8deg);}}
+
+  footer{text-align:center; padding:2rem 1rem 3rem; position:relative; z-index:1; color:var(--parchment2); font-size:.74rem; font-family:'JetBrains Mono',monospace; border-top:1px solid var(--line);}
+  footer .b{display:inline-block; animation:spin 6s linear infinite; margin-right:.3rem;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* ---- multi-page view system ---- */
+  .view{display:none;}
+  .view.active{display:block;}
+  main{padding-top:0;}
+  section.chapter{margin-bottom:0; scroll-margin-top:0;}
+  .nav a.active{background:var(--gold); color:var(--navy); border-color:var(--gold);}
+
+  .chapter-topbar{display:flex; align-items:center; justify-content:space-between; gap:.8rem; flex-wrap:wrap; padding:1rem 0 .4rem; margin-bottom:.4rem;}
+  .back-btn{display:inline-flex; align-items:center; gap:.4rem; text-decoration:none; font-family:'JetBrains Mono',monospace; font-size:.74rem; font-weight:700; color:var(--navy); background:var(--gold-bright); padding:.5rem .9rem; border-radius:99px; box-shadow:0 4px 10px rgba(0,0,0,.25); transition:.2s; cursor:pointer; border:none;}
+  .back-btn:hover{transform:translateX(-3px);}
+  .crumb{font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--parchment2); letter-spacing:.06em; text-transform:uppercase; opacity:.8;}
+
+  .chapter-bottombar{display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin:2.4rem 0 1rem; padding-top:1.4rem; border-top:1px solid var(--line);}
+  @media (max-width:560px){.chapter-bottombar{grid-template-columns:1fr;}}
+  .pn-btn{display:flex; flex-direction:column; gap:.25rem; text-decoration:none; padding:.85rem 1rem; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid var(--line); transition:.2s; cursor:pointer;}
+  .pn-btn:hover{background:rgba(255,255,255,.08); transform:translateY(-2px);}
+  .pn-btn.next{text-align:right; align-items:flex-end;}
+  .pn-btn .pn-label{font-family:'JetBrains Mono',monospace; font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-bright);}
+  .pn-btn .pn-title{font-family:'Fraunces',serif; font-weight:700; font-size:.95rem; color:#fff;}
+  .pn-btn.contents{background:linear-gradient(120deg, color-mix(in srgb, var(--accent) 30%, var(--navy)), var(--navy)); border-color:color-mix(in srgb, var(--accent-bright) 45%, transparent); align-items:center; text-align:center; grid-column:1/-1;}
+
+  /* ---- artwork / print card ---- */
+  .art-card{grid-column:1/-1; background:linear-gradient(165deg,var(--parchment),var(--parchment2)); color:var(--ink); border-radius:18px; padding:1.1rem; display:grid; grid-template-columns:minmax(220px,340px) 1fr; gap:1.1rem; box-shadow:0 12px 28px rgba(0,0,0,.3); border-top:4px solid var(--accent); opacity:0; transform:translateY(20px) scale(.98); transition:opacity .5s ease, transform .5s ease;}
+  .art-card.show{opacity:1; transform:translateY(0) scale(1);}
+  @media (max-width:640px){.art-card{grid-template-columns:1fr;}}
+  .art-frame{position:relative; border-radius:12px; overflow:hidden; cursor:zoom-in; box-shadow:0 8px 20px rgba(0,0,0,.35); border:6px solid #fff; outline:1px solid rgba(0,0,0,.15);}
+  .art-frame img{display:block; width:100%; height:auto; transition:transform .6s cubic-bezier(.22,1,.36,1);}
+  .art-frame:hover img{transform:scale(1.08) rotate(-.4deg);}
+  .art-frame .art-zoom{position:absolute; right:.5rem; bottom:.5rem; background:rgba(10,42,48,.75); color:#fff; font-size:.68rem; font-family:'JetBrains Mono',monospace; padding:.25rem .5rem; border-radius:99px; display:flex; align-items:center; gap:.3rem; opacity:0; transform:translateY(6px); transition:.25s;}
+  .art-frame:hover .art-zoom{opacity:1; transform:translateY(0);}
+  .art-cap{font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--accent); margin-top:.5rem; letter-spacing:.02em;}
+  .art-text h3{margin-bottom:.5rem;}
+  .art-text ul{margin:0; padding-left:1.05rem;} .art-text li{margin-bottom:.4rem; font-size:.83rem;}
+
+  .lightbox{position:fixed; inset:0; z-index:100; display:none; align-items:center; justify-content:center; background:rgba(4,14,16,.92); backdrop-filter:blur(4px); padding:2rem 1.2rem; opacity:0; transition:opacity .25s ease;}
+  .lightbox.open{display:flex; opacity:1;}
+  .lightbox img{max-width:min(90vw,900px); max-height:80vh; border-radius:10px; box-shadow:0 20px 60px rgba(0,0,0,.6); border:8px solid #fff; transform:scale(.92); transition:transform .3s cubic-bezier(.22,1,.36,1);}
+  .lightbox.open img{transform:scale(1);}
+  .lightbox-cap{position:absolute; bottom:2rem; left:0; right:0; text-align:center; color:var(--parchment2); font-size:.78rem; font-family:'JetBrains Mono',monospace; padding:0 1.5rem;}
+  .lightbox-close{position:absolute; top:1.1rem; right:1.3rem; background:var(--gold-bright); color:var(--navy); border:none; width:36px; height:36px; border-radius:50%; font-size:1.1rem; font-weight:700; cursor:pointer; transition:.2s;}
+  .lightbox-close:hover{transform:rotate(90deg);}
+
+  /* ---- date ledger ---- */
+  .ledger{grid-column:1/-1; background:rgba(255,255,255,.045); border:1px solid var(--line); border-radius:18px; padding:1.1rem 1.2rem 1.2rem; opacity:0; transform:translateY(20px); transition:opacity .5s ease, transform .5s ease;}
+  .ledger.show{opacity:1; transform:translateY(0);}
+  .ledger-head{display:flex; align-items:center; gap:.6rem; margin-bottom:.85rem;}
+  .ledger-head h3{color:var(--gold-bright); font-size:1rem;}
+  .ledger-head .count{font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--parchment2); background:rgba(255,255,255,.07); padding:.2rem .55rem; border-radius:99px;}
+  .ledger-list{position:relative; margin:0; padding-left:1.4rem; border-left:2px dashed var(--line);}
+  .ledger-item{position:relative; padding:.05rem 0 1rem 1rem; opacity:0; transform:translateX(-10px); transition:opacity .4s ease, transform .4s ease;}
+  .ledger-item.show{opacity:1; transform:translateX(0);}
+  .ledger-item:last-child{padding-bottom:0;}
+  .ledger-item::before{content:""; position:absolute; left:-1.51rem; top:.35rem; width:9px; height:9px; border-radius:50%; background:var(--accent-bright); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent-bright) 25%, transparent);}
+  .ledger-year{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:.72rem; color:var(--accent-bright); display:block; margin-bottom:.1rem;}
+  .ledger-event{font-size:.82rem; color:var(--parchment2);}
+
+  /* ---- extra motion polish ---- */
+  .tl-item{opacity:0; transform:translateY(10px); transition:opacity .45s ease, transform .45s ease;}
+  .tl-item.show{opacity:1; transform:translateY(0);}
+  .card, .art-card{transition:opacity .5s ease, transform .5s ease, box-shadow .3s ease;}
+  .card:hover, .art-card:hover{box-shadow:0 16px 32px rgba(0,0,0,.35);}
+  .toc-card{transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="lightbox" id="lightbox">
+  <button type="button" class="lightbox-close" id="lightboxClose">✕</button>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-cap" id="lightboxCap"></div>
+</div>
+
+<nav class="nav">
+  <a href="#home" data-view="home" class="active">🏠 Home</a>
+  <a href="#ch1" data-view="ch1">Ch.1 Europe</a>
+  <a href="#ch2" data-view="ch2">Ch.2 India</a>
+  <a href="#ch3" data-view="ch3">Ch.3 Global World</a>
+  <a href="#ch4" data-view="ch4">Ch.4 Industrialisation</a>
+  <a href="#ch5" data-view="ch5">Ch.5 Print</a>
+</nav>
+
+<div id="home" class="view active">
+
+<header class="hero">
+  <div class="book">📖</div>
+  <p class="eyebrow">CBSE Class 10 · History · Full Book Notes</p>
+  <h1>India and the<br>Contemporary World – II</h1>
+  <p class="sub">Five chapters, one file. Nationalism sweeping Europe and India, factories rewriting the world of work, and the printed page that made revolutions possible.</p>
+  <div class="book-chips">
+    <a href="#ch1" data-view="ch1">① Nationalism in Europe</a>
+    <a href="#ch2" data-view="ch2">② Nationalism in India</a>
+    <a href="#ch3" data-view="ch3">③ The Making of a Global World</a>
+    <a href="#ch4" data-view="ch4">④ Age of Industrialisation</a>
+    <a href="#ch5" data-view="ch5">⑤ Print Culture</a>
+  </div>
+</header>
+
+<div class="toc">
+  <div class="toc-title"><h2>📑 Contents</h2><p>Tap a chapter to open its dedicated page.</p></div>
+  <div class="toc-grid">
+    <a class="toc-card" href="#ch1" data-view="ch1" style="--tc-accent:#5FCFC6;">
+      <div class="toc-num" style="--tc-accent:#5FCFC6;">1</div>
+      <div class="toc-body"><h3>Nationalism in Europe</h3><p>1789 – 1914 · citizens, revolutions & unification</p></div>
+      <div class="toc-arrow">→</div>
+    </a>
+    <a class="toc-card" href="#ch2" data-view="ch2" style="--tc-accent:#F2A65A;">
+      <div class="toc-num" style="--tc-accent:#F2A65A;">2</div>
+      <div class="toc-body"><h3>Nationalism in India</h3><p>1919 – 1942 · Rowlatt to Quit India</p></div>
+      <div class="toc-arrow">→</div>
+    </a>
+    <a class="toc-card" href="#ch3" data-view="ch3" style="--tc-accent:#7FB8E8;">
+      <div class="toc-num" style="--tc-accent:#7FB8E8;">3</div>
+      <div class="toc-body"><h3>The Making of a Global World</h3><p>Trade, migration, capital & money go global</p></div>
+      <div class="toc-arrow">→</div>
+    </a>
+    <a class="toc-card" href="#ch4" data-view="ch4" style="--tc-accent:#E67FA6;">
+      <div class="toc-num" style="--tc-accent:#E67FA6;">4</div>
+      <div class="toc-body"><h3>The Age of Industrialisation</h3><p>Cottage workshops to colonial cotton mills</p></div>
+      <div class="toc-arrow">→</div>
+    </a>
+    <a class="toc-card" href="#ch5" data-view="ch5" style="--tc-accent:#9C8FF0;">
+      <div class="toc-num" style="--tc-accent:#9C8FF0;">5</div>
+      <div class="toc-body"><h3>Print Culture and the Modern World</h3><p>Woodblocks to the vernacular press</p></div>
+      <div class="toc-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+</div>
+
+<main>
+
+<!-- ============ CHAPTER 1 ============ -->
+<section class="chapter view" id="ch1" style="--accent:#1E7A76; --accent-bright:#5FCFC6;">
+  <div class="ch-head">
+    <div class="ch-num">1</div>
+    <div><h2>The Rise of Nationalism in Europe</h2><span class="range">1789 – 1914 · from citizens to nation-states</span></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1789</div><div class="tl-label">French Revolution</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1815</div><div class="tl-label">Congress of Vienna</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1821</div><div class="tl-label">Greek independence</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1830-48</div><div class="tl-label">Age of Revolutions</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1859-71</div><div class="tl-label">Italy & Germany unified</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1914</div><div class="tl-label">Balkan crisis → WWI</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="ledger">
+      <div class="ledger-head"><h3>📅 Key Dates — Chapter 1</h3><span class="count">18 dates</span></div>
+      <div class="ledger-list">
+        <div class="ledger-item"><span class="ledger-year">1789</span><span class="ledger-event">French Revolution begins — sovereignty passes from monarchy to "the nation" of citizens.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1804</span><span class="ledger-event">Napoleon's Civil Code enacted — legal equality, but also heavy taxation and conscription.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1815</span><span class="ledger-event">Congress of Vienna, hosted by Metternich — conservative monarchies restored across Europe.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1821</span><span class="ledger-event">Greek War of Independence begins against Ottoman rule.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1830</span><span class="ledger-event">July Revolution in France — Bourbons overthrown, Louis Philippe crowned; Belgium breaks from the Netherlands.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1832</span><span class="ledger-event">Treaty of Constantinople recognises Greece as an independent nation.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1834</span><span class="ledger-event">Zollverein — Prussian-led customs union — formed among German states.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1845</span><span class="ledger-event">Silesian weavers' revolt against exploitative contractors and cheap English imports.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1848</span><span class="ledger-event">Paris revolution topples Louis Philippe; Frankfurt Parliament drafts a constitution for a united Germany; Sorrieu paints his utopian "pact of nations" prints.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1860</span><span class="ledger-event">Garibaldi's "Red Shirts" conquer South Italy.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1861</span><span class="ledger-event">Victor Emmanuel II proclaimed king of a united Italy.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1866–71</span><span class="ledger-event">Prussia fights Austria, Denmark and France en route to German unification.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1871</span><span class="ledger-event">King William I proclaimed German Emperor at Versailles — Germany unified.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1871–1914</span><span class="ledger-event">Nationalism curdles into an aggressive, expansionist creed across Europe.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1707</span><span class="ledger-event">Act of Union joins Scotland to England and Wales, an early step toward a "British nation."</span></div>
+        <div class="ledger-item"><span class="ledger-year">1801</span><span class="ledger-event">Ireland forcibly incorporated into the United Kingdom.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1831</span><span class="ledger-event">Russian made the language of instruction in Polish schools, sparking language-based resistance.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1914</span><span class="ledger-event">Balkan crisis explodes into the First World War.</span></div>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="🇫🇷">
+      <h3><span class="sticker">⚜️</span> French Revolution & the Idea of the Nation</h3>
+      <ul>
+        <li><span class="date">1789</span> sovereignty shifted from monarchy to citizens — birth of the "nation" as a political idea.</li>
+        <li><b>La patrie</b> (fatherland) & <b>le citoyen</b> (citizen); tricolour flag; National Assembly; uniform laws & weights/measures; Paris-dialect French made the national language.</li>
+        <li>Revolutionaries believed France's mission was to liberate Europe from despotism → Jacobin clubs spread; French armies (1790s) carried nationalism into Holland, Belgium, Switzerland, Italy.</li>
+        <li><b>Napoleon's Civil Code (1804):</b> equality before law, end of birth privileges, right to property — but also heavy taxation, censorship, forced conscription → local resentment grew.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🏰">
+      <h3><span class="sticker">🧩</span> A Patchwork Continent</h3>
+      <ul>
+        <li>Mid-18th century: no "nation-states." Germany, Italy, Switzerland = scattered kingdoms/duchies/cantons.</li>
+        <li><b>Habsburg Empire</b> — a patchwork of German, Italian, Magyar, Polish peoples held together only by loyalty to the emperor, not a shared identity.</li>
+        <li>The new <b>middle class</b>, born with industrialisation (England from late 18th c.; France/Germany in the 19th c.), became the chief carrier of nationalist ideas.</li>
+      </ul>
+      <div class="subgrid">
+        <div class="subcard"><h4>LIBERAL NATIONALISM STOOD FOR</h4><ul><li>Individual freedom, equality before law, government by consent</li><li>Free markets — e.g. <b>Zollverein</b> (1834), Prussian-led customs union</li></ul></div>
+        <div class="subcard"><h4>BUT NOT FOR</h4><ul><li>Universal suffrage — vote mostly limited to property-owning men</li><li>Women's or the poor's political rights</li></ul></div>
+      </div>
+    </div>
+    <div class="card" data-emoji="🕊️">
+      <h3><span class="sticker">🔒</span> Conservatism After 1815</h3>
+      <ul>
+        <li><span class="date">1815</span> Congress of Vienna, hosted by Austrian Chancellor <b>Metternich</b> — restored Bourbon monarchy in France, redrew borders to contain future French expansion, restored conservative monarchies, imposed censorship.</li>
+        <li>Secret societies of revolutionaries pushed back: <b>Giuseppe Mazzini</b> founded Young Italy & Young Europe, believing nations were the natural units of mankind.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🗡️">
+      <h3><span class="sticker">🎭</span> Age of Revolutions, 1830–1848</h3>
+      <ul>
+        <li><span class="date">1830</span> July Revolution (France) — Bourbons overthrown, Louis Philippe installed; sparks Belgium's break from the Netherlands.</li>
+        <li><span class="date">1821</span> <b>Greek War of Independence</b> against the Ottomans — European poets & artists (Lord Byron) rallied support; Treaty of Constantinople (1832) recognised Greece.</li>
+        <li><b>Romanticism</b>: Herder & the Grimm Brothers championed <i>das volk</i> (folk culture) as the true source of national spirit, over cold reason.</li>
+        <li><b>Silesian weavers' revolt</b> (1845) against exploitative contractors, amid unemployment and competition from cheap English goods.</li>
+        <li><span class="date">1848</span> Paris revolution topples Louis Philippe; parallel liberal <b>Frankfurt Parliament</b> drafts a constitution for a united Germany — rejected by the Prussian king, movement crushed, though monarchs later loosened serfdom in Habsburg lands & Russia.</li>
+      </ul>
+    </div>
+    <div class="art-card">
+      <div>
+        <div class="art-frame" data-lightbox="sorrieu" data-cap="Frédéric Sorrieu, &#8216;Dream of Worldwide Democratic and Social Republics&#8217; (1848) — nations march together as equals, flags raised, toward a shared utopian future.">
+          <img src="data:image/jpeg;base64,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" alt="Sorrieu 1848 print: a utopian pact of nations marching together under allegorical figures of Liberty and Fraternity">
+          <div class="art-zoom">🔍 tap to enlarge</div>
+        </div>
+        <div class="art-cap">Fig. — Frédéric Sorrieu, "Dream of Worldwide Democratic and Social Republics", 1848</div>
+      </div>
+      <div class="art-text">
+        <h3><span class="sticker">🤝</span> The Pact Between Nations — Sorrieu's Utopia</h3>
+        <ul>
+          <li>French artist <b>Frédéric Sorrieu</b> made a series of four prints in <span class="date">1848</span> imagining his dream of a world remade into <b>"democratic and social Republics."</b></li>
+          <li>This first print shows the peoples of Europe and America — France, Germany, Italy, Poland, Hungary, and beyond — marching in a long procession, each nation identified by its flag and national costume, to pay homage before the statue of Liberty.</li>
+          <li>Leading the march is <b>France</b>, torch of liberty in hand, followed arm-in-arm by other nations as equal, fraternal partners — a visual "pact" of solidarity, not conquest.</li>
+          <li>Above the procession, <b>Christ, saints and angels</b> look on, blessing the pact — linking the new idea of "the nation" to older, familiar religious imagery so ordinary people could grasp it.</li>
+          <li>Sorrieu's vision was <b>utopian</b>: it imagined nations founded on <i>fraternity</i>, choosing unity over war — though real unification (Germany, Italy) came instead through diplomacy and conflict, not a peaceful pact.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="⚔️">
+      <h3><span class="sticker">🇩🇪</span> Unifying Germany & Italy</h3>
+      <div class="subgrid">
+        <div class="subcard"><h4>GERMANY</h4><ul><li>Prussia led unification via army & bureaucracy under <b>Otto von Bismarck</b>'s "Blood and Iron" policy</li><li>Three wars (Austria, Denmark, France), 1866–71 → <b>Jan 1871</b>, King William I proclaimed German Emperor at Versailles</li></ul></div>
+        <div class="subcard"><h4>ITALY</h4><ul><li>Split among Austria, the Pope, Bourbon Spain & Sardinia-Piedmont</li><li>Chief Minister <b>Cavour</b> led diplomacy; <b>Garibaldi</b>'s "Red Shirts" took South Italy (1860)</li><li><b>1861</b> — Victor Emmanuel II crowned king of united Italy</li></ul></div>
+      </div>
+    </div>
+    <div class="card" data-emoji="🏴󠁧󠁢">
+      <h3><span class="sticker">👑</span> Britain — A Different Path</h3>
+      <ul>
+        <li>No sudden revolution — a gradual process. Parliament, dominant after 1688, forged a "British nation": <b>Act of Union with Scotland (1707)</b>; Ireland forcibly incorporated (<b>1801</b>).</li>
+        <li>Scottish & Irish culture actively suppressed; English symbols (Union Jack, "God Save the King") promoted as national symbols for the whole kingdom.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🎨">
+      <h3><span class="sticker">🗽</span> Visualising the Nation</h3>
+      <ul>
+        <li>Nations personified as women — abstract ideas made visible as <b>allegories</b>.</li>
+        <li><b>France → Marianne</b> (red liberty cap, tricolour, cockade); <b>Germany → Germania</b> (oak-leaf crown for heroism, sword, broken chains for freedom).</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <div class="icon">💥</div>
+      <p><b>Turning point:</b> after 1871, nationalism curdled into an aggressive, narrow creed. The <b>Balkans</b> — a Slav region under a crumbling Ottoman Empire, fought over by Russia, Germany, Britain & Austria-Hungary — became the powder keg that triggered <b>the First World War (1914)</b>. Later, colonised nations borrowed the "nation-state" idea for their own freedom struggles.</p>
+    </div>
+    <div class="glossary">
+      <h4>Glossary</h4>
+      <div class="terms">
+        <div class="term"><b>Plebiscite</b>direct vote of a region's people on a proposal</div>
+        <div class="term"><b>Suffrage</b>the right to vote</div>
+        <div class="term"><b>Zollverein</b>1834 customs union of German states</div>
+        <div class="term"><b>Allegory</b>an abstract idea shown through a person/object</div>
+        <div class="term"><b>Utopian</b>an ideal, unlikely-to-exist vision</div>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="🗣️">
+      <h3><span class="sticker">📖</span> Language, Culture & Resistance</h3>
+      <ul>
+        <li>Poland, partitioned among Russia, Prussia & Austria, had no independent existence — yet <b>Polish language</b> was made a tool of national resistance against Russian rule.</li>
+        <li>Russian replaced Polish in schools from 1831; clergy & students defied this in secret classes — language became a symbol of the fight to keep a national identity alive.</li>
+        <li>Composers and painters, like <b>Frédéric Chopin</b>, wove folk dances into their music, smuggling nationalist feeling past the censor.</li>
+      </ul>
+    </div>
+
+    <div class="fig-title">👤 Key Historical Figures</div>
+    <div class="figure-grid">
+      <div class="fig-card"><div class="fig-avatar">🎖️</div><div class="fig-body"><h4>Napoleon Bonaparte</h4><div class="role">French Emperor</div><p>Carried revolutionary ideas across Europe via conquest; his Civil Code (1804) ended feudal privilege but provoked local resentment.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🎩</div><div class="fig-body"><h4>Klemens von Metternich</h4><div class="role">Austrian Chancellor</div><p>Hosted the Congress of Vienna (1815); architect of conservative restoration across post-Napoleonic Europe.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🔥</div><div class="fig-body"><h4>Giuseppe Mazzini</h4><div class="role">Italian Revolutionary</div><p>Founded Young Italy & Young Europe; believed nations were the natural, God-given units of mankind.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">⚔️</div><div class="fig-body"><h4>Otto von Bismarck</h4><div class="role">Prussian Chief Minister</div><p>Unified Germany through his "Blood and Iron" policy and three calculated wars, 1866–71.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🎯</div><div class="fig-body"><h4>Camillo di Cavour</h4><div class="role">Chief Minister, Sardinia-Piedmont</div><p>Led the diplomacy behind Italian unification without ever fighting on a battlefield himself.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🗡️</div><div class="fig-body"><h4>Giuseppe Garibaldi</h4><div class="role">Revolutionary General</div><p>Led his volunteer "Red Shirts" into South Italy in 1860, a decisive push toward unification.</p></div></div>
+    </div>
+  </div>
+
+  <div class="mm-wrap"><div class="mm-title">🧠 Mind Map — Chapter 1</div><div class="mindmap" id="mm1"></div></div>
+</section>
+
+<!-- ============ CHAPTER 2 ============ -->
+<section class="chapter view" id="ch2" style="--accent:#BE5A1E; --accent-bright:#F2A65A;">
+  <div class="ch-head">
+    <div class="ch-num">2</div>
+    <div><h2>Nationalism in India</h2><span class="range">1919 – 1942 · from Rowlatt to Quit India</span></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1919</div><div class="tl-label">Rowlatt Act & Jallianwala Bagh</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1920-22</div><div class="tl-label">Non-Cooperation & Khilafat</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1922</div><div class="tl-label">Chauri Chaura</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1930</div><div class="tl-label">Salt March & Civil Disobedience</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1932</div><div class="tl-label">Poona Pact</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1942</div><div class="tl-label">Quit India</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="ledger">
+      <div class="ledger-head"><h3>📅 Key Dates — Chapter 2</h3><span class="count">17 dates</span></div>
+      <div class="ledger-list">
+        <div class="ledger-item"><span class="ledger-year">1885</span><span class="ledger-event">Indian National Congress founded — early decades of petitions and moderate politics.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1915</span><span class="ledger-event">Gandhi returns from South Africa, already known for satyagraha against racial laws there.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1916</span><span class="ledger-event">Lucknow Pact — Congress and the Muslim League agree to work together.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1917</span><span class="ledger-event">Champaran satyagraha for indigo peasants; Kheda peasants' satyagraha begins.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1918</span><span class="ledger-event">Ahmedabad mill workers' satyagraha; countrywide crop failures and influenza epidemic begin.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1919</span><span class="ledger-event">Rowlatt Act passed; Jallianwala Bagh massacre (13 April); Khilafat Committee formed in Bombay.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1920</span><span class="ledger-event">Nagpur session (December) adopts the Non-Cooperation programme.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1921–22</span><span class="ledger-event">Foreign cloth boycotted; imports of foreign cloth halve.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1922</span><span class="ledger-event">Chauri Chaura incident (February) — Gandhi calls off Non-Cooperation.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1924</span><span class="ledger-event">Alluri Sitaram Raju, leader of the Gudem Hills rebellion, executed.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1928</span><span class="ledger-event">Simon Commission arrives, met with "Go back Simon" protests; All Parties Conference talks with Jinnah fail.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1929</span><span class="ledger-event">Lahore Congress (December) declares "Purna Swaraj".</span></div>
+        <div class="ledger-item"><span class="ledger-year">1930</span><span class="ledger-event">26 January observed as Independence Day; Salt March (Sabarmati→Dandi) breaks the salt law on 6 April; Dr Ambedkar organises the Depressed Classes Association.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1931</span><span class="ledger-event">Gandhi–Irwin Pact (March) ends the first phase of Civil Disobedience.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1932</span><span class="ledger-event">Civil Disobedience relaunched; Poona Pact (September) reserves seats for the Depressed Classes.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1934</span><span class="ledger-event">Civil Disobedience Movement loses steam.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1942</span><span class="ledger-event">Quit India resolution passed at Wardha (14 July); Gandhi's "Do or Die" speech in Bombay (8 August).</span></div>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="🕯️">
+      <h3><span class="sticker">🕊️</span> WWI, Khilafat & Satyagraha</h3>
+      <ul>
+        <li>WWI sent defence spending & taxes soaring, prices doubled (1913–18), forced recruitment; 1918–21 crop failures + influenza epidemic killed <b>12–13 million</b>.</li>
+        <li><b>Satyagraha</b> (Gandhi): the power of truth & non-violence to persuade — not force — the oppressor. Proven in <b>Champaran</b> (indigo peasants, 1917), <b>Ahmedabad</b> mill workers & <b>Kheda</b> peasants (1918).</li>
+        <li><b>Rowlatt Act (1919)</b> allowed detention without trial. Gandhi's hartal (6 April) met with repression → <b>Jallianwala Bagh massacre</b> (13 April 1919, General Dyer) — hundreds killed.</li>
+        <li><b>Khilafat issue</b>: Ottoman Turkey's defeat threatened the Khalifa; Khilafat Committee (Bombay 1919, Muhammad Ali & Shaukat Ali) — Gandhi linked it to Non-Cooperation to unite Hindus & Muslims.</li>
+        <li>Nagpur session (<b>Dec 1920</b>) adopted Non-Cooperation: surrender titles; boycott civil service, army, police, courts, schools, foreign goods.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🌾">
+      <h3><span class="sticker">🧵</span> Many Strands, Many "Swaraj"s</h3>
+      <ul>
+        <li><b>Towns:</b> foreign cloth boycotted & burnt, imports halved (1921–22) — but khadi was costlier than mill cloth and momentum slowed.</li>
+        <li><b>Awadh countryside:</b> Baba Ramchandra led peasants against <i>talukdars</i> over high rents & <i>begar</i> (forced labour); Oudh Kisan Sabha (Jawaharlal Nehru).</li>
+        <li><b>Gudem Hills, AP:</b> Alluri Sitaram Raju led a militant guerrilla struggle — believed force, not non-violence, could free India; executed 1924.</li>
+        <li><b>Assam plantation workers:</b> swaraj meant freedom to leave and return to their villages, restricted under the Inland Emigration Act, 1859.</li>
+      </ul>
+      <div class="subgrid"><div class="subcard"><h4>CHAURI CHAURA, FEB 1922</h4><ul><li>Violent clash killed policemen → Gandhi called off Non-Cooperation, fearing loss of discipline</li></ul></div></div>
+    </div>
+    <div class="card" data-emoji="🧂">
+      <h3><span class="sticker">🚶</span> Towards Civil Disobedience</h3>
+      <ul>
+        <li>C.R. Das & Motilal Nehru form the <b>Swaraj Party</b>; Nehru & Subhas Bose push radical mass action; global depression (from 1926) squeezes peasants.</li>
+        <li><b>Simon Commission (1928)</b>, all-British, met with "Go back Simon" protests.</li>
+        <li>Lahore Congress (Dec 1929) declares <b>"Purna Swaraj"</b>; <b>26 Jan 1930</b> observed as Independence Day.</li>
+        <li><b>Salt March:</b> Gandhi's 11 demands to Viceroy Irwin; walked 240 miles, Sabarmati→Dandi (24 days), broke the salt law <span class="date">6 Apr 1930</span> → launched Civil Disobedience — people now broke laws, not just refused cooperation.</li>
+        <li>Gandhi–Irwin Pact (March 1931); movement relaunched 1932, lost steam by 1934.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="👥">
+      <h3><span class="sticker">🌍</span> How Different Groups Saw the Movement</h3>
+      <ul>
+        <li><b>Rich peasants</b> (Patidars, Jats): wanted lower revenue, disappointed the 1931 pact didn't cut rates.</li>
+        <li><b>Poor peasants</b>: wanted unpaid rent remitted — Congress hesitated, fearing to alienate landlords.</li>
+        <li><b>Business (FICCI, 1927)</b>: backed CDM for tariff protection, but grew wary of prolonged disruption & rising socialism.</li>
+        <li><b>Industrial workers</b>: limited role (bar Nagpur) — Congress kept their demands sidelined too.</li>
+        <li><b>Women</b>: huge turnout at the salt march & picketing, yet Gandhi still framed their duty around home & hearth.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="⚖️">
+      <h3><span class="sticker">🤝</span> Limits of Civil Disobedience</h3>
+      <ul>
+        <li><b>Dr B.R. Ambedkar</b> organised the Depressed Classes Association (1930), sought separate electorates at the 2nd Round Table Conference; Gandhi fasted against this → <b>Poona Pact (Sept 1932)</b> reserved seats for Depressed Classes within the general electorate.</li>
+        <li>Many Muslims felt alienated after Khilafat's decline; Congress seemed closer to the Hindu Mahasabha. <b>Jinnah</b> sought guaranteed representation — talks failed at the 1928 All Parties Conference.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🇮🇳">
+      <h3><span class="sticker">🎇</span> A Sense of Collective Belonging</h3>
+      <ul>
+        <li><b>Bharat Mata</b> — image first created by Bankim Chandra Chattopadhyay (<i>Vande Mataram</i>, in <i>Anandamath</i>); painted as an ascetic figure by Abanindranath Tagore.</li>
+        <li>Folklore revival to recover a "true" national culture; icons like the 1905 Swadeshi tricolour and Gandhi's 1921 Swaraj flag (spinning wheel at centre).</li>
+        <li>Nationalist writers glorified India's ancient past to counter British claims of backwardness — but this often alienated other communities.</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <div class="icon">✊</div>
+      <p><b>Quit India, 1942:</b> failure of the Cripps Mission + wartime hardship → Congress's "Quit India" resolution (Wardha, 14 July) and Gandhi's <b>"Do or Die"</b> speech (8 Aug, Bombay). A mass movement paralysed parts of the state machinery before being crushed within a year. Congress's long project was, in the end, <b>"a nation with many voices."</b></p>
+    </div>
+
+    <div class="card" data-emoji="🏛️">
+      <h3><span class="sticker">📅</span> Before Gandhi — Setting the Stage</h3>
+      <ul>
+        <li>The <b>Indian National Congress</b>, founded in 1885, spent its early decades as a "moderate" body — petitions, resolutions, and dialogue with the colonial government.</li>
+        <li><b>Lucknow Pact (1916)</b> saw Congress and the Muslim League agree to work together, briefly uniting Hindus and Muslims against colonial rule ahead of Gandhi's mass movements.</li>
+        <li>Gandhi returned from South Africa in <b>1915</b>, already famous for developing satyagraha against racial laws there.</li>
+      </ul>
+    </div>
+
+    <div class="fig-title">👤 Key Historical Figures</div>
+    <div class="figure-grid">
+      <div class="fig-card"><div class="fig-avatar">🕊️</div><div class="fig-body"><h4>Mahatma Gandhi</h4><div class="role">Leader, Indian National Congress</div><p>Pioneered satyagraha; led Non-Cooperation, Salt March, Civil Disobedience & Quit India.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🌾</div><div class="fig-body"><h4>Baba Ramchandra</h4><div class="role">Peasant Leader, Awadh</div><p>Organised peasants against talukdars over high rents and forced unpaid labour (begar).</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🏹</div><div class="fig-body"><h4>Alluri Sitarama Raju</h4><div class="role">Tribal Guerrilla Leader</div><p>Led armed resistance in the Gudem Hills; believed force, not non-violence, would free India. Executed 1924.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">⚖️</div><div class="fig-body"><h4>Dr B.R. Ambedkar</h4><div class="role">Leader, Depressed Classes</div><p>Fought for Dalit political rights; his demand for separate electorates led to the Poona Pact, 1932.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🎓</div><div class="fig-body"><h4>Muhammad Ali Jinnah</h4><div class="role">Muslim League Leader</div><p>Sought guaranteed political representation for Muslims as Hindu-Muslim unity frayed after Khilafat.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🎨</div><div class="fig-body"><h4>Abanindranath Tagore</h4><div class="role">Artist</div><p>Painted the iconic ascetic, spiritual image of Bharat Mata that shaped nationalist imagination.</p></div></div>
+    </div>
+  </div>
+
+  <div class="mm-wrap"><div class="mm-title">🧠 Mind Map — Chapter 2</div><div class="mindmap" id="mm2"></div></div>
+</section>
+
+<!-- ============ CHAPTER 3 ============ -->
+<section class="chapter view" id="ch3" style="--accent:#2D6BA3; --accent-bright:#7FB8E8;">
+  <div class="ch-head">
+    <div class="ch-num">3</div>
+    <div><h2>The Making of a Global World</h2><span class="range">Trade, migration, capital & money reshape the planet</span></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">3000 BCE</div><div class="tl-label">Indus–West Asia coastal trade</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">13th c.</div><div class="tl-label">Germs travel globally</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1634</div><div class="tl-label">Winthrop on smallpox "clearing" land</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1845-49</div><div class="tl-label">Irish Potato Famine</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1885</div><div class="tl-label">Berlin Conference</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1890s</div><div class="tl-label">Rinderpest kills 90% of Africa's cattle</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1914-18</div><div class="tl-label">First World War</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1921</div><div class="tl-label">Indentured labour abolished</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1929-35</div><div class="tl-label">Great Depression</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1931</div><div class="tl-label">Civil Disobedience Movement</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1939-45</div><div class="tl-label">Second World War</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">Jul 1944</div><div class="tl-label">Bretton Woods Conference</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1947</div><div class="tl-label">IMF & World Bank begin work</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1970s</div><div class="tl-label">Fixed rates collapse → floating rates</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="ledger">
+      <div class="ledger-head"><h3>📅 Key Dates — Chapter 3</h3><span class="count">20 dates</span></div>
+      <div class="ledger-list">
+        <div class="ledger-item"><span class="ledger-year">~3000 BCE</span><span class="ledger-event">Indus Valley trade with West Asia along the coast already active.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Before 15th c.</span><span class="ledger-event">Silk Routes link Asia, Europe and North Africa in continuous trade.</span></div>
+        <div class="ledger-item"><span class="ledger-year">5th century</span><span class="ledger-event">Noodles said to travel from China to Italy via Arab traders, becoming spaghetti.</span></div>
+        <div class="ledger-item"><span class="ledger-year">16th century</span><span class="ledger-event">Sea routes to Asia and across the Atlantic to America are found — the world "shrinks."</span></div>
+        <div class="ledger-item"><span class="ledger-year">1634</span><span class="ledger-event">John Winthrop frames smallpox's toll on Native Americans as a sign favouring colonisation.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1845–49</span><span class="ledger-event">Irish Potato Famine kills about a million people.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1869</span><span class="ledger-event">Suez Canal opens, sharply cutting the Europe–Asia sea journey.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1885</span><span class="ledger-event">Berlin Conference — European powers formally carve up Africa.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Late 1880s–1897</span><span class="ledger-event">Rinderpest cattle plague kills 90% of Africa's cattle.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1914–18</span><span class="ledger-event">First World War — the first fully industrial war; about 9 million dead.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Jan 1914</span><span class="ledger-event">Henry Ford doubles daily wages to $5 to curb worker turnover on his assembly line.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1921</span><span class="ledger-event">Indentured labour system formally abolished.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1923</span><span class="ledger-event">United States becomes the world's largest overseas lender.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1929–mid-1930s</span><span class="ledger-event">The Great Depression — production, employment and trade collapse worldwide.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1928–34</span><span class="ledger-event">India's exports and imports nearly halve under the Depression.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1931</span><span class="ledger-event">Gandhi launches the Civil Disobedience Movement amid rural distress.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1939–45</span><span class="ledger-event">Second World War — around 60 million dead, most of them civilians.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Jul 1944</span><span class="ledger-event">Bretton Woods Conference creates the IMF and World Bank.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1947</span><span class="ledger-event">IMF and World Bank become operational.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1970s</span><span class="ledger-event">Dollar–gold link collapses; fixed exchange rates give way to floating rates.</span></div>
+      </div>
+    </div>
+
+    <div class="divider"><span class="tag">Pre-modern World · before 1500s</span></div>
+    <div class="card" data-emoji="🧵">
+      <h3><span class="sticker">🐫</span> Silk Routes Link the World</h3>
+      <ul>
+        <li>Land + sea routes linking <b>Asia ↔ Europe ↔ North Africa</b>, active before the Christian Era, thriving till the 15th century.</li>
+        <li>Carried Chinese silk & pottery, Indian/SE-Asian textiles & spices; gold and silver flowed back from Europe to Asia.</li>
+        <li>Trade meant cultural exchange too — Christian missionaries, Muslim preachers, and <b>Buddhism</b> all spread along these routes.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🍝">
+      <h3><span class="sticker">🥔</span> Food Travels</h3>
+      <ul>
+        <li>Noodles likely travelled China → Italy (via Arab traders, 5th-century Sicily) and became spaghetti.</li>
+        <li>Potato, tomato, chilli, maize — unknown to Europe/Asia until Columbus reached the Americas.</li>
+        <li>Europe's new dependence on the potato backfired: <span class="date">1845–49</span> Irish Potato Famine killed ~1,000,000.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🦠">
+      <h3><span class="sticker">⚔️</span> Conquest, Disease & Trade</h3>
+      <ul>
+        <li><b>16th century:</b> sea routes to Asia found, the Atlantic crossed to America — the world "shrank."</li>
+        <li>Spain's deadliest weapon was <b>smallpox</b> — Native Americans had no immunity; whole communities were wiped out ahead of the invaders.</li>
+        <li>By the 18th century, slave-worked plantations in America grew cotton & sugar for Europe.</li>
+        <li>China restricted overseas contact from the 15th century → world trade's centre shifted westward to Europe.</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <div class="icon">📜</div>
+      <p><b>Source to remember:</b> John Winthrop (Massachusetts, 1634) called smallpox a sign of God's blessing on the colonists — an early example of "biological" conquest.</p>
+    </div>
+
+    <div class="divider"><span class="tag">The 19th Century · 1815-1914</span></div>
+    <div class="card" data-emoji="🌾">
+      <h3><span class="sticker">🌍</span> A World Economy Takes Shape</h3>
+      <ul>
+        <li>Three interlinked flows: trade (goods), labour (migration), capital (investment).</li>
+        <li>Britain scraps the <b>Corn Laws</b> → cheap food imports → British farms can't compete → workers migrate overseas.</li>
+        <li>~<b>50 million</b> emigrated Europe→America/Australia; ~<b>150 million</b> worldwide left home in the 19th century.</li>
+        <li>World trade grew <b>25–40×</b> between 1820–1914; 60% was "primary products."</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🚂">
+      <h3><span class="sticker">🧊</span> Role of Technology</h3>
+      <ul>
+        <li>Railways, steamships & the telegraph reshaped distance and time.</li>
+        <li><b>Refrigerated ships</b> (from the 1870s) brought cheaper meat to Europe's poor, improving diets.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🗺️">
+      <h3><span class="sticker">🏴</span> Late-19th-century Colonialism</h3>
+      <ul>
+        <li><span class="date">1885</span> Berlin Conference — European powers carve up Africa with ruler-straight borders.</li>
+        <li>Britain & France expand empires; Belgium, Germany, and even the US (late 1890s) join as colonial powers.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🐄">
+      <h3><span class="sticker">☣️</span> Rinderpest — the Cattle Plague</h3>
+      <ul>
+        <li>Arrived via infected cattle imported to feed Italian troops in Eritrea, late 1880s.</li>
+        <li>Spread "like forest fire," killing <b>90% of Africa's cattle</b> by 1897.</li>
+        <li>Loss of livestock destroyed African livelihoods and forced people into wage labour under colonial control.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="⛓️">
+      <h3><span class="sticker">🧳</span> Indentured Labour from India</h3>
+      <ul>
+        <li>From UP, Bihar, central India, Tamil Nadu → Caribbean, Mauritius, Fiji, Ceylon, Malaya, Assam tea gardens.</li>
+        <li>Called a <b>"new system of slavery"</b> — harsh conditions, agents lied about work & travel.</li>
+        <li>Culture survived and fused: Hosay carnival, Rastafarianism, Chutney music. System abolished in <span class="date">1921</span>.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="💰">
+      <h3><span class="sticker">🏦</span> Indian Entrepreneurs & Trade</h3>
+      <ul>
+        <li>Shikaripuri Shroffs & Nattukottai Chettiars financed export agriculture across Central & SE Asia.</li>
+        <li>Indian cotton-textile exports collapsed: 30% (1800) → under 3% (1870s) as British tariffs bit; opium to China became India's largest export from the 1820s.</li>
+      </ul>
+    </div>
+
+    <div class="divider"><span class="tag">The Inter-war Economy</span></div>
+    <div class="card" data-emoji="💣">
+      <h3><span class="sticker">⚙️</span> Wartime Transformations</h3>
+      <ul>
+        <li><b>First World War (1914–18):</b> the first fully industrial war — <b>9 million dead, 20 million injured.</b></li>
+        <li>Britain borrowed heavily from US banks → the <b>US flips from debtor to creditor</b> nation.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🚗">
+      <h3><span class="sticker">🏭</span> Mass Production Rises</h3>
+      <ul>
+        <li><b>Henry Ford</b> builds the car assembly line in Detroit; <span class="date">Jan 1914</span> doubles daily wage to $5 to stop workers quitting.</li>
+        <li>US car production: 2 million (1919) → 5 million+ (1929). <span class="date">1923</span>: US becomes the world's largest overseas lender.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🕳️">
+      <h3><span class="sticker">📊</span> The Great Depression</h3>
+      <ul>
+        <li><b>1929 – mid-1930s</b>: catastrophic fall in production, employment, incomes, trade.</li>
+        <li>Causes: agricultural overproduction + panic withdrawal of US loans + banking collapse — over 4,000 US banks closed by 1933.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🌾">
+      <h3><span class="sticker">🇮🇳</span> India & the Depression</h3>
+      <ul>
+        <li>India's exports & imports nearly halved (1928–34); wheat prices fell 50%; Bengal's jute price crashed over 60%.</li>
+        <li><span class="date">1931</span>: Gandhi launches the Civil Disobedience Movement amid rural unrest.</li>
+      </ul>
+    </div>
+
+    <div class="divider"><span class="tag">Rebuilding a World Economy · post-war</span></div>
+    <div class="card" data-emoji="🕊️">
+      <h3><span class="sticker">🌐</span> Bretton Woods System</h3>
+      <ul>
+        <li><b>Second World War (1939–45):</b> ~60 million dead, most of them civilians.</li>
+        <li><span class="date">Jul 1944</span>: Bretton Woods Conference creates the <b>IMF</b> and <b>World Bank</b> — operational from <span class="date">1947</span>.</li>
+        <li><b>Fixed exchange rates:</b> currencies pegged to the dollar; dollar pegged to gold at $35/ounce.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🗽">
+      <h3><span class="sticker">🕊️</span> Decolonisation & the G-77</h3>
+      <ul>
+        <li>Asian & African colonies win independence but inherit poverty and underdevelopment.</li>
+        <li>Developing nations form the <b>G-77</b>, demanding a <b>New International Economic Order (NIEO).</b></li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="💱">
+      <h3><span class="sticker">📈</span> End of Bretton Woods & the Asian Shift</h3>
+      <ul>
+        <li><b>1970s:</b> dollar-gold link collapses → floating exchange rates begin; developing-world debt crises follow.</li>
+        <li>MNCs relocate production to low-wage Asian economies; China reopens after 1949 to become a manufacturing hub.</li>
+      </ul>
+    </div>
+
+    <div class="card" data-emoji="📡">
+      <h3><span class="sticker">🚢</span> Technology Shrinks the World Further</h3>
+      <ul>
+        <li>The <b>Suez Canal (1869)</b> cut the sea journey between Europe and Asia dramatically, boosting trade volumes.</li>
+        <li>The <b>telegraph</b> let news and prices travel almost instantly across continents — merchants in London could react to a harvest in Punjab within hours, not months.</li>
+        <li>Faster, cheaper transport made it possible for the same three flows — trade, labour, capital — to move at a scale never seen before 1800.</li>
+      </ul>
+    </div>
+
+    <div class="fig-title">👤 Key Historical Figures</div>
+    <div class="figure-grid">
+      <div class="fig-card"><div class="fig-avatar">📜</div><div class="fig-body"><h4>John Winthrop</h4><div class="role">Governor, Massachusetts Bay</div><p>Framed smallpox's devastation of Native Americans as a "sign" favouring colonisation, 1634.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🚗</div><div class="fig-body"><h4>Henry Ford</h4><div class="role">Industrialist</div><p>Pioneered the moving assembly line in Detroit, turning the car into a mass-produced good.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">💷</div><div class="fig-body"><h4>John Maynard Keynes</h4><div class="role">British Economist</div><p>A key architect behind the Bretton Woods conference's economic thinking, 1944.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🏦</div><div class="fig-body"><h4>Harry Dexter White</h4><div class="role">US Treasury Official</div><p>Co-designed the Bretton Woods framework, shaping the IMF and World Bank alongside Keynes.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🕊️</div><div class="fig-body"><h4>Mahatma Gandhi</h4><div class="role">Congress Leader</div><p>Launched the Civil Disobedience Movement in 1931, as the Depression deepened rural India's distress.</p></div></div>
+    </div>
+  </div>
+
+  <div class="mm-wrap"><div class="mm-title">🧠 Mind Map — Chapter 3</div><div class="mindmap" id="mm3"></div></div>
+</section>
+
+<!-- ============ CHAPTER 4 ============ -->
+<section class="chapter view" id="ch4" style="--accent:#8E2A50; --accent-bright:#E67FA6;">
+  <div class="ch-head">
+    <div class="ch-num">4</div>
+    <div><h2>The Age of Industrialisation</h2><span class="range">Cottage workshops to colonial cotton mills</span></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">17-18th c.</div><div class="tl-label">Proto-industrialisation</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1730s+</div><div class="tl-label">Rise of factories, cotton boom</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1750s</div><div class="tl-label">Weavers' networks break down</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1854</div><div class="tl-label">First cotton mill, Bombay</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1906</div><div class="tl-label">Mills shift from yarn to cloth</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">WWI</div><div class="tl-label">Indian mills boom, Britain declines</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="ledger">
+      <div class="ledger-head"><h3>📅 Key Dates — Chapter 4</h3><span class="count">15 dates</span></div>
+      <div class="ledger-list">
+        <div class="ledger-item"><span class="ledger-year">17th–18th c.</span><span class="ledger-event">Proto-industrialisation — large-scale production for export happens in the countryside.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1730s</span><span class="ledger-event">Earliest factories appear in England.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1750s onward</span><span class="ledger-event">Pre-colonial Indian weavers' trading networks break down as European companies win monopoly rights.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1760–1787</span><span class="ledger-event">Britain's raw cotton imports leap from 2.5 million lb to 22 million lb.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1764</span><span class="ledger-event">James Hargreaves builds the Spinning Jenny, sped up thread production and provoked worker protests.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1781</span><span class="ledger-event">James Watt patents an improved steam engine — slow to find buyers at first.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1800</span><span class="ledger-event">Only 321 steam engines exist in all of England.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1811-12 → 1850-51</span><span class="ledger-event">Indian piece-goods' share of exports collapses from 33% to just 3%.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1854</span><span class="ledger-event">First cotton mill opens in Bombay.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1855</span><span class="ledger-event">Jute mills begin operating in Bengal.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1874</span><span class="ledger-event">Mills established in Kanpur, Ahmedabad and Madras.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1906</span><span class="ledger-event">Indian mills shift from spinning yarn to weaving cloth, spurred by the Swadeshi movement.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1911</span><span class="ledger-event">Only about 5% of India's industrial workforce works in registered factories.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1914–18 (WWI)</span><span class="ledger-event">Manchester imports fall; Indian mills boom supplying home needs and war goods.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1918 onward</span><span class="ledger-event">Seasonal unemployment among Indian factory workers becomes more common.</span></div>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="🧶">
+      <h3><span class="sticker">🏘️</span> Before the Factory</h3>
+      <ul>
+        <li><b>Proto-industrialisation:</b> large-scale production for international markets happened in the countryside, since urban guilds blocked new merchants in towns.</li>
+        <li>Chain: merchant clothier → wool stapler → spinners → weavers → fullers → dyers, with finishing done in London.</li>
+        <li>Open fields vanishing & commons being enclosed pushed peasant families to take up this extra spinning/weaving income.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🏭">
+      <h3><span class="sticker">🧵</span> Coming of the Factory</h3>
+      <ul>
+        <li>Earliest factories by the 1730s, multiplying late in the 18th century. <b>Cotton</b> symbolised the new era — raw imports rose from 2.5 million lb (1760) to 22 million lb (1787).</li>
+        <li><b>Richard Arkwright</b> created the cotton mill, bringing every process under one roof and one management.</li>
+        <li><b>But industrialisation was slow & uneven:</b> even late in the 19th century under 20% of Britain's workforce worked in technologically advanced sectors; steam engines spread very slowly (only 321 in all England by 1800).</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🔨">
+      <h3><span class="sticker">✋</span> Why Hand Labour Survived</h3>
+      <ul>
+        <li>Britain had abundant, cheap labour — industrialists were in no rush to install costly machines that displaced human hands (unlike labour-scarce USA).</li>
+        <li>Seasonal industries (gas works, breweries, book-binding, shipbuilding) preferred hand labour for temporary peak demand.</li>
+        <li>Upper classes valued refined, individual <b>handmade</b> goods; machine-made goods were mostly for colonial export.</li>
+        <li><b>Spinning Jenny</b> (Hargreaves, 1764) was attacked by textile workers who feared unemployment.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🇮🇳">
+      <h3><span class="sticker">🪢</span> Weavers Under Company Rule</h3>
+      <ul>
+        <li>Pre-colonial India's silk & fine cotton dominated world textile trade via Surat, Masulipatam, Hoogly, financed by Indian merchant-banker networks.</li>
+        <li>From the 1750s the network broke down as European companies won monopoly trade rights; Bombay & Calcutta rose as colonial ports.</li>
+        <li><b>Gomasthas</b> (paid Company servants) replaced independent traders, tying weavers exclusively to the Company through advances and often force.</li>
+      </ul>
+      <div class="subgrid"><div class="subcard"><h4>MANCHESTER COMES TO INDIA</h4><ul><li>Indian piece-goods exports fell from 33% (1811-12) to just 3% (1850-51)</li><li>Weavers hit twice — export markets gone, local markets flooded with cheap Manchester cloth</li></ul></div></div>
+    </div>
+    <div class="card" data-emoji="⚙️">
+      <h3><span class="sticker">🏗️</span> Factories Come Up in India</h3>
+      <ul>
+        <li>First cotton mill — <b>Bombay, 1854</b>; jute mills — Bengal from 1855; Kanpur, Ahmedabad, Madras mills follow by 1874.</li>
+        <li>Entrepreneurs financed by China trade (opium/tea): <b>Dwarkanath Tagore</b> (Bengal), Parsis (Dinshaw Petit, J.N. Tata), Marwaris (Hukumchand, Birla).</li>
+        <li>Till WWI, European <b>Managing Agencies</b> controlled much industry — Indians supplied capital, Europeans made investment decisions.</li>
+        <li>Workers were controlled at entry by a <b>jobber</b> — a trusted worker who recruited and gained power over new hires.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🧵">
+      <h3><span class="sticker">📈</span> Peculiarities of Growth</h3>
+      <ul>
+        <li>Indian mills first made coarse <b>yarn</b> (not cloth) to avoid competing with Manchester; shifted to cloth after 1906 (Swadeshi movement + falling yarn exports to China).</li>
+        <li>WWI cut Manchester imports — Indian mills supplied home needs & war goods (uniforms, tents, jute bags), booming while Britain's textile industry never recovered.</li>
+        <li>Large factories stayed a small slice of the economy — only 5% of the industrial workforce was in registered factories by 1911.</li>
+        <li><b>Handlooms survived and even expanded</b> — helped by the fly shuttle and by weaving specialised cloth (Banarasi, Baluchari) mills couldn't copy.</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <div class="icon">🖼️</div>
+      <p><b>Selling the goods:</b> "MADE IN MANCHESTER" labels used images of Indian gods and royal figures to build familiarity and trust; calendars carried ads even to non-readers. Indian manufacturers later turned the tables, using the <b>Swadeshi/nationalist message</b> in their own advertising.</p>
+    </div>
+
+    <div class="card" data-emoji="👷">
+      <h3><span class="sticker">🏚️</span> Life of the Workers</h3>
+      <ul>
+        <li>Jobs were scarce relative to the number of job-seekers — workers relied on kin & village networks to hear of openings, and could stay unemployed for weeks.</li>
+        <li>Wages depended on the industry and skill, and rose slowly through the 19th century; seasonal unemployment was common, especially after 1918.</li>
+        <li>Some mills gave badli (substitute) workers no job security at all — daily attendance was recorded outside the factory gates each morning.</li>
+      </ul>
+    </div>
+
+    <div class="fig-title">👤 Key Historical Figures</div>
+    <div class="figure-grid">
+      <div class="fig-card"><div class="fig-avatar">⚙️</div><div class="fig-body"><h4>Richard Arkwright</h4><div class="role">British Industrialist</div><p>Created the cotton mill, bringing spinning and weaving under one roof for the first time.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🔧</div><div class="fig-body"><h4>James Watt</h4><div class="role">Engineer</div><p>Patented an improved steam engine in 1781 — though it found few buyers for years.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🧵</div><div class="fig-body"><h4>James Hargreaves</h4><div class="role">Inventor</div><p>Built the Spinning Jenny (1764), speeding up thread production — and triggering worker protests.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🏢</div><div class="fig-body"><h4>Dwarkanath Tagore</h4><div class="role">Bengal Entrepreneur</div><p>Used profits from the China trade to finance some of India's earliest industrial ventures.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🏭</div><div class="fig-body"><h4>Jamsetji N. Tata</h4><div class="role">Parsi Industrialist</div><p>Part of the Parsi business network that financed and grew India's early cotton mills.</p></div></div>
+    </div>
+  </div>
+
+  <div class="mm-wrap"><div class="mm-title">🧠 Mind Map — Chapter 4</div><div class="mindmap" id="mm4"></div></div>
+</section>
+
+<!-- ============ CHAPTER 5 ============ -->
+<section class="chapter view" id="ch5" style="--accent:#4B3F9E; --accent-bright:#9C8FF0;">
+  <div class="ch-head">
+    <div class="ch-num">5</div>
+    <div><h2>Print Culture and the Modern World</h2><span class="range">From woodblocks to the vernacular press</span></div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">AD 594</div><div class="tl-label">Woodblock print, China</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1295</div><div class="tl-label">Marco Polo brings knowledge to Italy</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1448</div><div class="tl-label">Gutenberg's printing press</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1517</div><div class="tl-label">Luther's 95 Theses & Reformation</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1780</div><div class="tl-label">First newspaper printed in India</div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">1878</div><div class="tl-label">Vernacular Press Act</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="ledger">
+      <div class="ledger-head"><h3>📅 Key Dates — Chapter 5</h3><span class="count">21 dates</span></div>
+      <div class="ledger-list">
+        <div class="ledger-item"><span class="ledger-year">AD 594</span><span class="ledger-event">Earliest woodblock printing recorded in China.</span></div>
+        <div class="ledger-item"><span class="ledger-year">AD ~768–770</span><span class="ledger-event">Buddhist missionaries bring hand-printing technology from China to Japan.</span></div>
+        <div class="ledger-item"><span class="ledger-year">AD 868</span><span class="ledger-event">The Diamond Sutra, the oldest known printed book, is produced in China.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1295</span><span class="ledger-event">Marco Polo carries woodblock printing knowledge from China back to Italy.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Mid-16th c.</span><span class="ledger-event">Portuguese missionaries bring print to Goa; Konkani and Kanara tracts follow.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1448</span><span class="ledger-event">Johann Gutenberg designs the first known printing press in Strasbourg.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1450s</span><span class="ledger-event">Gutenberg's Bible printed — about 180 copies, launching the Print Revolution.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1450–1550</span><span class="ledger-event">Printing presses spread across most European countries.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1517</span><span class="ledger-event">Martin Luther's Ninety Five Theses are printed and spread, fuelling the Reformation.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1558</span><span class="ledger-event">The Roman Church issues its Index of Prohibited Books.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1579</span><span class="ledger-event">First Tamil tract printed by missionaries in India.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1713</span><span class="ledger-event">First Malayalam tract printed in India.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1476</span><span class="ledger-event">William Caxton sets up England's first printing press.</span></div>
+        <div class="ledger-item"><span class="ledger-year">Late 18th c.</span><span class="ledger-event">European literacy climbs to 60–80%, fuelling a "reading mania."</span></div>
+        <div class="ledger-item"><span class="ledger-year">1780</span><span class="ledger-event">James Augustus Hickey starts the Bengal Gazette, India's first newspaper.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1867</span><span class="ledger-event">Deoband Seminary founded, using lithographic presses to spread Persian/Urdu tracts and fatwas.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1871</span><span class="ledger-event">Jyotiba Phule publishes Gulamgiri, using print to challenge caste discrimination.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1876</span><span class="ledger-event">Rashsundari Debi's Amar Jiban, the first full-length Bengali autobiography, is published.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1878</span><span class="ledger-event">Vernacular Press Act allows seizure of vernacular papers judged seditious.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1908</span><span class="ledger-event">Bal Gangadhar Tilak imprisoned over nationalist writing in Kesari.</span></div>
+        <div class="ledger-item"><span class="ledger-year">1942</span><span class="ledger-event">Around 90 newspapers suppressed during the Quit India movement.</span></div>
+      </div>
+    </div>
+
+    <div class="card" data-emoji="🈷️">
+      <h3><span class="sticker">🀄</span> The First Printed Books</h3>
+      <ul>
+        <li><b>China:</b> earliest print technology from <b>AD 594</b> — paper rubbed against inked woodblocks; "accordion books"; the imperial state was the biggest producer.</li>
+        <li><b>Japan:</b> Buddhist missionaries brought hand-printing from China (~AD 768-770); the <i>Diamond Sutra</i> (AD 868) is the oldest printed book. Edo's <b>ukiyo</b> woodblock prints later influenced Manet, Monet, Van Gogh.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🖨️">
+      <h3><span class="sticker">🕮</span> Print Comes to Europe</h3>
+      <ul>
+        <li>Chinese paper reached Europe via the Silk Route (11th c.); <b>Marco Polo (1295)</b> carried woodblock printing knowledge from China to Italy.</li>
+        <li><b>Johann Gutenberg</b> (Strasbourg) adapted the olive press & goldsmith's metal moulds to design the first known <b>printing press by 1448</b>; first book: the Bible (~180 copies, 1450s). Moveable type stayed the basic technology for 300 years.</li>
+        <li>1450–1550: presses spread across Europe — book production boomed from 20 million copies (late 15th c.) to ~200 million (end of 16th c.) — the <b>Print Revolution</b>.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🔥">
+      <h3><span class="sticker">⛪</span> Print Revolution & Its Impact</h3>
+      <ul>
+        <li>Cost of books fell, creating a new reading public; oral & print culture blended, since literacy stayed low for a long time.</li>
+        <li>Martin Luther's <b>Ninety Five Theses</b> (<span class="date">1517</span>) printed and spread widely → the <b>Protestant Reformation</b>. Fearing loss of control, the Roman Church issued its <b>Index of Prohibited Books</b> (from 1558).</li>
+        <li><b>Menocchio</b>, an Italian miller, reinterpreted the Bible from his own reading and was executed by the Inquisition — print could be dangerous.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="📰">
+      <h3><span class="sticker">🧠</span> The Reading Mania & the 19th Century</h3>
+      <ul>
+        <li>European literacy rose sharply (60–80% by late 18th c.) → almanacs, chapbooks, periodicals mixing news and entertainment.</li>
+        <li>New readers of the 19th century: <b>children</b> (school textbooks, Grimm tales), <b>women</b> (penny magazines, novelists like Jane Austen, George Eliot), <b>workers</b> (self-improvement tracts, autobiographies).</li>
+        <li>Technology leapt forward: Richard Hoe's power-driven cylindrical press (mid-19th c., 8,000 sheets/hr) → offset press → electric press; selling tricks like serialised novels and cheap paperbacks followed.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🇮🇳">
+      <h3><span class="sticker">🗞️</span> India and the World of Print</h3>
+      <ul>
+        <li>A rich manuscript tradition (Sanskrit, Persian, Arabic, vernacular) ran alongside print into the late 19th century.</li>
+        <li>Print arrived with Portuguese missionaries at <b>Goa (mid-16th c.)</b> — Konkani, Kanara, Tamil (1579), Malayalam (1713) tracts.</li>
+        <li><b>James Augustus Hickey's Bengal Gazette</b> (from 1780) was India's first newspaper — gossipy, persecuted by Warren Hastings.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="🕉️">
+      <h3><span class="sticker">⚖️</span> Religious Reform & Public Debate</h3>
+      <ul>
+        <li>Bengal: Rammohun Roy's <i>Sambad Kaumudi</i> vs orthodox <i>Samachar Chandrika</i>, debating widow immolation and priesthood.</li>
+        <li>North India: the <b>ulama</b> used cheap lithographic presses for Persian/Urdu tracts and fatwas (e.g. Deoband Seminary, 1867).</li>
+        <li>Newspapers linked communities across regions, building pan-Indian identities and public opinion — acting like an "opposition" holding government accountable.</li>
+      </ul>
+    </div>
+    <div class="card" data-emoji="✍️">
+      <h3><span class="sticker">📚</span> New Forms & New Voices</h3>
+      <ul>
+        <li>Novel, lyric, short story, essay explored personal and social lives; Raja Ravi Varma's mass-produced prints spread new visual culture.</li>
+        <li><b>Rashsundari Debi's <i>Amar Jiban</i> (1876)</b> — first full-length autobiography in Bengali; Tarabai Shinde & Pandita Ramabai wrote on the miseries of upper-caste Hindu women.</li>
+        <li><b>Jyotiba Phule's <i>Gulamgiri</i> (1871)</b>, Ambedkar, and Periyar used print to challenge caste discrimination.</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <div class="icon">🚫</div>
+      <p><b>Censorship tightened after 1857:</b> the <b>Vernacular Press Act, 1878</b> (modelled on Irish press laws) allowed seizure of vernacular papers judged seditious. Nationalist papers grew anyway — Tilak's <b>Kesari</b> saw him imprisoned in 1908 — repression only provoked more protest. Around <b>90 newspapers</b> were suppressed during Quit India (1942).</p>
+    </div>
+
+    <div class="card" data-emoji="⚡">
+      <h3><span class="sticker">💡</span> Print & the French Revolution</h3>
+      <ul>
+        <li>Print did three things at once: it popularised Enlightenment ideas critiquing tradition and despotism, it created a culture of public debate and questioning, and it spread satire mocking royalty.</li>
+        <li>But print didn't dictate a single opinion — readers met many, even opposing, viewpoints, which opened up new ways of thinking rather than closing them down.</li>
+        <li>England's own printing history began with <b>William Caxton</b>, who set up the country's first press in 1476.</li>
+      </ul>
+    </div>
+
+    <div class="fig-title">👤 Key Historical Figures</div>
+    <div class="figure-grid">
+      <div class="fig-card"><div class="fig-avatar">🖨️</div><div class="fig-body"><h4>Johann Gutenberg</h4><div class="role">German Printer</div><p>Designed the first known printing press by 1448, launching Europe's Print Revolution.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">✝️</div><div class="fig-body"><h4>Martin Luther</h4><div class="role">Reformer</div><p>His printed Ninety Five Theses (1517) spread rapidly, fuelling the Protestant Reformation.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">📰</div><div class="fig-body"><h4>James Augustus Hickey</h4><div class="role">Publisher</div><p>Started the Bengal Gazette (1780), India's first newspaper — and was persecuted for it.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">🕉️</div><div class="fig-body"><h4>Raja Rammohun Roy</h4><div class="role">Reformer</div><p>Published Sambad Kaumudi, using print to campaign against practices like widow immolation.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">✒️</div><div class="fig-body"><h4>Bal Gangadhar Tilak</h4><div class="role">Nationalist Editor</div><p>Edited Kesari; imprisoned in 1908 for nationalist writing that colonial censors judged seditious.</p></div></div>
+      <div class="fig-card"><div class="fig-avatar">📖</div><div class="fig-body"><h4>Rashsundari Debi</h4><div class="role">Writer</div><p>Wrote Amar Jiban (1876), the first full-length autobiography published in Bengali.</p></div></div>
+    </div>
+  </div>
+
+  <div class="mm-wrap"><div class="mm-title">🧠 Mind Map — Chapter 5</div><div class="mindmap" id="mm5"></div></div>
+</section>
+
+<div class="stickers"><span>🇫🇷</span><span>🇮🇳</span><span>🏭</span><span>🖨️</span><span>📜</span></div>
+
+</main>
+
+<footer><span class="b">📘</span> Full-book revision notes · scroll, tap the mind-map bubbles, and revise chapter by chapter.</footer>
+
+<script>
+  // starfield
+  const starWrap = document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100 + '%';
+    s.style.top = Math.random()*100 + '%';
+    s.style.animationDelay = (Math.random()*4) + 's';
+    starWrap.appendChild(s);
+  }
+
+  // ---- chapter metadata (order, titles, accents) for topbar/bottombar + nav ----
+  const CHAPTERS = [
+    {id:'ch1', num:1, title:'Nationalism in Europe',           accent:'#5FCFC6'},
+    {id:'ch2', num:2, title:'Nationalism in India',            accent:'#F2A65A'},
+    {id:'ch3', num:3, title:'The Making of a Global World',    accent:'#7FB8E8'},
+    {id:'ch4', num:4, title:'The Age of Industrialisation',    accent:'#E67FA6'},
+    {id:'ch5', num:5, title:'Print Culture and the Modern World', accent:'#9C8FF0'}
+  ];
+
+  // build a dedicated top bar (Back to Contents) and bottom bar (Prev/Next chapter) for every chapter page
+  CHAPTERS.forEach((ch, i)=>{
+    const section = document.getElementById(ch.id);
+    if(!section) return;
+
+    const top = document.createElement('div');
+    top.className = 'chapter-topbar';
+    top.innerHTML = `
+      <button type="button" class="back-btn" data-view="home">← Back to Contents</button>
+      <span class="crumb">Chapter ${ch.num} of ${CHAPTERS.length}</span>
+    `;
+    section.insertBefore(top, section.firstChild);
+
+    const prev = CHAPTERS[i-1];
+    const next = CHAPTERS[i+1];
+    const bottom = document.createElement('div');
+    bottom.className = 'chapter-bottombar';
+    bottom.innerHTML = `
+      ${prev ? `<button type="button" class="pn-btn prev" data-view="${prev.id}"><span class="pn-label">← Previous</span><span class="pn-title">${prev.title}</span></button>` : `<span></span>`}
+      ${next ? `<button type="button" class="pn-btn next" data-view="${next.id}"><span class="pn-label">Next →</span><span class="pn-title">${next.title}</span></button>` : `<button type="button" class="pn-btn contents" data-view="home"><span class="pn-label">🎉 That's the whole book</span><span class="pn-title">Back to Contents</span></button>`}
+    `;
+    section.appendChild(bottom);
+  });
+
+  // ---- page routing: show exactly one view (home or one chapter) at a time ----
+  const navLinks = document.querySelectorAll('.nav a[data-view]');
+
+  function revealChapter(section){
+    const items = section.querySelectorAll('.card, .callout, .glossary, .ch-head, .mindmap, .fig-card, .art-card, .ledger, .tl-item');
+    items.forEach((el, i)=>{
+      el.classList.remove('show');
+      void el.offsetWidth; // restart animation each visit
+      setTimeout(()=>el.classList.add('show'), 20 + i*35);
+    });
+    // stagger the ledger's individual date rows a beat after the ledger card itself
+    section.querySelectorAll('.ledger-item').forEach((el, i)=>{
+      el.classList.remove('show');
+      void el.offsetWidth;
+      setTimeout(()=>el.classList.add('show'), 260 + i*55);
+    });
+  }
+
+  function showView(id, opts={}){
+    const target = document.getElementById(id) || document.getElementById('home');
+    const resolvedId = target.id;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    target.classList.add('active');
+    document.body.classList.toggle('on-chapter', resolvedId !== 'home');
+    navLinks.forEach(a=>a.classList.toggle('active', a.dataset.view === resolvedId));
+    window.scrollTo({top:0, behavior:'auto'});
+    if(resolvedId !== 'home') revealChapter(target);
+    if(opts.push !== false){
+      history.pushState({view:resolvedId}, '', '#'+resolvedId);
+    }
+  }
+
+  // intercept every click on a chapter/home link so it opens a dedicated page instead of scrolling
+  document.addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-view]');
+    if(!el) return;
+    e.preventDefault();
+    showView(el.dataset.view);
+  });
+
+  // ---- lightbox for artwork/prints ----
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCap = document.getElementById('lightboxCap');
+
+  function openLightbox(frame){
+    const img = frame.querySelector('img');
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightboxCap.textContent = frame.dataset.cap || img.alt || '';
+    lightbox.classList.add('open');
+  }
+  function closeLightbox(){ lightbox.classList.remove('open'); }
+
+  document.addEventListener('click', (e)=>{
+    const frame = e.target.closest('.art-frame');
+    if(frame){ openLightbox(frame); return; }
+    if(e.target === lightbox || e.target.id === 'lightboxClose'){ closeLightbox(); }
+  });
+  window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
+
+  window.addEventListener('popstate', (e)=>{
+    const id = (e.state && e.state.view) || (location.hash ? location.hash.slice(1) : 'home');
+    showView(id, {push:false});
+  });
+
+  // open directly to a chapter if the URL already has a hash (deep link / refresh)
+  const initial = location.hash ? location.hash.slice(1) : 'home';
+  showView(initial, {push:false});
+  history.replaceState({view: (document.querySelector('.view.active')||{}).id || 'home'}, '', location.hash || '#home');
+
+  // build mind maps
+  function buildMindMap(id, center, items){
+    const el = document.getElementById(id);
+    const n = items.length;
+    let html = `<div class="mm-center">${center}</div>`;
+    items.forEach((t,i)=>{
+      const angle = (360/n)*i - 90;
+      const delay = (i*0.1).toFixed(2);
+      html += `<div class="mm-branch" style="--a:${angle}deg; animation-delay:${delay}s;">
+                 <div class="mm-node" style="--a:${angle}deg; animation-delay:${(0.15+i*0.1).toFixed(2)}s;">${t}</div>
+               </div>`;
+    });
+    el.innerHTML = html;
+  }
+
+  buildMindMap('mm1', 'Nationalism<br>in Europe', [
+    'French Revolution — birth of the nation',
+    'Napoleon\'s Civil Code',
+    'Congress of Vienna, 1815',
+    'Romanticism & Mazzini',
+    'Unification: Germany (Bismarck) & Italy (Cavour, Garibaldi)',
+    'Marianne & Germania — allegories',
+    'Balkans → WWI'
+  ]);
+
+  buildMindMap('mm2', 'Nationalism<br>in India', [
+    'Rowlatt Act & Jallianwala Bagh',
+    'Khilafat + Non-Cooperation',
+    'Chauri Chaura, 1922',
+    'Salt March & Civil Disobedience',
+    'Poona Pact, 1932',
+    'Bharat Mata & folk revival',
+    'Quit India, 1942'
+  ]);
+
+  buildMindMap('mm3', 'Making of a<br>Global World', [
+    'Silk Routes & food travels',
+    'Conquest & disease — smallpox',
+    'Corn Laws & mass migration',
+    'Berlin Conference, 1885',
+    'Indentured labour',
+    'Great Depression, 1929',
+    'Bretton Woods — IMF & World Bank',
+    'MNCs shift to Asia'
+  ]);
+
+  buildMindMap('mm4', 'Age of<br>Industrialisation', [
+    'Proto-industrialisation',
+    'Rise of factories & cotton',
+    'Hand labour vs machines',
+    'Weavers & gomasthas',
+    'Manchester floods Indian markets',
+    'Indian mills, 1854 onward',
+    'Handlooms survive'
+  ]);
+
+  buildMindMap('mm5', 'Print<br>Culture', [
+    'China & Japan — earliest print',
+    'Gutenberg\'s press, 1448',
+    'Print Revolution',
+    'Luther & the Reformation',
+    '19th c. new readers',
+    'India — Bengal Gazette',
+    'Vernacular Press Act, 1878'
+  ]);
+</script>
+
+</body>
+</html>
