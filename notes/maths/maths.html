@@ -270,6 +270,8 @@ body{
 .callout.extra .label{ color:var(--chalk-violet); }
 .callout.trick{ border-left:4px solid var(--chalk-coral); background:rgba(255,122,107,0.05); }
 .callout.trick .label{ color:var(--chalk-coral); }
+.callout.facts{ border-left:4px solid var(--chalk-yellow); background:rgba(255,207,86,0.045); }
+.callout.facts .label{ color:var(--chalk-yellow); }
 .callout .label{
   font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; display:block; font-weight:600;
 }
@@ -324,6 +326,35 @@ table.ratio-table tbody tr:hover td{ background:rgba(255,255,255,0.04); }
 .shape-row{ display:flex; justify-content:space-between; gap:8px; font-family:var(--mono); font-size:0.82rem; border-top:1px dashed var(--rule-line); padding-top:6px; }
 .shape-row .srk{ color:var(--chalk-dim); flex-shrink:0; }
 .shape-row .srv{ color:var(--chalk-white); text-align:right; }
+
+/* flashcards */
+.flashcards-wrap{ margin:44px 0 10px; }
+.fc-heading{ font-family:var(--serif-display); font-size:1.7rem; color:var(--chalk-white); margin:0 0 4px; display:flex; align-items:center; gap:10px; }
+.flip-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:18px; margin-top:16px; }
+.flip-card{ perspective:1300px; height:160px; cursor:pointer; }
+.flip-card-inner{
+  position:relative; width:100%; height:100%;
+  transition:transform 0.65s cubic-bezier(.22,.85,.3,1.1);
+  transform-style:preserve-3d;
+}
+.flip-card.flipped .flip-card-inner{ transform:rotateY(180deg); }
+.flip-face{
+  position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  border-radius:14px; padding:20px 18px; display:flex; align-items:center; justify-content:center;
+  text-align:center; font-size:0.95rem; line-height:1.45;
+}
+.flip-front{
+  background:linear-gradient(160deg, rgba(126,200,255,0.09), rgba(255,255,255,0.02));
+  border:1px solid rgba(126,200,255,0.3); color:var(--chalk-white); font-family:var(--sans); font-weight:500;
+}
+.flip-back{
+  background:linear-gradient(160deg, rgba(255,207,86,0.18), rgba(255,207,86,0.05));
+  border:1px solid rgba(255,207,86,0.45); color:var(--chalk-yellow);
+  transform:rotateY(180deg); font-family:var(--mono); font-weight:600;
+}
+.flip-hint{ position:absolute; bottom:8px; right:12px; font-size:0.6rem; opacity:0.45; font-family:var(--mono); font-weight:400; }
+.flip-card:hover .flip-front{ border-color: var(--chalk-blue); box-shadow: 0 10px 24px -10px rgba(0,0,0,0.5); }
+.flip-card:hover .flip-back{ border-color: var(--chalk-yellow); box-shadow: 0 10px 24px -10px rgba(0,0,0,0.5); }
 
 /* chapter prev/next footer */
 .chapter-pager{
@@ -574,6 +605,12 @@ const CHAPTERS = [
         "The proof that √2 is irrational is credited to the <b>Pythagoreans</b> around 500 BCE, and legend says the discovery was so unsettling to their belief that 'all is number' (meaning rational number) that it was kept secret.",
         "Euclid's algorithm (300 BCE) is considered one of the <b>oldest algorithms still in active use</b> — it's a direct ancestor of the GCD functions in every modern programming language."
       ]},
+    {type:'facts', items:[
+        "π has been calculated to trillions of digits by supercomputers, yet mathematicians have <i>proven</i> it will never terminate or repeat — a direct real-world consequence of the very definition of an irrational number you just studied.",
+        "Every whole number greater than 1 is either prime or breaks into primes in exactly one way — this uniqueness is why prime numbers are sometimes nicknamed the 'atoms' of arithmetic, the indivisible building blocks every other number is made from.",
+        "Volunteers and research groups still hunt for new record-breaking prime numbers using distributed computing (ordinary computers worldwide donating spare processing power) — the current record primes run into tens of millions of digits.",
+        "LCM-style thinking quietly runs in the background of everyday engineering — traffic-signal cycles at busy junctions and the gear ratios on a bicycle are both tuned using the same 'smallest number all these cycles agree on' logic as chapter's LCM problems."
+      ]},
     {type:'trick', items:[
         "For HCF/LCM word problems ('find the largest number that divides...', 'find the smallest number divisible by...'), the phrase <b>'divides exactly'</b> signals HCF, and <b>'exactly divisible by'</b> or 'least number' signals LCM.",
         "To prove a number is irrational, always start with <b>'Let us assume, to the contrary, that it is rational.'</b> — this exact phrasing is what CBSE examiners look for in the first step.",
@@ -588,7 +625,22 @@ const CHAPTERS = [
     ["Terminating decimal condition","q = 2^m × 5^n"],
     ["√p is irrational","for any prime p"],
     ["Sum/difference: rational + irrational","always irrational"],
-    ["Product: (non-zero rational) × irrational","always irrational"]
+    ["Product: (non-zero rational) × irrational","always irrational"],
+    ["Number of factors of n (n = p₁^a₁p₂^a₂...)","(a₁+1)(a₂+1)..."],
+    ["LCM of two fractions a/b, c/d","LCM(a,c) / HCF(b,d)"],
+    ["HCF of two fractions a/b, c/d","HCF(a,c) / LCM(b,d)"],
+    ["HCF of two coprime numbers","always 1"],
+    ["LCM of two coprime numbers a, b","a × b"]
+  ],
+  flashcards:[
+    {q:"What is Euclid's Division Lemma?", a:"a = bq + r, where 0 ≤ r < b"},
+    {q:"State the Fundamental Theorem of Arithmetic.", a:"Every composite number is a product of primes, uniquely (apart from order)."},
+    {q:"HCF(a,b) × LCM(a,b) = ?", a:"a × b"},
+    {q:"When does p/q terminate as a decimal?", a:"When q = 2ᵐ × 5ⁿ"},
+    {q:"Is √2 rational or irrational?", a:"Irrational"},
+    {q:"Sum of a rational and an irrational number is always...?", a:"Irrational"},
+    {q:"What key identity does Euclid's algorithm repeatedly use?", a:"HCF(a,b) = HCF(b,r)"},
+    {q:"Name any irrational number besides √2.", a:"π, e, √3, or √5 (any valid example)"}
   ]
 },
 {
@@ -629,6 +681,12 @@ const CHAPTERS = [
         "The relationship between zeros and coefficients generalises far beyond Class 10 — for a degree-n polynomial, these are called <b>Vieta's Formulas</b>, named after the 16th-century French mathematician François Viète, and they're used heavily in higher algebra and even in cryptographic algorithms.",
         "Every polynomial curve you graph is continuous and smooth (no breaks, no sharp corners) — this is exactly why root-finding software (like the ones inside calculators and engineering tools) can reliably zoom in on a zero once it detects a sign change."
       ]},
+    {type:'facts', items:[
+        "There is <b>no general formula using only radicals</b> (like the quadratic formula) for solving polynomial equations of degree 5 or higher — this was proven independently by mathematicians Niels Abel and Évariste Galois in the early 1800s, one of the most celebrated results in algebra.",
+        "Computer graphics, from smartphone fonts to video-game character models, are drawn using polynomial curves called <b>Bézier curves</b> — built on the exact same 'roots and coefficients' logic explored in this chapter.",
+        "Ancient Babylonian and Egyptian scribes were already solving polynomial-style word problems nearly 4000 years ago, using geometric methods rather than the symbolic algebra we use today — symbolic notation (x², x³) is a comparatively recent invention.",
+        "'Splitting the middle term' — the factorisation trick every student learns — is a specific case of a general technique mathematicians call completing a polynomial's factor structure, used everywhere from cryptography to signal processing."
+      ]},
     {type:'trick', items:[
         "For splitting the middle term in a quadratic ax²+bx+c, find two numbers whose <b>product is a×c</b> and whose <b>sum is b</b> — this two-second mental check saves guesswork.",
         "If a question gives you 'sum of zeros = 0', it's hinting the quadratic has no x-term (of the form ax²+c) — a common shortcut in MCQs.",
@@ -644,7 +702,21 @@ const CHAPTERS = [
     ["Cubic: product of zeros","αβγ = −d/a"],
     ["Division algorithm","p(x) = g(x)·q(x) + r(x)"],
     ["Sum of squares of zeros","α²+β² = (α+β)² − 2αβ"],
-    ["Difference squared","(α−β)² = (α+β)² − 4αβ"]
+    ["Difference squared","(α−β)² = (α+β)² − 4αβ"],
+    ["1/α + 1/β (quadratic)","(α+β)/αβ"],
+    ["α/β + β/α (quadratic)","(α²+β²)/αβ"],
+    ["Cubic built from zeros α,β,γ","x³ − (Σα)x² + (Σαβ)x − αβγ"],
+    ["Zero of a linear polynomial ax+b","x = −b/a"]
+  ],
+  flashcards:[
+    {q:"Degree of a quadratic polynomial?", a:"2"},
+    {q:"Sum of zeros of ax²+bx+c?", a:"−b/a"},
+    {q:"Product of zeros of ax²+bx+c?", a:"c/a"},
+    {q:"Maximum number of zeros a cubic can have?", a:"3"},
+    {q:"Build a quadratic from its zeros α and β.", a:"x² − (α+β)x + αβ"},
+    {q:"What is p(x) = g(x)q(x) + r(x) called?", a:"The Division Algorithm for polynomials"},
+    {q:"What is a one-term polynomial called?", a:"A monomial"},
+    {q:"For a cubic with zeros α, β, γ — what is αβγ?", a:"−d/a"}
   ]
 },
 {
@@ -683,6 +755,12 @@ const CHAPTERS = [
         "Large real-world systems can have hundreds or millions of variables — economists, engineers, and computer graphics programs solve these using matrix methods that are a direct extension of the elimination method you're learning here.",
         "The word 'linear' refers to the fact that every term is degree 1 — no x², no xy, no √x. The moment any term breaks that rule, the graph stops being a straight line."
       ]},
+    {type:'facts', items:[
+        "Your phone's <b>GPS</b> works by solving a system of equations using signal-timing data from multiple satellites simultaneously — a direct, real-time, real-world version of the 'pair of equations' idea, just scaled up to more variables.",
+        "The three graphical outcomes you learn here — intersecting, parallel, coincident — map almost exactly onto three classic outcomes in economics: a market finding one equilibrium price, a permanent shortage/surplus, or two policies that are secretly identical.",
+        "Substitution and elimination, the two hand-methods taught in school, are the direct ancestors of <b>Gaussian elimination</b> — the algorithm computers still use today to solve systems with millions of variables in engineering and machine learning.",
+        "Large-scale flight schedules, factory production planning, and delivery-route optimisation are all solved using giant systems of linear equations and inequalities, a field called <b>linear programming</b> that grew directly out of this humble two-variable chapter."
+      ]},
     {type:'trick', items:[
         "Before choosing a method, glance at the coefficients — if any variable already has coefficient 1 in either equation, substitution will be faster than elimination.",
         "In word problems, always double-check units before forming equations (e.g. convert 'km/h' consistently) — most marks lost in this chapter are due to equation-formation errors, not solving errors.",
@@ -696,7 +774,21 @@ const CHAPTERS = [
     ["Cross-multiplication","x/(b₁c₂−b₂c₁) = y/(c₁a₂−c₂a₁) = 1/(a₁b₂−a₂b₁)"],
     ["Substitution for 1/x, 1/y type","u = 1/x, v = 1/y, then solve linearly"],
     ["Slope of a₁x+b₁y+c₁=0","m = −a₁/b₁"],
-    ["y-intercept of a line","c = −c₁/b₁ (from a₁x+b₁y+c₁=0)"]
+    ["y-intercept of a line","c = −c₁/b₁ (from a₁x+b₁y+c₁=0)"],
+    ["Speed–distance–time relation","distance = speed × time"],
+    ["Combined work rate (two workers)","1/T = 1/T₁ + 1/T₂"],
+    ["Boats & streams: downstream speed","speed of boat + speed of stream"],
+    ["Boats & streams: upstream speed","speed of boat − speed of stream"]
+  ],
+  flashcards:[
+    {q:"Condition for a unique solution?", a:"a₁/a₂ ≠ b₁/b₂"},
+    {q:"Condition for infinitely many solutions?", a:"a₁/a₂ = b₁/b₂ = c₁/c₂"},
+    {q:"Condition for no solution?", a:"a₁/a₂ = b₁/b₂ ≠ c₁/c₂"},
+    {q:"Name the three algebraic methods for solving a linear pair.", a:"Substitution, Elimination, Cross-multiplication"},
+    {q:"Graphically, what do parallel lines represent?", a:"No solution (inconsistent pair)"},
+    {q:"Graphically, what do coincident lines represent?", a:"Infinitely many solutions"},
+    {q:"What substitution linearises equations with 1/x and 1/y?", a:"u = 1/x, v = 1/y"},
+    {q:"What do we call a pair of equations with no solution?", a:"Inconsistent"}
   ]
 },
 {
@@ -729,6 +821,22 @@ const CHAPTERS = [
       items:[
         "Typical CBSE word-problem families: consecutive numbers, ages, speed–distance–time with a changed speed/time condition, area/perimeter of rectangles, and work-and-time (pipes filling a tank).",
         "Workflow: define the variable clearly, translate the word condition into a quadratic equation, solve using the formula or factorisation, and — crucially — <b>reject any root that doesn't make physical sense</b> (like a negative length, age, or time)."
+      ]},
+    {type:'extra', items:[
+        "Parabolic reflectors — used in satellite dishes, car headlights, and telescope mirrors — are precisely the 3D graph of a quadratic equation, shaped so every incoming signal focuses onto a single point.",
+        "'Completing the square,' the method behind the quadratic formula, is also the key algebraic trick used to derive the equation of a circle and to locate the vertex of any parabola in coordinate geometry.",
+        "Clay tablets from ancient Babylon, nearly 4000 years old, already contain step-by-step methods for solving quadratic-like problems — making this one of the oldest continuously studied topics in all of mathematics."
+      ]},
+    {type:'facts', items:[
+        "The discriminant's sign (D&gt;0, D=0, D&lt;0) is the exact same logic physicists use to determine whether a thrown ball ever reaches a certain height, or whether two moving objects ever meet — 'does a real solution exist' is a universal question, not just an exam trick.",
+        "The word 'quadratic' comes from the Latin <i>quadratus</i>, meaning 'square' — because the original geometric problems these equations solved were literally about finding the side of a square of a given area.",
+        "Video game physics engines solve a quadratic equation (from the laws of projectile motion) every single frame to calculate exactly where a thrown or launched object will land.",
+        "Long before the 'minus b' formula was taught in classrooms, 9th-century Persian mathematician <b>Al-Khwarizmi</b> — whose name gives us the word 'algorithm' — wrote systematic rules for solving quadratic-type equations using geometric reasoning."
+      ]},
+    {type:'trick', items:[
+        "If a quadratic equation has rational coefficients and one irrational root of the form p+√q, the other root is always its conjugate p−√q — a shortcut that saves solving the whole equation again.",
+        "For 'nature of roots' questions, compute only the discriminant D — you almost never need to find the actual roots unless the question specifically asks for them.",
+        "When a word problem produces two valid-looking roots, always re-read the question for hidden constraints (positive only, whole numbers only, greater than a certain value) before picking the final answer."
       ]}
   ],
   formulas:[
@@ -740,7 +848,22 @@ const CHAPTERS = [
     ["Real & distinct roots condition","D > 0"],
     ["Real & equal roots condition","D = 0"],
     ["No real roots condition","D < 0"],
-    ["Completing the square form","a(x + b/2a)² + (c − b²/4a)"]
+    ["Completing the square form","a(x + b/2a)² + (c − b²/4a)"],
+    ["Condition: roots equal & reciprocal","c = a"],
+    ["Condition: roots equal magnitude, opposite sign","b = 0"],
+    ["Condition: one root is zero","c = 0"],
+    ["Condition: both roots positive","D ≥ 0, sum > 0, product > 0"],
+    ["Condition: both roots negative","D ≥ 0, sum < 0, product > 0"]
+  ],
+  flashcards:[
+    {q:"Standard form of a quadratic equation?", a:"ax² + bx + c = 0, a ≠ 0"},
+    {q:"State the quadratic formula.", a:"x = [−b ± √(b²−4ac)] / 2a"},
+    {q:"What is the discriminant?", a:"D = b² − 4ac"},
+    {q:"D > 0 means?", a:"Two distinct real roots"},
+    {q:"D = 0 means?", a:"Two equal real roots"},
+    {q:"D < 0 means?", a:"No real roots"},
+    {q:"Sum of roots of ax²+bx+c=0?", a:"−b/a"},
+    {q:"Product of roots of ax²+bx+c=0?", a:"c/a"}
   ]
 },
 {
@@ -764,6 +887,12 @@ const CHAPTERS = [
         "AP shows up constantly outside exams: simple interest growth, stadium seating rows, straight-line depreciation of assets, and even the spacing of rungs on a ladder.",
         "An AP with common difference 0 is technically still an AP (a constant sequence) — don't assume d must be non-zero when a question says 'the numbers are in AP'."
       ]},
+    {type:'facts', items:[
+        "Gauss's schoolboy shortcut for summing 1 to 100 is considered one of the earliest recorded examples of finding a mathematical <i>shortcut</i> instead of brute-force calculating — a mindset that underlies almost all modern algorithm design.",
+        "Amphitheatre and stadium seating is frequently designed as an AP — each row holding a fixed number of seats more than the last as it radiates outward — which is exactly why 'total seats in a stadium' is a classic AP word problem.",
+        "Straight-line depreciation, a common accounting method where an asset loses the same fixed value every year, is literally an arithmetic progression running in reverse (a decreasing AP) on a company's balance sheet.",
+        "The 'sum of an AP' formula is a special, simplest case of a much broader mathematical field called <b>series and sequences</b>, which underlies compound interest, population growth models, and the loop-counting logic inside every computer program."
+      ]},
     {type:'trick', items:[
         "If three numbers are in AP, represent them as <span class='mathf'>a−d, a, a+d</span> — the middle term is automatically their average, and this trick massively simplifies algebra.",
         "For 'which term is the first negative term' type questions, set <span class='mathf'>aₙ &lt; 0</span> and solve the inequality for n, then round up to the next integer.",
@@ -778,7 +907,21 @@ const CHAPTERS = [
     ["Three terms in AP","a−d, a, a+d"],
     ["Four terms in AP","a−3d, a−d, a+d, a+3d"],
     ["Common difference","d = aₙ − aₙ₋₁"],
-    ["Sum of first n natural numbers","n(n+1)/2"]
+    ["Sum of first n natural numbers","n(n+1)/2"],
+    ["Sum of first n odd numbers","n²"],
+    ["Sum of first n even numbers","n(n+1)"],
+    ["Arithmetic mean of two numbers a, b","(a+b)/2"],
+    ["nth term from the end (last term l)","l − (n−1)d"]
+  ],
+  flashcards:[
+    {q:"Formula for the nth term of an AP?", a:"aₙ = a + (n−1)d"},
+    {q:"Formula for the sum of the first n terms?", a:"Sₙ = n/2[2a+(n−1)d]"},
+    {q:"How do you find the common difference d?", a:"d = aₙ − aₙ₋₁"},
+    {q:"If a, b, c are in AP, what is b in terms of a and c?", a:"b = (a+c)/2"},
+    {q:"How do you find the nth term from sums?", a:"aₙ = Sₙ − Sₙ₋₁"},
+    {q:"Represent three numbers in AP using one variable.", a:"a−d, a, a+d"},
+    {q:"Sum of the first n natural numbers?", a:"n(n+1)/2"},
+    {q:"Who is credited with the fast summing trick for 1 to 100?", a:"Carl Friedrich Gauss"}
   ]
 },
 {
@@ -813,6 +956,12 @@ const CHAPTERS = [
         "Surveyors historically measured the height of mountains and pyramids using shadows and similar triangles, centuries before laser rangefinders existed — this is the exact 'height and distance' logic reused in Chapter 9.",
         "Pythagoras theorem has over 350 known distinct proofs, including one published by future U.S. President <b>James Garfield</b> in 1876, using nothing but a trapezium built from two copies of the same right triangle."
       ]},
+    {type:'facts', items:[
+        "James Garfield discovered his original trapezium-based proof of Pythagoras' theorem five years <i>before</i> becoming U.S. President, during an informal mathematical conversation with fellow members of Congress in 1876 — he remains the only U.S. President credited with a genuine original mathematical result.",
+        "The word 'similar' comes from the Latin <i>similis</i>, meaning 'like' or 'resembling' — the same root that gives English the words 'simulate' and 'simultaneous.'",
+        "Bridge and roof trusses are built almost entirely from triangles, never squares or rectangles, because a triangle is the only polygon that can't be deformed without changing the length of one of its sides — making it the most structurally rigid shape possible.",
+        "Fractal art like the Sierpinski Triangle is built by endlessly nesting smaller similar triangles inside a larger one — a striking, modern visual descendant of the similarity ideas explored in this chapter."
+      ]},
     {type:'trick', items:[
         "When a question shows a triangle with a line parallel to one side, immediately check if it's a BPT (ratio) question or a similar-triangles (AA) question — look for whether you need a ratio of segments or a ratio of full sides.",
         "Common Pythagorean triples worth memorising to save calculation time: <span class='mathf'>(3,4,5)</span>, <span class='mathf'>(5,12,13)</span>, <span class='mathf'>(8,15,17)</span>, <span class='mathf'>(7,24,25)</span> — and their multiples (6,8,10 etc).",
@@ -825,7 +974,20 @@ const CHAPTERS = [
     ["Pythagoras theorem","(hypotenuse)² = (base)² + (perp)²"],
     ["Similarity criteria","AAA, SSS, SAS"],
     ["Common Pythagorean triples","(3,4,5), (5,12,13), (8,15,17), (7,24,25)"],
-    ["Midpoint theorem (special BPT case)","line joining midpoints of two sides ∥ third side, and = half of it"]
+    ["Midpoint theorem (special BPT case)","line joining midpoints of two sides ∥ third side, and = half of it"],
+    ["Area of a triangle (Heron's formula)","√[s(s−a)(s−b)(s−c)], where s=(a+b+c)/2"],
+    ["Area using base and height","½ × base × height"],
+    ["Apollonius' theorem (median length, beyond NCERT)","AB² + AC² = 2AD² + 2BD²  (AD = median to BC)"],
+    ["Ratio of perimeters of similar triangles","= ratio of corresponding sides"]
+  ],
+  flashcards:[
+    {q:"State the Basic Proportionality Theorem (BPT).", a:"A line parallel to one side of a triangle divides the other two sides in the same ratio."},
+    {q:"Name the three similarity criteria for triangles.", a:"AAA (AA), SSS, SAS"},
+    {q:"Ratio of areas of two similar triangles equals?", a:"The square of the ratio of corresponding sides"},
+    {q:"State Pythagoras theorem.", a:"(hypotenuse)² = (base)² + (perpendicular)²"},
+    {q:"Name a common Pythagorean triple.", a:"(3,4,5) — or (5,12,13), (8,15,17)"},
+    {q:"Which construction proves Pythagoras theorem via similarity?", a:"Drawing the altitude to the hypotenuse, creating similar triangles"},
+    {q:"Who found an original proof of Pythagoras theorem in 1876, five years before becoming U.S. President?", a:"James Garfield"}
   ]
 },
 {
@@ -856,6 +1018,22 @@ const CHAPTERS = [
         "<b>Finding the centroid</b> of a triangle (the point where medians meet) with vertices (x₁,y₁),(x₂,y₂),(x₃,y₃): <span class='mathf'>[(x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3]</span> — a direct extension of the midpoint idea.",
         "<b>Proving a shape is a specific quadrilateral</b> (square, rectangle, rhombus, parallelogram) combines multiple tools: use the distance formula to check side lengths, and check diagonals for equality (rectangle/square) or perpendicular bisection (rhombus/square).",
         "<b>Ratio in which the x-axis or y-axis divides a segment</b> is a specific section-formula application: for the x-axis, set the y-coordinate of the dividing point to 0 and solve for the ratio k:1."
+      ]},
+    {type:'extra', items:[
+        "René Descartes, who invented the (x,y) coordinate system in the 17th century, reportedly got the idea while lying ill in bed watching a fly move across the corner of his ceiling — realising its position could be pinned down using just two numbers relative to the walls.",
+        "Every video game character's position, every pixel on your screen, and every GPS coordinate on Earth (latitude, longitude) is fundamentally the same idea taught in this chapter — a point located precisely by two (or three) numbers.",
+        "Computer-Aided Design (CAD) software, used to design everything from smartphones to aircraft, relies on distance and section formulas exactly like the ones here to calculate precise positions in a virtual 3D space."
+      ]},
+    {type:'facts', items:[
+        "The area-of-triangle-from-coordinates formula is nicknamed the <b>'shoelace formula'</b> — when you write the coordinates in a column and multiply diagonally, the crossing lines resemble lacing up a shoe.",
+        "Cartography (mapmaking) is essentially applied coordinate geometry at planetary scale — every point on a map is stored as a coordinate pair, and distances between cities are calculated using a curved-surface version of the distance formula.",
+        "Coordinate geometry was historically revolutionary because it merged two previously separate branches of mathematics — algebra and geometry — into one unified system, a shift so significant it's sometimes called the birth of 'analytic geometry.'",
+        "Robotic arms in factories are positioned using coordinate geometry in three dimensions — each joint's movement is calculated so the arm's tip lands on an exact (x,y,z) coordinate to weld, place, or assemble a part."
+      ]},
+    {type:'trick', items:[
+        "When a question only asks whether points are collinear (not the actual area), you can stop as soon as you get Area = 0 — no need to simplify further or find any missing coordinate beyond what's asked.",
+        "For 'type of quadrilateral' questions, check diagonals first (equal → could be rectangle/square, perpendicular → could be rhombus/square) before computing all four side lengths — it's often faster to disprove a shape than to fully prove it.",
+        "If a problem gives you three vertices of a parallelogram and asks for the fourth, use the property that diagonals of a parallelogram bisect each other — set the midpoint of one diagonal equal to the midpoint of the other and solve directly, without needing the section formula at all."
       ]}
   ],
   formulas:[
@@ -866,7 +1044,21 @@ const CHAPTERS = [
     ["Centroid of a triangle","[(x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3]"],
     ["Area of triangle","½|x₁(y₂−y₃)+x₂(y₃−y₁)+x₃(y₁−y₂)|"],
     ["Collinearity condition","Area = 0"],
-    ["Ratio in which x-axis divides AB","k = −y₁/y₂"]
+    ["Ratio in which x-axis divides AB","k = −y₁/y₂"],
+    ["Slope of a line through two points","m = (y₂−y₁)/(x₂−x₁)"],
+    ["Condition for perpendicular lines","m₁ × m₂ = −1"],
+    ["Condition for parallel lines","m₁ = m₂"],
+    ["Area of a quadrilateral (via diagonal split)","Area(Δ₁) + Area(Δ₂)"]
+  ],
+  flashcards:[
+    {q:"Distance formula between two points?", a:"√[(x₂−x₁)² + (y₂−y₁)²]"},
+    {q:"Midpoint formula?", a:"[(x₁+x₂)/2, (y₁+y₂)/2]"},
+    {q:"Section formula for ratio m:n?", a:"[(mx₂+nx₁)/(m+n), (my₂+ny₁)/(m+n)]"},
+    {q:"Condition for three points to be collinear?", a:"Area of the triangle they form = 0"},
+    {q:"Centroid formula of a triangle?", a:"[(x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3]"},
+    {q:"Who is credited with inventing the (x,y) coordinate plane?", a:"René Descartes"},
+    {q:"What is the area-of-triangle formula nicknamed?", a:"The 'shoelace formula'"},
+    {q:"Distance of a point (x,y) from the origin?", a:"√(x² + y²)"}
   ]
 },
 {
@@ -915,6 +1107,12 @@ const CHAPTERS = [
         "The Indian mathematician <b>Aryabhata</b> (5th century CE) is credited with some of the earliest known sine-like tables, calling the ratio 'jya' — a term that, through translation chains via Arabic and Latin, eventually became the modern word 'sine'.",
         "Modern GPS, sound engineering, and computer graphics all run on trigonometric functions constantly — every rotation you see in a video game or 3D animation is computed using sin and cos."
       ]},
+    {type:'facts', items:[
+        "Hipparchus of ancient Greece (2nd century BCE) is often called the 'father of trigonometry' for compiling the earliest known trigonometric table — over 500 years before Aryabhata's sine tables appeared in India.",
+        "The word 'sine' has a genuinely strange journey: Sanskrit <i>jya/jiva</i> (chord) → phonetically borrowed into Arabic as the meaningless <i>jiba</i> → misread by later scholars as <i>jaib</i> ('bay' or 'fold') → translated into Latin as <i>sinus</i> ('bay') → English 'sine.' A centuries-old translation quirk accidentally named the function.",
+        "Every rotation, wave, and vibration in physics and engineering — sound waves, alternating-current electricity, pendulum motion, radio signals — is mathematically described using sine and cosine functions.",
+        "Digital music synthesis, from keyboard apps to phone speakers, builds every sound by combining sine waves of different frequencies — a direct, modern-day descendant of the exact ratios memorised in this chapter."
+      ]},
     {type:'trick', items:[
         "When simplifying a trig expression, converting everything to <b>sin θ and cos θ</b> first is almost always the fastest route, even if the question is stated in tan, cot, sec, or cosec.",
         "For 'evaluate' questions mixing multiple standard angles, group terms so complementary-angle pairs cancel neatly before you substitute numeric values.",
@@ -933,7 +1131,22 @@ const CHAPTERS = [
     ["Identity with cot","1 + cot²θ = cosec²θ"],
     ["Complementary swap (sin/cos)","sin(90°−θ) = cos θ"],
     ["Complementary swap (tan/cot)","tan(90°−θ) = cot θ"],
-    ["Range of sin θ, cos θ","−1 ≤ sin θ, cos θ ≤ 1"]
+    ["Range of sin θ, cos θ","−1 ≤ sin θ, cos θ ≤ 1"],
+    ["cosec²θ − cot²θ","1"],
+    ["sec²θ − tan²θ","1"],
+    ["tan θ × cot θ","1"],
+    ["sin θ × cosec θ","1"],
+    ["cos θ × sec θ","1"]
+  ],
+  flashcards:[
+    {q:"sin θ = ?", a:"opposite / hypotenuse"},
+    {q:"cos 60° = ?", a:"1/2"},
+    {q:"tan 45° = ?", a:"1"},
+    {q:"sin²θ + cos²θ = ?", a:"1"},
+    {q:"1 + tan²θ = ?", a:"sec²θ"},
+    {q:"sin(90°−θ) = ?", a:"cos θ"},
+    {q:"Value of tan 90°?", a:"Not defined"},
+    {q:"Who is called the 'father of trigonometry'?", a:"Hipparchus"}
   ]
 },
 {
@@ -965,6 +1178,12 @@ const CHAPTERS = [
         "Air traffic controllers and coast guard rescue teams still use angle-of-elevation/depression calculations (now automated by radar software) to estimate the altitude and distance of aircraft or ships.",
         "The Great Trigonometric Survey of India (started 1802) used these same height-and-distance principles to map the entire Indian subcontinent and first accurately measured the height of the Himalayan peaks."
       ]},
+    {type:'facts', items:[
+        "Radhanath Sikdar, an Indian mathematician working as 'Chief Computer' for the Great Trigonometrical Survey, is widely credited with the 1852 calculation that first identified 'Peak XV' — later named Mount Everest — as the world's highest mountain, using exactly this triangulation method, without ever setting foot on the mountain itself.",
+        "Ancient Egyptian builders used a simple angle-and-shadow ratio called a <i>seked</i> to design the precise, consistent slope of the pyramids over 4000 years ago — one of the earliest recorded practical applications of these ideas.",
+        "Modern drone and satellite mapping software still performs essentially the same 'measure two angles, solve the triangle' calculation taught here — just automated and completed in milliseconds instead of by hand with a theodolite.",
+        "Lighthouse keepers and ship navigators historically used angle-of-depression sightings to estimate a ship's distance from shore, long before radar and GPS existed — a direct maritime application of this chapter."
+      ]},
     {type:'trick', items:[
         "If a question mentions 'the angle of elevation changes from θ₁ to θ₂ as the observer walks a distance d towards the tower', always let the final unknown distance be x, express the original distance as (x + d), and use tan θ₁ and tan θ₂ to form two equations in h and x.",
         "For 'top of a tower' vs 'top of a building' comparisons, sketch both structures on the <b>same</b> horizontal ground line before writing any equation — a rushed diagram is the #1 cause of setup errors in this chapter.",
@@ -978,7 +1197,18 @@ const CHAPTERS = [
     ["Opposite side (general)","opposite = hypotenuse · sin θ"],
     ["Adjacent side (general)","adjacent = hypotenuse · cos θ"],
     ["Line of sight length (hypotenuse)","hypotenuse = h / sin θ  =  d / cos θ"],
-    ["Total height with observer's eye-level","Total height = h(object) + observer's height"]
+    ["Total height with observer's eye-level","Total height = h(object) + observer's height"],
+    ["Height from two elevation angles at points d apart","h = d / (cot θ₁ − cot θ₂)"],
+    ["Distance walked towards the tower (angle θ₁→θ₂)","d = h(cot θ₁ − cot θ₂)"]
+  ],
+  flashcards:[
+    {q:"What is the angle of elevation?", a:"Angle between the horizontal and the line of sight, looking up"},
+    {q:"What is the angle of depression?", a:"Angle between the horizontal and the line of sight, looking down"},
+    {q:"Which ratio connects tower height, distance, and elevation angle?", a:"tan θ = height / distance"},
+    {q:"True or false: angle of depression from the top equals angle of elevation from the bottom.", a:"True (alternate angles, parallel horizontals)"},
+    {q:"What technique combines angles from two known points to find a height?", a:"Triangulation"},
+    {q:"Who is widely credited with the 1852 calculation identifying Everest as the highest peak?", a:"Radhanath Sikdar"},
+    {q:"Hypotenuse in terms of height and sin θ?", a:"hypotenuse = height / sin θ"}
   ]
 },
 {
@@ -1014,6 +1244,12 @@ const CHAPTERS = [
         "The equal-opposite-sides property of a tangential quadrilateral is called the <b>Pitot theorem</b>, named after the French engineer Henri Pitot, and is used in some structural and pipe-network design problems.",
         "Bicycle wheels, ball bearings, and even planetary orbits (to a first approximation) all rely on tangent-line and circular-motion relationships explored first in this simple chapter."
       ]},
+    {type:'facts', items:[
+        "The equal-opposite-sides property of a tangential quadrilateral is called the <b>Pitot theorem</b>, named after 18th-century French engineer Henri Pitot — who also invented the Pitot tube, the exact instrument still used today to measure the airspeed of aircraft.",
+        "Tangent-circle geometry directly inspired constant-width shapes like the <b>Reuleaux triangle</b>, which — surprisingly — can roll almost as smoothly as a wheel despite not being circular at all, and is used in some drill bits and coin designs.",
+        "Spacecraft mission planners calculate 'transfer orbits' using tangent-circle geometry — a spacecraft's path can be a straight tangent line to a circular parking orbit at the precise moment an engine fires.",
+        "The equal-tangents property is the exact geometric reason a ball bearing race spins smoothly — every ball maintains equal tangential contact distances as it rolls, distributing load evenly."
+      ]},
     {type:'trick', items:[
         "The moment you see the word 'tangent' in a problem, draw the radius to the point of contact and mark the right angle — this single habit solves most numerical problems here almost automatically.",
         "For 'two tangents from an external point' diagrams, look for the <b>kite shape</b> formed by the two radii and two tangents (two pairs of adjacent equal sides) — its diagonal (joining the external point to the centre) is always an axis of symmetry.",
@@ -1026,7 +1262,19 @@ const CHAPTERS = [
     ["Right triangle from tangent","OP² = OA² + PA²  (O=centre, A=point of contact, P=external point)"],
     ["Tangent length formula","PA = √(OP² − r²)"],
     ["Tangential quadrilateral property","AB + CD = BC + AD"],
-    ["Number of tangents (inside/on/outside)","0 / 1 / 2"]
+    ["Number of tangents (inside/on/outside)","0 / 1 / 2"],
+    ["Direct common tangent length (radii r₁,r₂, centre distance d) — beyond NCERT","√[d² − (r₁−r₂)²]"],
+    ["Transverse common tangent length — beyond NCERT","√[d² − (r₁+r₂)²]"]
+  ],
+  flashcards:[
+    {q:"A tangent touches a circle at how many points?", a:"Exactly one"},
+    {q:"What angle does a tangent make with the radius at the point of contact?", a:"90° (perpendicular)"},
+    {q:"Are the two tangents from an external point equal in length?", a:"Yes, always"},
+    {q:"Number of tangents from a point inside the circle?", a:"Zero"},
+    {q:"Number of tangents from a point outside the circle?", a:"Two"},
+    {q:"Property of a quadrilateral circumscribing a circle?", a:"Sum of opposite sides are equal: AB+CD = BC+AD"},
+    {q:"What is this equal-opposite-sides property officially called?", a:"The Pitot theorem"},
+    {q:"What did Henri Pitot (namesake of the Pitot theorem) also invent?", a:"The Pitot tube, used to measure aircraft airspeed"}
   ]
 },
 {
@@ -1050,8 +1298,14 @@ const CHAPTERS = [
       ]},
     {type:'extra', items:[
         "The area-of-a-sector idea is exactly how a <b>pizza slice's</b> area is calculated, and it's also the basis for the design of pie charts used everywhere in statistics and business reporting.",
-        "Ancient mathematician <b>Archimedes</b> estimated π by inscribing and circumscribing regular polygons with increasing numbers of sides around a circle — essentially using sectors to squeeze in on the true value of π from both sides, over 2000 years before calculators existed.",
+        "Ancient mathematician <b>Archimedes</b> (c. 250 BCE) accurately bounded the value of π by inscribing and circumscribing a 96-sided polygon around a circle, proving 223/71 &lt; π &lt; 22/7 — essentially squeezing sector and polygon area logic to trap the true value of π, nearly 1900 years before calculators existed.",
         "Windshield wipers, radar sweep displays, and rotating sprinklers all trace out sector-shaped regions — the area they cover is a direct real-world sector calculation."
+      ]},
+    {type:'facts', items:[
+        "Archimedes' polygon method for bounding π remained essentially unmatched in elegance for centuries — it wasn't overtaken until 17th-century mathematicians developed infinite-series methods that could compute far more digits, far faster.",
+        "Pie charts — literally named after circular 'pie slices' — were popularised by Scottish engineer <b>William Playfair</b> in 1801, making sector-area logic one of the oldest tools in the entire history of data visualisation.",
+        "The symbol π itself wasn't standardised until the 18th century, when Swiss mathematician <b>Leonhard Euler</b> popularised its use — for over 4000 years before that, the ratio was simply described in words or approximated with fractions like 22/7.",
+        "Sprinkler and radar systems calculate the exact sector area they 'sweep' on every rotation to optimise water coverage or detection range — the same θ/360° formula taught in this chapter, running in real engineering hardware."
       ]},
     {type:'trick', items:[
         "Combination questions (circle + square, circle + triangle) are just addition/subtraction of areas — sketch the figure first and mentally isolate each individual shape before writing formulas.",
@@ -1069,7 +1323,20 @@ const CHAPTERS = [
     ["Area of semicircle","½ πr²"],
     ["Perimeter of semicircle","πr + 2r"],
     ["Area of quarter circle","¼ πr²"],
-    ["Value of π (common approximations)","22/7 or 3.14"]
+    ["Value of π (common approximations)","22/7 or 3.14"],
+    ["Length of a chord subtending angle θ at centre","2r sin(θ/2)"],
+    ["Area of the triangle part of a sector (angle θ)","½r² sin θ"],
+    ["Perimeter of a sector","2r + (θ/360°) × 2πr"]
+  ],
+  flashcards:[
+    {q:"Formula for area of a circle?", a:"πr²"},
+    {q:"Formula for circumference?", a:"2πr"},
+    {q:"Formula for arc length?", a:"(θ/360°) × 2πr"},
+    {q:"Formula for area of a sector?", a:"(θ/360°) × πr²"},
+    {q:"Area of minor segment = ?", a:"Area of sector − Area of the triangle"},
+    {q:"Area of a semicircle?", a:"½πr²"},
+    {q:"Who first accurately bounded π using a 96-sided polygon?", a:"Archimedes"},
+    {q:"Who popularised the pie chart in 1801?", a:"William Playfair"}
   ]
 },
 {
@@ -1098,6 +1365,12 @@ const CHAPTERS = [
         "The word 'frustum' comes from Latin, meaning 'a piece cut off' — think of it as a cone with its pointy top sliced away, exactly like a lampshade or a bucket.",
         "Volume-conservation (recasting) problems mirror real manufacturing processes — metal foundries genuinely melt scrap metal shaped one way and recast it into rods, spheres, or coins of a completely different shape, using precisely this volume-equality principle.",
         "A sphere has the <b>smallest surface area for a given volume</b> of any 3D shape — this is exactly why soap bubbles, water droplets, and planets are naturally spherical: nature minimises surface energy."
+      ]},
+    {type:'facts', items:[
+        "Egyptian and Babylonian engineers were already computing approximate volumes of frustum-shaped structures (like a truncated pyramid) over 3500 years ago — one of the oldest surviving records of this is the Moscow Mathematical Papyrus.",
+        "Beverage-can manufacturers use surface-area formulas from this exact chapter to design cylindrical cans that hold a fixed volume while using the least possible aluminium — a small formula difference translates into massive material savings at billion-can scale.",
+        "3D printers build solid objects by calculating the volume of thousands of thin horizontal 'slices' and stacking them — essentially applying the same volume formulas from this chapter (extended with calculus) layer by layer.",
+        "The ice-cream-cone-with-a-hemispherical-scoop is a favourite exam figure for a good reason — it combines exactly two shapes from this chapter's reference sheet, which is precisely why it appears so often in textbooks worldwide."
       ]}
   ],
   shapeSheet:[
@@ -1118,7 +1391,20 @@ const CHAPTERS = [
     ["Cube diagonal","a√3"],
     ["Cuboid diagonal","√(l²+b²+h²)"],
     ["Hollow cylinder volume","πh(R² − r²)   (R=outer, r=inner radius)"],
-    ["Number of solids melted & recast","Volume of big solid ÷ Volume of one small solid"]
+    ["Number of solids melted & recast","Volume of big solid ÷ Volume of one small solid"],
+    ["Volume of a general pyramid — beyond NCERT","(1/3) × base area × height"],
+    ["Volume scaling when radius scaled by k","new volume = k³ × original volume"],
+    ["Surface area scaling when radius scaled by k","new surface area = k² × original surface area"]
+  ],
+  flashcards:[
+    {q:"TSA of a cube with side a?", a:"6a²"},
+    {q:"Volume of a cylinder?", a:"πr²h"},
+    {q:"Volume of a cone?", a:"(1/3)πr²h"},
+    {q:"Volume of a sphere?", a:"(4/3)πr³"},
+    {q:"TSA of a hemisphere?", a:"3πr²"},
+    {q:"Slant height of a cone?", a:"l = √(r²+h²)"},
+    {q:"Volume of a frustum?", a:"(1/3)πh(r₁²+r₂²+r₁r₂)"},
+    {q:"What stays constant when a solid is melted and recast into another shape?", a:"Volume"}
   ]
 },
 {
@@ -1151,6 +1437,12 @@ const CHAPTERS = [
         "Modern data science tools (spreadsheets, Python's pandas library, R) compute mean/median/mode instantly, but the underlying grouped-data formulas you're learning here are exactly what those tools use internally when your dataset is 'binned' into ranges, like age groups or income brackets.",
         "The word 'ogive' comes from architecture — it originally described the pointed arch shape seen in Gothic cathedral windows, later borrowed by statisticians because the cumulative frequency curve has a similar elongated S/arch profile."
       ]},
+    {type:'facts', items:[
+        "The word 'statistics' itself comes from the Latin <i>status</i> ('state') — the field originally grew out of governments collecting numerical data about their population and economy, literally 'state-istics.'",
+        "<b>Florence Nightingale</b>, famous today as a pioneering nurse, was also a skilled statistician who invented a striking pie-chart variant (the 'polar area diagram') to visually convince the British government to improve army hospital sanitation — a chart credited with saving lives.",
+        "The empirical relationship Mode = 3 Median − 2 Mean is only an <b>approximation</b>, valid for moderately skewed distributions — it doesn't hold for every dataset, which is exactly why some exam questions ask you to verify it rather than assume it blindly.",
+        "Modern 'big data' analytics still relies on grouped-frequency thinking exactly like this chapter — massive datasets are binned into ranges before mean, median, and mode are computed, because handling millions of raw individual values directly is impractical."
+      ]},
     {type:'trick', items:[
         "Always choose the <b>assumed mean (a)</b> as the class mark of the class with the highest frequency, or simply the middle-most class — this keeps the deviations dᵢ small and arithmetic clean.",
         "For step-deviation, the class width h must be the <b>same</b> for every class — if class intervals are unequal, you must use the direct or assumed-mean method instead.",
@@ -1165,7 +1457,20 @@ const CHAPTERS = [
     ["Mode (grouped)","l + [(f₁−f₀)/(2f₁−f₀−f₂)] × h"],
     ["Empirical relation","Mode = 3 Median − 2 Mean"],
     ["Class mark","xᵢ = (upper limit + lower limit)/2"],
-    ["Class width","h = upper limit − lower limit"]
+    ["Class width","h = upper limit − lower limit"],
+    ["Range","Highest value − Lowest value"],
+    ["Combined mean of two groups","(n₁x̄₁ + n₂x̄₂) / (n₁+n₂)"],
+    ["Relative frequency","frequency of class / total frequency"]
+  ],
+  flashcards:[
+    {q:"Formula for direct mean?", a:"x̄ = Σfᵢxᵢ / Σfᵢ"},
+    {q:"Formula for the median of grouped data?", a:"l + [(n/2 − cf)/f] × h"},
+    {q:"Formula for the mode of grouped data?", a:"l + [(f₁−f₀)/(2f₁−f₀−f₂)] × h"},
+    {q:"Empirical relationship between mean, median, and mode?", a:"Mode = 3 Median − 2 Mean"},
+    {q:"What is a class mark?", a:"(upper limit + lower limit) / 2"},
+    {q:"Which graph gives the median directly, from its intersection point?", a:"The ogive (cumulative frequency curve)"},
+    {q:"Who pioneered a famous pie-chart variant to push for sanitation reform?", a:"Florence Nightingale"},
+    {q:"What Latin word is 'statistics' derived from?", a:"Status (state)"}
   ]
 },
 {
@@ -1195,8 +1500,14 @@ const CHAPTERS = [
       ]},
     {type:'extra', items:[
         "Modern applications of probability built directly on these ideas include <b>weather forecasting</b> ('70% chance of rain'), <b>insurance premium calculation</b>, and the shuffling algorithms used in every card game app.",
-        "The formal mathematical study of probability began with a real gambling dispute in the 1650s between <b>Blaise Pascal and Pierre de Fermat</b>, who exchanged letters trying to fairly split stakes in an interrupted game of chance."
-      ]}
+        "The formal mathematical study of probability began with a real gambling dispute: in 1654, a gambler named the Chevalier de Méré posed a fair-stakes puzzle to <b>Blaise Pascal</b>, who then corresponded with <b>Pierre de Fermat</b> over several weeks — their exchange introduced the idea of mathematical 'expectation' and effectively founded probability theory."
+      ]},
+    {type:'facts', items:[
+        "Modern casinos, insurance actuaries, and even streaming-service recommendation algorithms all run on probability theory that traces directly back to a gambler's question asked to Pascal in the summer of 1654.",
+        "The word 'probability' comes from the Latin <i>probabilis</i>, meaning 'provable' or 'worthy of approval' — its precise mathematical meaning as a numeric measure of chance only developed centuries after the word itself already existed.",
+        "Weather forecasts like '70% chance of rain' blend historical frequency data with real-time atmospheric models — a far more complex, data-driven descendant of the simple coin-and-dice probability taught in this chapter.",
+        "Before Pascal and Fermat, Italian polymath <b>Gerolamo Cardano</b> wrote an early, largely unpublished treatise on the probabilities in dice games in the 16th century — making him an important but often overlooked forerunner to the field."
+      ]},
   ],
   formulas:[
     ["Theoretical probability","P(E) = favourable outcomes / total outcomes"],
@@ -1207,10 +1518,26 @@ const CHAPTERS = [
     ["Total outcomes — 1 coin / 2 coins","2 / 4"],
     ["Total outcomes — 1 die / 2 dice","6 / 36"],
     ["Total outcomes — deck of cards","52 (26 red, 26 black)"],
-    ["Face cards in a deck","12 (4 each of J, Q, K)"]
+    ["Face cards in a deck","12 (4 each of J, Q, K)"],
+    ["Odds in favour of an event E","P(E) : P(not E)"],
+    ["Number of subsets of a sample space with n outcomes","2ⁿ"],
+    ["P(A) if A never happens","0"]
+  ],
+  flashcards:[
+    {q:"Formula for theoretical probability?", a:"P(E) = favourable outcomes / total outcomes"},
+    {q:"Range of probability values?", a:"0 to 1, inclusive"},
+    {q:"P(E) + P(not E) = ?", a:"1"},
+    {q:"Total outcomes when rolling two dice?", a:"36"},
+    {q:"Total cards in a standard deck?", a:"52"},
+    {q:"How many face cards are in a deck?", a:"12"},
+    {q:"Who exchanged the famous 1654 letters that founded probability theory?", a:"Blaise Pascal and Pierre de Fermat"},
+    {q:"P(impossible event) = ?", a:"0"}
   ]
 }
 ];
+
+
+
 
 
 /* ---------------- render helpers ---------------- */
@@ -1269,6 +1596,13 @@ function sectionHTML(sec){
       </div>
     </div>`;
   }
+  if(sec.type==='facts'){
+    return `<div class="section-block">
+      <div class="callout facts"><span class="label">✨ Did You Know?</span>
+        <ol>${sec.items.map(it=>`<li>${it}</li>`).join('')}</ol>
+      </div>
+    </div>`;
+  }
   if(sec.type==='table'){
     return `<div class="section-block">
       <h2><span class="tag">Reference</span> ${sec.heading}</h2>
@@ -1303,6 +1637,24 @@ function shapeSheetHTML(c){
   </div>`;
 }
 
+function flashcardsHTML(c){
+  if(!c.flashcards || !c.flashcards.length) return '';
+  return `<div class="flashcards-wrap" id="flashcards">
+    <h2 class="fc-heading">🎴 Flash Cards — Test Yourself</h2>
+    <span class="fs-sub">Tap a card to flip it. Question on the front, answer on the back.</span>
+    <div class="flip-grid">
+      ${c.flashcards.map((f,i)=>`
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+          <div class="flip-card-inner">
+            <div class="flip-face flip-front"><span>${f.q}</span><span class="flip-hint">tap ⤵</span></div>
+            <div class="flip-face flip-back"><span>${f.a}</span><span class="flip-hint">tap ⤴</span></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
 function renderChapter(id){
   const idx = CHAPTERS.findIndex(c=>c.id===id);
   const c = CHAPTERS[idx];
@@ -1320,6 +1672,7 @@ function renderChapter(id){
       ${c.sections.filter(s=>s.type!=='extra'&&s.type!=='trick').map(s=>`<a href="#s-${slug(s.heading)}">${s.heading}</a>`).join('')}
       ${c.shapeSheet?'<a href="#shapes">Shape Reference</a>':''}
       <a href="#formulas">Formula Sheet</a>
+      ${c.flashcards&&c.flashcards.length?'<a href="#flashcards">Flash Cards</a>':''}
     </nav>
     <div class="chapter-body">
       ${c.sections.map(s=>`<div id="s-${slug(s.heading||'')}">${sectionHTML(s)}</div>`).join('')}
@@ -1331,6 +1684,7 @@ function renderChapter(id){
           ${c.formulas.map(f=>`<div class="formula-card"><div class="fname">${f[0]}</div><div class="fexpr">${f[1]}</div></div>`).join('')}
         </div>
       </div>
+      ${flashcardsHTML(c)}
     </div>
     <div class="chapter-pager">
       ${prev?`<div class="pager-btn" onclick="openChapter(${prev.id})"><div class="plabel">← Previous</div><div class="ptitle">${prev.title}</div></div>`:'<div></div>'}
