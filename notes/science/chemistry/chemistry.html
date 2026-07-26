@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>छे Mistri 🧪 — Class 10 Chemistry Notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M16 5H24V14L31 30C32 32.5 30 35 27 35H13C10 35 8 32.5 9 30L16 14V5Z' fill='%2310140f' stroke='%23ff7a3d' stroke-width='2.5' stroke-linejoin='round'/%3E%3Cpath d='M13 24H27' stroke='%23ff7a3d' stroke-width='2.5'/%3E%3C/svg%3E">
 <meta name="description" content="Short, sharp notes on Chemical Reactions, Acids Bases &amp; Salts, Metals &amp; Non-metals, and Carbon Compounds — Class 10 Science, with facts, glossary and quick revision.">
 <style>
 /* ==========================================================================
@@ -53,10 +54,18 @@
   --radius: 14px;
   --radius-sm: 8px;
   --ease: cubic-bezier(.22,1,.36,1);
+  --ease-soft: cubic-bezier(.16,.84,.44,1);
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+
+  /* ---- elevation (layered shadows read as more premium than a single flat shadow) ---- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.35), 0 6px 14px -8px rgba(0,0,0,.4);
+  --shadow-md: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -20px rgba(0,0,0,.55);
+  --shadow-lg: 0 2px 4px rgba(0,0,0,.35), 0 30px 60px -24px rgba(0,0,0,.65);
+  --shadow-glow: 0 0 0 1px rgba(255,122,61,.12), 0 14px 32px -16px rgba(255,122,61,.35);
 }
 
 *,*::before,*::after{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
+html{ scroll-behavior:smooth; overflow-x:hidden; width:100%; max-width:100%; }
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior:auto; }
   *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
@@ -64,6 +73,8 @@ html{ scroll-behavior:smooth; }
 
 body{
   margin:0;
+  width:100%;
+  max-width:100%;
   background:var(--ink);
   color:var(--paper);
   font-family:var(--f-body);
@@ -71,6 +82,14 @@ body{
   line-height:1.65;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+}
+
+/* subtle film-grain texture — reads as premium/tactile rather than flat */
+body::after{
+  content:"";
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* ---- SPA page routing: only one .page visible at a time ---- */
@@ -103,6 +122,14 @@ button{ font-family:inherit; }
 
 ::selection{ background:var(--accent); color:#161616; }
 
+/* refined keyboard-focus ring — accessible and on-brand instead of the default blue outline */
+:focus-visible{
+  outline:2px solid var(--_a);
+  outline-offset:3px;
+  border-radius:4px;
+}
+a, button, input{ outline-offset:2px; }
+
 /* scrollbar flavor */
 ::-webkit-scrollbar{ width:10px; }
 ::-webkit-scrollbar-track{ background:var(--ink); }
@@ -115,9 +142,11 @@ button{ font-family:inherit; }
   position:sticky; top:0; z-index:50;
   display:flex; align-items:center; justify-content:space-between;
   padding:14px clamp(18px,4vw,48px);
-  background:rgba(16,20,15,.72);
-  backdrop-filter:blur(10px);
+  background:rgba(16,20,15,.68);
+  backdrop-filter:blur(14px) saturate(1.3);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);
   border-bottom:1px solid rgba(239,231,212,.08);
+  box-shadow:0 1px 0 rgba(239,231,212,.03), 0 12px 24px -20px rgba(0,0,0,.5);
 }
 .brand{
   display:flex; align-items:center; gap:10px;
@@ -167,6 +196,7 @@ button{ font-family:inherit; }
 .hero h1 .hi{
   background:linear-gradient(100deg, var(--flame) 0%, var(--flame-2) 45%, var(--brass-light) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 2px 18px rgba(255,122,61,.25));
 }
 .hero p.lede{
   font-family:var(--f-body); font-style:italic; font-size:1.15rem; color:var(--paper-2);
@@ -185,10 +215,20 @@ button{ font-family:inherit; }
 .btn-primary{
   background:linear-gradient(100deg, var(--flame), var(--flame-2));
   color:#1a1206; font-weight:600;
+  position:relative; overflow:hidden;
+  box-shadow:var(--shadow-sm);
 }
-.btn-primary:hover{ transform:translateY(-3px); box-shadow:0 14px 28px -12px rgba(255,122,61,.55); }
+.btn-primary::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(255,255,255,.35), transparent 55%);
+  opacity:.6; transition:opacity .3s var(--ease);
+}
+.btn-primary:hover{ transform:translateY(-3px); box-shadow:var(--shadow-glow); }
+.btn-primary:hover::before{ opacity:.85; }
+.btn-primary:active{ transform:translateY(-1px) scale(.99); }
 .btn-ghost{ border-color:rgba(239,231,212,.28); color:var(--paper); }
 .btn-ghost:hover{ border-color:var(--paper); transform:translateY(-3px); background:rgba(239,231,212,.06); }
+.btn-ghost:active{ transform:translateY(-1px) scale(.99); }
 
 /* ---- hero rig: bunsen + flask ---- */
 .hero-rig{
@@ -279,7 +319,7 @@ button{ font-family:inherit; }
 }
 .bottle-card:hover{
   transform:translateY(-8px) rotate(-.3deg);
-  box-shadow:0 24px 48px -20px rgba(0,0,0,.6);
+  box-shadow:var(--shadow-lg);
   border-color:rgba(239,231,212,.22);
 }
 .bottle-card.ch1{ --_a:var(--c1-a); --_b:var(--c1-b); }
@@ -348,6 +388,21 @@ footer .heart{ color:var(--flame-2); }
 .crumb a{ color:var(--_a); }
 .crumb a:hover{ text-decoration:underline; }
 
+.ch-stepper{ display:flex; align-items:center; gap:6px; margin-top:16px; }
+.step-line{ width:20px; height:1px; background:rgba(239,231,212,.18); }
+.step-dot{
+  width:26px; height:26px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-mono); font-size:.72rem; font-weight:600;
+  color:var(--paper-2); border:1.5px solid rgba(239,231,212,.2);
+  transition:transform .3s var(--ease), border-color .3s, background .3s, color .3s;
+}
+.step-dot:hover{ transform:scale(1.15); border-color:var(--_a); color:var(--paper); }
+.step-dot.active{
+  background:linear-gradient(140deg, var(--_a), var(--_b));
+  color:#171a12; border-color:transparent;
+}
+
 /* chapter hero */
 .ch-hero{ position:relative; padding:44px 0 30px; overflow:hidden; }
 .ch-kicker{ font-family:var(--f-mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--_a); }
@@ -401,7 +456,7 @@ footer .heart{ color:var(--flame-2); }
   border-radius:var(--radius);
   padding:26px 28px;
   position:relative;
-  box-shadow:0 18px 40px -22px rgba(0,0,0,.6);
+  box-shadow:var(--shadow-md);
   transform:rotate(-.25deg);
 }
 .card + .card{ margin-top:18px; }
@@ -417,7 +472,7 @@ footer .heart{ color:var(--flame-2); }
   transform:rotate(-4deg);
 }
 
-.formula{ font-family:var(--f-mono); background:rgba(20,25,15,.08); padding:2px 7px; border-radius:5px; font-size:.92em; white-space:nowrap; }
+.formula{ font-family:var(--f-mono); background:rgba(20,25,15,.08); padding:2px 7px; border-radius:5px; font-size:.92em; white-space:normal; overflow-wrap:anywhere; }
 
 .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:640px){ .two-col{ grid-template-columns:1fr; } }
@@ -446,7 +501,7 @@ footer .heart{ color:var(--flame-2); }
 }
 .rxn:hover{ border-color:var(--_a); transform:translateX(4px); }
 .rxn .rxn-label{ font-family:var(--f-mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--_a); margin-bottom:6px; display:block; }
-.rxn code{ font-family:var(--f-mono); font-size:1rem; color:var(--paper); }
+.rxn code{ font-family:var(--f-mono); font-size:1rem; color:var(--paper); overflow-wrap:anywhere; word-break:break-word; }
 .rxn .rxn-note{ margin-top:6px; font-size:.85rem; color:var(--paper-2); }
 
 /* things to remember — sticky-note grid */
@@ -496,13 +551,13 @@ footer .heart{ color:var(--flame-2); }
 /* amazing-fact callout (distinct from Mistri's tip) */
 .fact{
   position:relative;
-  background:rgba(239,231,212,.035);
-  border:1.5px dashed color-mix(in srgb, var(--_a) 50%, transparent);
+  background:rgba(19,24,15,.94);
+  border:1.5px dashed color-mix(in srgb, var(--_a) 55%, transparent);
   border-radius:var(--radius-sm);
   padding:16px 18px 16px 50px;
   margin:20px 0;
   font-size:.93rem;
-  color:var(--paper-2);
+  color:#cfc9b8;
 }
 .fact::before{
   content:"✦";
@@ -532,11 +587,14 @@ footer .heart{ color:var(--flame-2); }
   .topbar-links{
     position:fixed; top:60px; right:14px; left:14px; z-index:60;
     flex-direction:column; align-items:flex-start; gap:2px;
-    background:var(--bench); border:1px solid rgba(239,231,212,.12); border-radius:var(--radius);
+    background:rgba(27,34,25,.92); backdrop-filter:blur(16px) saturate(1.3); -webkit-backdrop-filter:blur(16px) saturate(1.3);
+    border:1px solid rgba(239,231,212,.12); border-radius:var(--radius);
     padding:10px; max-height:0; overflow:hidden; opacity:0; pointer-events:none;
-    transition:max-height .35s var(--ease), opacity .3s var(--ease);
+    transform:translateY(-8px);
+    box-shadow:var(--shadow-lg);
+    transition:max-height .4s var(--ease-soft), opacity .3s var(--ease), transform .35s var(--ease-soft);
   }
-  .topbar-links.open{ max-height:320px; opacity:1; pointer-events:auto; padding:10px 14px; }
+  .topbar-links.open{ max-height:320px; opacity:1; pointer-events:auto; padding:10px 14px; transform:translateY(0); }
   .topbar-links a{ width:100%; padding:10px 4px; border-bottom:1px solid rgba(239,231,212,.06); }
 }
 
@@ -609,10 +667,10 @@ footer .heart{ color:var(--flame-2); }
   display:flex; align-items:center; justify-content:center;
   opacity:0; transform:translateY(14px) scale(.9); pointer-events:none;
   transition:opacity .3s var(--ease), transform .3s var(--ease), border-color .3s, background .3s;
-  box-shadow:0 14px 26px -14px rgba(0,0,0,.6);
+  box-shadow:var(--shadow-md);
 }
 .back-to-top.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
-.back-to-top:hover{ border-color:var(--_a); background:var(--bench-2); transform:translateY(-3px) scale(1.05); }
+.back-to-top:hover{ border-color:var(--_a); background:var(--bench-2); transform:translateY(-3px) scale(1.05); box-shadow:var(--shadow-lg); }
 
 /* ---- keyboard hint chip (bottom-left, desktop only) ---- */
 .kbd-hint{
@@ -651,7 +709,8 @@ footer .heart{ color:var(--flame-2); }
 .mnemonic p{ margin:0; font-size:.9rem; color:var(--paper-2); }
 
 /* ---- comparison table ---- */
-.data-table{ width:100%; border-collapse:collapse; margin:14px 0; font-size:.9rem; }
+.table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+.data-table{ width:100%; min-width:420px; border-collapse:collapse; margin:0; font-size:.9rem; }
 .data-table caption{ text-align:left; font-family:var(--f-mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:color-mix(in srgb, var(--_a) 70%, black 10%); margin-bottom:8px; }
 .data-table th, .data-table td{ padding:10px 12px; border-bottom:1px solid var(--paper-line); text-align:left; }
 .data-table thead th{ font-family:var(--f-display); background:rgba(20,25,15,.06); font-size:.86rem; }
@@ -710,6 +769,128 @@ footer .heart{ color:var(--flame-2); }
 
 @media (prefers-reduced-motion: reduce){
   .ticker-track{ animation:none; }
+}
+
+/* ==========================================================================
+   Site footer — animated esterification reaction + designer credit
+   ========================================================================== */
+.site-footer{
+  border-top:1px solid rgba(239,231,212,.08);
+  padding:36px clamp(18px,4vw,48px) 30px;
+  display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center;
+}
+.site-footer.plain{ padding:22px clamp(18px,4vw,48px) 26px; gap:0; }
+.site-footer.plain .footer-bottom{ border-top:none; padding-top:0; }
+.ester-anim{ width:100%; max-width:480px; overflow:visible; }
+.ester-anim svg{ width:100%; height:auto; display:block; }
+.ester-caption{
+  font-family:var(--f-mono); font-size:.76rem; color:var(--paper-2);
+  max-width:52ch; margin:0; line-height:1.6;
+}
+.footer-bottom{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+  font-family:var(--f-mono); font-size:.75rem; color:var(--paper-2);
+  padding-top:10px; border-top:1px dashed rgba(239,231,212,.1); width:100%; max-width:480px;
+}
+.footer-bottom .dot-sep{ opacity:.4; }
+.footer-bottom .credit b{ color:var(--flame-2); font-weight:600; }
+
+/* reactant groups fade/slide toward the middle, then fade out (consumed) */
+@keyframes ester-in{
+  0%,10%{ opacity:1; transform:translateX(0) scale(1); }
+  38%,50%{ opacity:0; transform:translateX(22px) scale(.82); }
+  95%,100%{ opacity:1; transform:translateX(0) scale(1); }
+}
+/* product groups appear after reactants merge, hold, then reset */
+@keyframes ester-out{
+  0%,36%{ opacity:0; transform:translateX(-16px) scale(.75); }
+  52%,88%{ opacity:1; transform:translateX(0) scale(1); }
+  96%,100%{ opacity:0; transform:translateX(-16px) scale(.75); }
+}
+@keyframes ester-flash{
+  0%,44%{ opacity:0; r:2; }
+  50%{ opacity:.9; r:16; }
+  58%,100%{ opacity:0; r:2; }
+}
+.ester-acid, .ester-alcohol{ animation: ester-in 4.5s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+.ester-product, .ester-water{ animation: ester-out 4.5s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+.ester-flash{ animation: ester-flash 4.5s ease-in-out infinite; transform-origin:center; }
+
+@media (prefers-reduced-motion: reduce){
+  .ester-acid, .ester-alcohol, .ester-product, .ester-water, .ester-flash{ animation:none; opacity:1; }
+}
+
+/* ==========================================================================
+   Complete the Reaction — drag-and-drop exercise
+   ========================================================================== */
+.drag-exercise{
+  background:var(--ink-2); border:1px solid rgba(239,231,212,.1); border-radius:var(--radius);
+  padding:22px 22px 24px; margin-bottom:18px;
+}
+.drag-title{
+  font-family:var(--f-mono); font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--_a); margin-bottom:4px;
+}
+.drag-name{ font-family:var(--f-display); font-size:1.2rem; font-weight:700; color:var(--paper); margin-bottom:16px; }
+
+.drag-equation{
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  font-family:var(--f-mono); font-size:1.05rem; color:var(--paper);
+  background:rgba(0,0,0,.15); border-radius:var(--radius-sm); padding:18px 16px; margin-bottom:18px;
+}
+.eq-part{ white-space:nowrap; }
+
+.drop-zone{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:74px; height:36px; padding:0 10px;
+  border:2px dashed rgba(239,231,212,.3); border-radius:8px;
+  font-family:var(--f-mono); font-size:.95rem; color:var(--paper-2);
+  background:rgba(239,231,212,.03); transition:border-color .25s, background .25s, transform .2s;
+}
+.drop-zone.drag-over{ border-color:var(--_a); background:rgba(255,255,255,.06); transform:scale(1.05); }
+.drop-zone.filled{ border-style:solid; color:var(--paper); }
+.drop-zone.correct{ border-color:#2bb673; background:rgba(43,182,115,.14); color:#7be3ae; animation:zone-pop .45s var(--ease-spring); }
+@keyframes zone-pop{ 0%{ transform:scale(.85); } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); } }
+.drop-zone.incorrect{ animation:shake-zone .4s ease; border-color:#e63950; }
+@keyframes shake-zone{
+  0%,100%{ transform:translateX(0); }
+  25%{ transform:translateX(-6px); }
+  75%{ transform:translateX(6px); }
+}
+
+.drag-pool{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; min-height:44px; }
+.drag-chip{
+  font-family:var(--f-mono); font-size:.92rem; font-weight:600; color:#171a12;
+  background:linear-gradient(140deg, var(--_a), var(--_b));
+  padding:8px 16px; border-radius:99px; cursor:grab;
+  user-select:none; touch-action:none;
+  box-shadow:var(--shadow-sm);
+  transition:transform .15s var(--ease-spring), box-shadow .15s ease, opacity .2s ease;
+}
+.drag-chip:hover{ transform:translateY(-2px); }
+.drag-chip.dragging{
+  position:fixed; z-index:300; pointer-events:none; cursor:grabbing;
+  box-shadow:var(--shadow-lg); transform:scale(1.08);
+}
+.drag-chip.placed{ opacity:0; pointer-events:none; }
+.drag-chip.chip-locked{
+  background:none; box-shadow:none; padding:0; cursor:default;
+  color:inherit; font-weight:700; width:auto !important;
+}
+
+.drag-actions{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.drag-reset{
+  font-family:var(--f-mono); font-size:.8rem; color:var(--paper-2);
+  background:none; border:1px solid rgba(239,231,212,.2); border-radius:99px;
+  padding:8px 16px; cursor:pointer; transition:border-color .25s, color .25s;
+}
+.drag-reset:hover{ border-color:var(--_a); color:var(--paper); }
+.drag-status{ font-family:var(--f-mono); font-size:.82rem; color:var(--paper-2); }
+.drag-status.win{ color:#7be3ae; }
+
+@media (max-width:480px){
+  .drag-equation{ font-size:.92rem; padding:14px 12px; }
+  .drop-zone{ min-width:60px; height:32px; }
 }
 
 </style>
@@ -939,10 +1120,40 @@ footer .heart{ color:var(--flame-2); }
 </section>
 
 
-    <footer>
-      <span>छे Mistri 🧪 — made for last-minute revision, built to actually stick.</span>
-      <span>NCERT Class 10 Science · Chapters 1–4 <span class="heart">♥</span></span>
-    </footer>
+    
+<footer class="site-footer">
+  <div class="ester-anim" aria-hidden="true">
+    <svg viewBox="0 0 360 90">
+      <g class="ester-acid">
+        <ellipse cx="42" cy="45" rx="34" ry="20" fill="none" stroke="var(--_a)" stroke-width="2"/>
+        <text x="42" y="49" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="var(--_a)">CH₃COOH</text>
+      </g>
+      <text x="88" y="50" text-anchor="middle" fill="var(--paper-2)" font-size="16" font-family="'JetBrains Mono', monospace">+</text>
+      <g class="ester-alcohol">
+        <ellipse cx="134" cy="45" rx="34" ry="20" fill="none" stroke="var(--_b)" stroke-width="2"/>
+        <text x="134" y="49" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="var(--_b)">C₂H₅OH</text>
+      </g>
+      <circle class="ester-flash" cx="180" cy="45" r="2" fill="var(--flame-2)"/>
+      <text x="180" y="50" text-anchor="middle" fill="var(--paper-2)" font-size="16" font-family="'JetBrains Mono', monospace">⇌</text>
+      <g class="ester-product">
+        <ellipse cx="255" cy="45" rx="46" ry="20" fill="none" stroke="var(--flame-2)" stroke-width="2"/>
+        <text x="255" y="49" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="var(--flame-2)">CH₃COOC₂H₅</text>
+      </g>
+      <text x="313" y="50" text-anchor="middle" fill="var(--paper-2)" font-size="16" font-family="'JetBrains Mono', monospace">+</text>
+      <g class="ester-water">
+        <ellipse cx="340" cy="45" rx="18" ry="16" fill="none" stroke="#7dd3fc" stroke-width="2"/>
+        <text x="340" y="49" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7dd3fc">H₂O</text>
+      </g>
+    </svg>
+  </div>
+  <p class="ester-caption">Esterification, on a loop — CH₃COOH + C₂H₅OH ⇌ CH₃COOC₂H₅ + H₂O — a sweet-smelling ester and water, just like your revision, going round and round until it sticks.</p>
+  <div class="footer-bottom">
+    <span>छे Mistri 🧪 · NCERT Class 10 Chemistry Notes</span>
+    <span class="dot-sep">·</span>
+    <span class="credit">Designed by <b>Harshit Chaubey</b></span>
+  </div>
+</footer>
+
   </div>
 
   <div class="page chapter" id="page-ch1" data-route="ch1" data-a="--c1-a" data-b="--c1-b" data-title="Ch.01 — Chemical Reactions &amp; Equations | छे Mistri 🧪">
@@ -951,6 +1162,7 @@ footer .heart{ color:var(--flame-2); }
     <section class="ch-hero wrap float-stickers">
       <section class="ch-hero wrap float-stickers">
   <div class="crumb"><a href="#home" data-route="home">The Shelf</a> / Ch. 01</div>
+  <div class="ch-stepper" aria-label="Chapter progress"><a href="#ch1" data-route="ch1" class="step-dot active"><span>1</span></a><span class="step-line"></span><a href="#ch2" data-route="ch2" class="step-dot"><span>2</span></a><span class="step-line"></span><a href="#ch3" data-route="ch3" class="step-dot"><span>3</span></a><span class="step-line"></span><a href="#ch4" data-route="ch4" class="step-dot"><span>4</span></a></div>
   <svg class="sticker s1" viewBox="0 0 60 60" fill="none"><path d="M20 10L24 26H36L40 10" stroke="var(--_b)" stroke-width="2.4" stroke-linecap="round"/><rect x="22" y="26" width="16" height="22" rx="3" fill="var(--_b)" opacity=".25" stroke="var(--_b)" stroke-width="2"/></svg>
   <svg class="sticker s2" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="16" stroke="var(--_a)" stroke-width="2" stroke-dasharray="2 5"/></svg>
 
@@ -981,11 +1193,13 @@ footer .heart{ color:var(--flame-2); }
     <a href="#equations">Chemical Equations</a>
     <a href="#types">Types of Reactions</a>
     <a href="#oxidation">Oxidation &amp; Corrosion</a>
-    <a href="#glossary">Glossary</a>
-    <a href="#reactions">Important Reactions</a>
-    <a href="#remember">Things to Remember</a>
-    <a href="#revision">Quick Revision</a>
-    <a href="#exam">Exam Corner</a>
+    <a href="#ch1-glossary">Glossary</a>
+    <a href="#ch1-beyond">Beyond the Syllabus</a>
+    <a href="#ch1-reactions">Important Reactions</a>
+    <a href="#ch1-remember">Things to Remember</a>
+    <a href="#ch1-revision">Quick Revision</a>
+    <a href="#ch1-exam">Exam Corner</a>
+    <a href="#ch1-drag">Complete the Reaction</a>
   </nav>
 
   <main class="ch-content">
@@ -1001,12 +1215,12 @@ footer .heart{ color:var(--flame-2); }
           <li><b>Evolution of a gas</b> — bubbles when zinc meets dilute sulphuric acid.</li>
           <li><b>Change of temperature</b> — the flask feels warm/cold as the reaction proceeds.</li>
         </ul>
-        <div class="fact"><b>Amazing fact</b>Fireworks get their colours from burning metal compounds — strontium salts burn red, copper burns blue-green, and sodium burns the same yellow as a streetlight.</div>
         <div class="two-col">
           <div><b class="formula">Mg + O₂ → MgO</b><p style="margin-top:8px;">Magnesium ribbon burns with a dazzling white flame → white magnesium oxide ash.</p></div>
           <div><b class="formula">Zn + H₂SO₄ → ZnSO₄ + H₂↑</b><p style="margin-top:8px;">Zinc granules + dilute acid → bubbles of hydrogen gas, flask turns warm.</p></div>
         </div>
       </div>
+      <div class="fact"><b>Amazing fact</b>Fireworks get their colours from burning metal compounds — strontium salts burn red, copper burns blue-green, and sodium burns the same yellow as a streetlight.</div>
       <div class="tip">
         <svg class="mascot-mini" viewBox="0 0 60 60" fill="none"><path d="M24 8H36V22L48 46C50 50 47 54 42 54H18C13 54 10 50 12 46L24 22V8Z" fill="#232b1e" stroke="var(--_a)" stroke-width="2"/><circle class="eye" cx="25" cy="34" r="3" fill="#efe7d4"/><circle class="eye" cx="35" cy="34" r="3" fill="#efe7d4"/><circle cx="25" cy="34" r="1.3" fill="#171a12"/><circle cx="35" cy="34" r="1.3" fill="#171a12"/><path d="M24 42 Q30 46 36 42" stroke="#efe7d4" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
         <div class="tip-body"><b>Mistri's tip</b><p>Remember the four clues as <b>SCEG</b> — State, Colour, Evolution of gas, temperature Gain/loss. If an exam question describes an "observation," it's testing one of these four.</p></div>
@@ -1027,6 +1241,7 @@ footer .heart{ color:var(--flame-2); }
         <div class="rxn"><span class="rxn-label">Balanced</span><code>3Fe(s) + 4H₂O(g) → Fe₃O₄(s) + 4H₂(g)</code></div>
         <p>Balance by trial and error — adjust coefficients (never subscripts) until atom counts match on both sides.</p>
       </div>
+      <div class="fact"><b>Did you know</b>Balancing an equation by trial and error feels tedious, but it's the exact same principle chemists use to balance rocket-fuel combustion and even nuclear reactions — conservation of mass never stops applying, no matter the scale.</div>
       <div class="card">
         <h3>Making equations more informative</h3>
         <div class="kv">
@@ -1065,6 +1280,7 @@ footer .heart{ color:var(--flame-2); }
         <div class="rxn"><code>Fe(s) + CuSO₄(aq) → FeSO₄(aq) + Cu(s)</code><p class="rxn-note">Iron nail dipped in copper sulphate solution turns the blue solution pale green, and copper deposits on the nail.</p></div>
       </div>
 
+      <div class="fact"><b>Interesting fact</b>The thermite reaction you'll meet in Chapter 3 (used to weld railway tracks) is technically a displacement and a combination reaction happening at once — real chemistry rarely sits in just one neat box.</div>
       <div class="card">
         <h3>④ Double displacement reaction</h3>
         <p>Ions are exchanged between two compounds, often producing an <b>insoluble precipitate</b>.</p>
@@ -1088,7 +1304,7 @@ footer .heart{ color:var(--flame-2); }
 
       <div class="card">
         <h3>Quick-reference: types of reactions</h3>
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
           <caption>Five reaction types at a glance</caption>
           <thead><tr><th>Type</th><th>What happens</th><th>Example</th></tr></thead>
           <tbody>
@@ -1098,7 +1314,7 @@ footer .heart{ color:var(--flame-2); }
             <tr><td>Double displacement</td><td>AB + CD → AD + CB</td><td>Na₂SO₄ + BaCl₂ → BaSO₄ + 2NaCl</td></tr>
             <tr><td>Redox</td><td>Simultaneous oxidation + reduction</td><td>CuO + H₂ → Cu + H₂O</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="mnemonic">
@@ -1129,7 +1345,7 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="glossary">
+    <section class="section reveal" id="ch1-glossary">
       <div class="section-head"><span class="section-num">5</span><h2>📖 Glossary</h2></div>
       <div class="card">
         <dl class="glossary-grid">
@@ -1150,8 +1366,33 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="reactions">
-      <div class="section-head"><span class="section-num">6</span><h2>⚗️ Important Reactions to Remember</h2></div>
+    
+    <section class="section reveal" id="ch1-beyond">
+      <div class="section-head"><span class="section-num">6</span><h2>🌐 Beyond the Syllabus</h2></div>
+      <div class="card">
+        <h3>The word "chemistry" is 4,000 years old in spirit</h3>
+        <p>It comes from the Arabic <i>al-kīmiyā</i>, itself rooted in the ancient Greek <i>khēmeia</i> — the "art of transformation." Long before anyone wrote a balanced equation, Egyptian metalworkers and early alchemists were already asking the same question this chapter answers: how does one substance turn into another?</p>
+      </div>
+      <div class="card">
+        <h3>The chemist who weighed reactions into a law</h3>
+        <p>Antoine Lavoisier, often called the father of modern chemistry, spent the 1770s–80s sealing reactions in glass vessels and weighing everything before and after. His careful bookkeeping led directly to the <b>Law of Conservation of Mass</b> — the exact reason we're required to balance every equation in this chapter, atom for atom.</p>
+      </div>
+      <div class="card">
+        <h3>Corrosion's real price tag</h3>
+        <p>Industry studies (NACE/AMPP's IMPACT report) estimate global corrosion costs at roughly <b>US$2.5 trillion a year</b> — around 3–4% of world GDP — in damaged bridges, pipelines, ships, and reinforced concrete. Painting, galvanising, and alloying aren't just chapter vocabulary; they're a global engineering industry.</p>
+      </div>
+      <div class="card">
+        <h3>A combination reaction that feeds half the planet</h3>
+        <p>The industrial reaction N₂ + 3H₂ → 2NH₃ (the Haber–Bosch process) turns unreactive atmospheric nitrogen into ammonia for fertiliser. Historians estimate that roughly half of the nitrogen in the proteins in your body arrived there via this single combination reaction — discovered by Fritz Haber and scaled up by Carl Bosch, both later Nobel laureates.</p>
+      </div>
+      <div class="card">
+        <h3>Catalytic converters — activation energy at work</h3>
+        <p>Every petrol car has a small chamber lined with platinum, palladium, and rhodium. These metals don't get used up — they lower the <b>activation energy</b> needed for toxic exhaust gases (CO, NOₓ, unburnt hydrocarbons) to react into CO₂, N₂, and water, before the gas ever leaves the tailpipe.</p>
+      </div>
+    </section>
+
+    <section class="section reveal" id="ch1-reactions">
+      <div class="section-head"><span class="section-num">7</span><h2>⚗️ Important Reactions to Remember</h2></div>
       <div class="rxn"><span class="rxn-label">Combination</span><code>CaO(s) + H₂O(l) → Ca(OH)₂(aq) + Heat</code></div>
       <div class="rxn"><span class="rxn-label">Combination (combustion)</span><code>CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(g)</code></div>
       <div class="rxn"><span class="rxn-label">Thermal decomposition</span><code>CaCO₃(s) --Heat--&gt; CaO(s) + CO₂(g)</code></div>
@@ -1163,8 +1404,8 @@ footer .heart{ color:var(--flame-2); }
       <div class="rxn"><span class="rxn-label">Reactivity/iron with steam</span><code>3Fe(s) + 4H₂O(g) → Fe₃O₄(s) + 4H₂(g)</code></div>
     </section>
 
-    <section class="section reveal" id="remember">
-      <div class="section-head"><span class="section-num">7</span><h2>🧠 Things to Remember</h2></div>
+    <section class="section reveal" id="ch1-remember">
+      <div class="section-head"><span class="section-num">8</span><h2>🧠 Things to Remember</h2></div>
       <div class="notes-grid">
         <div class="sticky-note"><b>Balance first</b>Never change a subscript to balance an equation — only change the coefficient in front.</div>
         <div class="sticky-note"><b>Exothermic vs endothermic</b>Reactions releasing heat/light are exothermic (e.g. combustion); those absorbing energy are endothermic (e.g. thermal decomposition).</div>
@@ -1174,8 +1415,8 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="revision">
-      <div class="section-head"><span class="section-num">8</span><h2>Quick-fire Revision</h2></div>
+    <section class="section reveal" id="ch1-revision">
+      <div class="section-head"><span class="section-num">9</span><h2>Quick-fire Revision</h2></div>
       <p style="color:var(--paper-2); font-family:var(--f-mono); font-size:.85rem; margin-top:-10px;">Tap a card to flip it.</p>
       <div class="flash-grid">
         <div class="flash"><div class="flash-inner"><div class="flash-face flash-front">Rusting is caused by?</div><div class="flash-face flash-back">Reaction of iron with oxygen + moisture in air (Fe₂O₃·xH₂O)</div></div></div>
@@ -1189,12 +1430,38 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="exam">
-      <div class="section-head"><span class="section-num">9</span><h2>📝 Exam Corner</h2></div>
+    <section class="section reveal" id="ch1-exam">
+      <div class="section-head"><span class="section-num">10</span><h2>📝 Exam Corner</h2></div>
       <div class="exam-q"><span class="marks">1 mark</span><p>Why should a magnesium ribbon be cleaned before burning in air?</p></div>
       <div class="exam-q"><span class="marks">2 marks</span><p>Write balanced chemical equations with state symbols for: barium chloride + sodium sulphate → barium sulphate + sodium chloride.</p></div>
       <div class="exam-q"><span class="marks">3 marks</span><p>A shiny brown-coloured element X on heating in air turns black. Name the element X and the black coloured compound formed.</p></div>
       <div class="exam-q"><span class="marks">5 marks</span><p>Explain, with one example each, the terms: oxidation, reduction, and corrosion — and describe one method to prevent corrosion.</p></div>
+    </section>
+
+    
+    <section class="section reveal" id="ch1-drag">
+      <div class="section-head"><span class="section-num">11</span><h2>🧩 Complete the Reaction</h2></div>
+      <div class="drag-exercise">
+        <div class="drag-title">Reaction name</div>
+        <div class="drag-name">Displacement Reaction</div>
+        <div class="drag-equation">
+      <span class="drop-zone" data-answer="Fe"></span>
+      <span class="eq-part">+ CuSO₄ →</span>
+      <span class="drop-zone" data-answer="FeSO₄"></span>
+      <span class="eq-part">+</span>
+      <span class="drop-zone" data-answer="Cu"></span>
+        </div>
+        <div class="drag-pool">
+      <div class="drag-chip" data-value="FeSO₄">FeSO₄</div>
+      <div class="drag-chip" data-value="Cu">Cu</div>
+      <div class="drag-chip" data-value="Zn">Zn</div>
+      <div class="drag-chip" data-value="Fe">Fe</div>
+        </div>
+        <div class="drag-actions">
+          <button class="drag-reset" type="button">Reset</button>
+          <span class="drag-status"></span>
+        </div>
+      </div>
     </section>
 
     <div class="ch-footnav reveal">
@@ -1207,10 +1474,15 @@ footer .heart{ color:var(--flame-2); }
 
 
     </div>
-    <footer>
-      <span>छे Mistri 🧪 — made for last-minute revision, built to actually stick.</span>
-      <span>NCERT Class 10 Science · Chapter 1</span>
-    </footer>
+    
+<footer class="site-footer plain">
+  <div class="footer-bottom">
+    <span>छे Mistri 🧪 · Chapter 1</span>
+    <span class="dot-sep">·</span>
+    <span class="credit">Designed by <b>Harshit Chaubey</b></span>
+  </div>
+</footer>
+
   </div>
 
   <div class="page chapter" id="page-ch2" data-route="ch2" data-a="--c2-a" data-b="--c2-b" data-title="Ch.02 — Acids, Bases &amp; Salts | छे Mistri 🧪">
@@ -1219,6 +1491,7 @@ footer .heart{ color:var(--flame-2); }
     <section class="ch-hero wrap float-stickers">
       <section class="ch-hero wrap float-stickers">
   <div class="crumb"><a href="#home" data-route="home">The Shelf</a> / Ch. 02</div>
+  <div class="ch-stepper" aria-label="Chapter progress"><a href="#ch1" data-route="ch1" class="step-dot"><span>1</span></a><span class="step-line"></span><a href="#ch2" data-route="ch2" class="step-dot active"><span>2</span></a><span class="step-line"></span><a href="#ch3" data-route="ch3" class="step-dot"><span>3</span></a><span class="step-line"></span><a href="#ch4" data-route="ch4" class="step-dot"><span>4</span></a></div>
   <svg class="sticker s1" viewBox="0 0 60 60" fill="none"><rect x="20" y="10" width="8" height="30" rx="2" fill="var(--_a)" opacity=".7"/><rect x="32" y="10" width="8" height="30" rx="2" fill="var(--_b)" opacity=".7"/></svg>
   <svg class="sticker s2" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="15" stroke="var(--_a)" stroke-width="2" stroke-dasharray="2 4"/></svg>
 
@@ -1246,15 +1519,17 @@ footer .heart{ color:var(--flame-2); }
       <div class="wrap ch-layout">
   <nav class="ch-nav">
     <a href="#indicators">Indicators</a>
-    <a href="#reactions">How Acids &amp; Bases React</a>
+    <a href="#ch2-reactions">How Acids &amp; Bases React</a>
     <a href="#ph">The pH Scale</a>
     <a href="#salts">Family of Salts</a>
     <a href="#household">Salts in Daily Life</a>
-    <a href="#glossary">Glossary</a>
-    <a href="#important">Important Reactions</a>
-    <a href="#remember">Things to Remember</a>
-    <a href="#revision">Quick Revision</a>
-    <a href="#exam">Exam Corner</a>
+    <a href="#ch2-glossary">Glossary</a>
+    <a href="#ch2-beyond">Beyond the Syllabus</a>
+    <a href="#ch2-important">Important Reactions</a>
+    <a href="#ch2-remember">Things to Remember</a>
+    <a href="#ch2-revision">Quick Revision</a>
+    <a href="#ch2-exam">Exam Corner</a>
+    <a href="#ch2-drag">Complete the Reaction</a>
   </nav>
 
   <main class="ch-content">
@@ -1270,6 +1545,7 @@ footer .heart{ color:var(--flame-2); }
           <dt>Olfactory indicators</dt><dd>substances whose smell changes with acid/base — e.g. onion loses its odour in a base</dd>
         </div>
       </div>
+      <div class="fact"><b>Did you know</b>Red cabbage juice is a natural universal indicator you can make at home — it shifts red in acid, purple near neutral, and green/yellow in a base, making it a popular low-cost substitute for synthetic indicators in school labs.</div>
       <div class="card">
         <h3>Why do acids and bases behave this way?</h3>
         <p>Acids produce <b>H⁺ ions</b> (as H₃O⁺, hydronium ion) when dissolved in water. Bases produce <b>OH⁻ ions</b> in water. This is the actual reason behind every acid/base property.</p>
@@ -1279,7 +1555,7 @@ footer .heart{ color:var(--flame-2); }
 
       <div class="card">
         <h3>Acid vs Base — quick comparison</h3>
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
           <caption>Side-by-side comparison</caption>
           <thead><tr><th>Property</th><th>Acid</th><th>Base</th></tr></thead>
           <tbody>
@@ -1290,7 +1566,7 @@ footer .heart{ color:var(--flame-2); }
             <tr><td>Phenolphthalein</td><td>Colourless</td><td>Pink</td></tr>
             <tr><td>pH range</td><td>0–7</td><td>7–14</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="mnemonic">
@@ -1305,7 +1581,7 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="reactions">
+    <section class="section reveal" id="ch2-reactions">
       <div class="section-head"><span class="section-num">2</span><h2>How Acids &amp; Bases React</h2></div>
       <div class="card">
         <h3>Acid + Metal</h3>
@@ -1349,11 +1625,11 @@ footer .heart{ color:var(--flame-2); }
         <ul>
           <li><b>Our body</b> works in a narrow pH range (7.0–7.8); tooth decay starts when mouth pH drops below 5.5.</li>
           <li><b>Plants &amp; animals</b> are pH-sensitive — acid rain (pH &lt; 5.6) damages aquatic life.</li>
-          <li style="list-style:none; margin-left:-1.3em;"><div class="fact"><b>Amazing fact</b>Acid rain (pH below 5.6) has been slowly dissolving the marble (calcium carbonate) of the Taj Mahal for decades — the same acid-carbonate reaction you studied above, just playing out over centuries on a monument.</div></li>
           <li><b>Digestion</b> needs the stomach's dilute HCl; excess acid causes indigestion, treated with a mild base (antacid).</li>
           <li><b>Soil pH</b> must suit the crop — treated with quicklime/slaked lime if too acidic.</li>
         </ul>
       </div>
+      <div class="fact"><b>Amazing fact</b>Acid rain (pH below 5.6) has been slowly dissolving the marble (calcium carbonate) of the Taj Mahal for decades — the same acid-carbonate reaction you studied above, just playing out over centuries on a monument.</div>
     </section>
 
     <section class="section reveal" id="salts">
@@ -1366,6 +1642,7 @@ footer .heart{ color:var(--flame-2); }
           <dt>Weak acid + Strong base</dt><dd>Basic salt, pH &gt; 7 (e.g. Na₂CO₃)</dd>
         </div>
       </div>
+      <div class="fact"><b>Interesting fact</b>Heat blue copper sulfate crystals and they turn white as their water of crystallisation escapes — add a drop of water back and the blue returns instantly. This simple colour-change trick is still used as a quick test for detecting moisture in an unknown liquid.</div>
       <div class="card">
         <h3>Water of crystallisation</h3>
         <p>Fixed number of water molecules chemically bound in one formula unit of a salt — e.g. <span class="formula">CuSO₄·5H₂O</span> (blue vitriol). Heating removes this water: blue copper sulphate crystals turn white, then turn blue again on adding water.</p>
@@ -1402,7 +1679,7 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="glossary">
+    <section class="section reveal" id="ch2-glossary">
       <div class="section-head"><span class="section-num">6</span><h2>📖 Glossary</h2></div>
       <div class="card">
         <dl class="glossary-grid">
@@ -1422,8 +1699,33 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="important">
-      <div class="section-head"><span class="section-num">7</span><h2>⚗️ Important Reactions to Remember</h2></div>
+    
+    <section class="section reveal" id="ch2-beyond">
+      <div class="section-head"><span class="section-num">7</span><h2>🌐 Beyond the Syllabus</h2></div>
+      <div class="card">
+        <h3>The pH scale was invented at a brewery</h3>
+        <p>Danish chemist Søren P. L. Sørensen introduced the pH scale in 1909 while working at the Carlsberg Laboratory — yes, the beer company. He needed a precise way to control acidity during brewing, and the notation he invented (pH = "power of Hydrogen") became one of chemistry's most-used scales.</p>
+      </div>
+      <div class="card">
+        <h3>A real-world pH ladder</h3>
+        <p>Battery acid sits near pH 0, gastric acid around 1.5–3.5, lemon juice ≈2, black coffee ≈5, pure water at 7, seawater ≈8.1, milk of magnesia ≈10.5, ammonia ≈11, and household bleach ≈12.5. Almost everything you touch in a day has a pH — this chapter's scale is really a map of daily chemistry.</p>
+      </div>
+      <div class="card">
+        <h3>The ocean is quietly acidifying</h3>
+        <p>Since the Industrial Revolution, the ocean's average surface pH has dropped from about 8.2 to about 8.1. Because pH is logarithmic, that "small" 0.1 drop represents roughly a <b>30% rise</b> in ocean acidity — mostly from seawater absorbing excess atmospheric CO₂ and forming carbonic acid, the same H₂CO₃ chemistry behind fizzy drinks.</p>
+      </div>
+      <div class="card">
+        <h3>The world's most-produced chemical</h3>
+        <p>Sulfuric acid (H₂SO₄) is manufactured in greater quantity by mass than any other industrial chemical on Earth — used in fertilisers, batteries, and metal processing. Economists have historically used a country's sulfuric acid output as a rough proxy for its industrial strength.</p>
+      </div>
+      <div class="card">
+        <h3>What's actually in an antacid tablet</h3>
+        <p>Most over-the-counter antacids use magnesium hydroxide, aluminium hydroxide, or calcium carbonate — mild bases chosen because they neutralise excess stomach HCl gently, without the runaway heat a strong base would release in reaction with a strong acid.</p>
+      </div>
+    </section>
+
+    <section class="section reveal" id="ch2-important">
+      <div class="section-head"><span class="section-num">8</span><h2>⚗️ Important Reactions to Remember</h2></div>
       <div class="rxn"><span class="rxn-label">Acid + Metal</span><code>Zn(s) + H₂SO₄(aq) → ZnSO₄(aq) + H₂(g)</code></div>
       <div class="rxn"><span class="rxn-label">Base + Metal</span><code>2NaOH(aq) + Zn(s) → Na₂ZnO₂(aq) + H₂(g)</code></div>
       <div class="rxn"><span class="rxn-label">Acid + Metal carbonate</span><code>Na₂CO₃(s) + 2HCl(aq) → 2NaCl(aq) + H₂O(l) + CO₂(g)</code></div>
@@ -1435,8 +1737,8 @@ footer .heart{ color:var(--flame-2); }
       <div class="rxn"><span class="rxn-label">Plaster of Paris setting</span><code>CaSO₄·½H₂O + 1½H₂O → CaSO₄·2H₂O</code></div>
     </section>
 
-    <section class="section reveal" id="remember">
-      <div class="section-head"><span class="section-num">8</span><h2>🧠 Things to Remember</h2></div>
+    <section class="section reveal" id="ch2-remember">
+      <div class="section-head"><span class="section-num">9</span><h2>🧠 Things to Remember</h2></div>
       <div class="notes-grid">
         <div class="sticky-note"><b>Never test acids by taste</b>In the lab, we test with indicators, not tongue — many acids/bases are corrosive.</div>
         <div class="sticky-note"><b>Always add acid to water</b>Dissolving acid in water is highly exothermic — add acid to water slowly, never the reverse, or it may splash and burn.</div>
@@ -1446,8 +1748,8 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="revision">
-      <div class="section-head"><span class="section-num">9</span><h2>Quick-fire Revision</h2></div>
+    <section class="section reveal" id="ch2-revision">
+      <div class="section-head"><span class="section-num">10</span><h2>Quick-fire Revision</h2></div>
       <p style="color:var(--paper-2); font-family:var(--f-mono); font-size:.85rem; margin-top:-10px;">Tap a card to flip it.</p>
       <div class="flash-grid">
         <div class="flash"><div class="flash-inner"><div class="flash-face flash-front">Why does dry HCl gas not turn dry litmus red?</div><div class="flash-face flash-back">Acidic behaviour needs H⁺ ions, which form only in the presence of water.</div></div></div>
@@ -1461,12 +1763,39 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="exam">
-      <div class="section-head"><span class="section-num">10</span><h2>📝 Exam Corner</h2></div>
+    <section class="section reveal" id="ch2-exam">
+      <div class="section-head"><span class="section-num">11</span><h2>📝 Exam Corner</h2></div>
       <div class="exam-q"><span class="marks">1 mark</span><p>Why does an aqueous solution of an acid conduct electricity?</p></div>
       <div class="exam-q"><span class="marks">2 marks</span><p>What happens when a solution of an acid is mixed with a solution of a base? Give the general equation.</p></div>
       <div class="exam-q"><span class="marks">3 marks</span><p>Why is it recommended to add acid to water rather than water to acid, while diluting? Explain with reason.</p></div>
       <div class="exam-q"><span class="marks">5 marks</span><p>Name the gas evolved when dilute HCl reacts with sodium hydrogencarbonate. Write the chemical equation and describe how you would test for the evolved gas.</p></div>
+    </section>
+
+    
+    <section class="section reveal" id="ch2-drag">
+      <div class="section-head"><span class="section-num">12</span><h2>🧩 Complete the Reaction</h2></div>
+      <div class="drag-exercise">
+        <div class="drag-title">Reaction name</div>
+        <div class="drag-name">Neutralisation Reaction</div>
+        <div class="drag-equation">
+      <span class="eq-part">NaOH +</span>
+      <span class="drop-zone" data-answer="HCl"></span>
+      <span class="eq-part">→</span>
+      <span class="drop-zone" data-answer="NaCl"></span>
+      <span class="eq-part">+</span>
+      <span class="drop-zone" data-answer="H₂O"></span>
+        </div>
+        <div class="drag-pool">
+      <div class="drag-chip" data-value="NaCl">NaCl</div>
+      <div class="drag-chip" data-value="H₂O">H₂O</div>
+      <div class="drag-chip" data-value="KCl">KCl</div>
+      <div class="drag-chip" data-value="HCl">HCl</div>
+        </div>
+        <div class="drag-actions">
+          <button class="drag-reset" type="button">Reset</button>
+          <span class="drag-status"></span>
+        </div>
+      </div>
     </section>
 
     <div class="ch-footnav reveal">
@@ -1479,10 +1808,15 @@ footer .heart{ color:var(--flame-2); }
 
 
     </div>
-    <footer>
-      <span>छे Mistri 🧪 — made for last-minute revision, built to actually stick.</span>
-      <span>NCERT Class 10 Science · Chapter 2</span>
-    </footer>
+    
+<footer class="site-footer plain">
+  <div class="footer-bottom">
+    <span>छे Mistri 🧪 · Chapter 2</span>
+    <span class="dot-sep">·</span>
+    <span class="credit">Designed by <b>Harshit Chaubey</b></span>
+  </div>
+</footer>
+
   </div>
 
   <div class="page chapter" id="page-ch3" data-route="ch3" data-a="--c3-a" data-b="--c3-b" data-title="Ch.03 — Metals &amp; Non-metals | छे Mistri 🧪">
@@ -1491,6 +1825,7 @@ footer .heart{ color:var(--flame-2); }
     <section class="ch-hero wrap float-stickers">
       <section class="ch-hero wrap float-stickers">
   <div class="crumb"><a href="#home" data-route="home">The Shelf</a> / Ch. 03</div>
+  <div class="ch-stepper" aria-label="Chapter progress"><a href="#ch1" data-route="ch1" class="step-dot"><span>1</span></a><span class="step-line"></span><a href="#ch2" data-route="ch2" class="step-dot"><span>2</span></a><span class="step-line"></span><a href="#ch3" data-route="ch3" class="step-dot active"><span>3</span></a><span class="step-line"></span><a href="#ch4" data-route="ch4" class="step-dot"><span>4</span></a></div>
   <svg class="sticker s1" viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="16" fill="none" stroke="var(--_a)" stroke-width="2.4"/><path d="M22 30L28 36L40 22" stroke="var(--_b)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
   <svg class="sticker s2" viewBox="0 0 60 60" fill="none"><path d="M15 45L25 15L35 45L45 15" stroke="var(--_a)" stroke-width="2" fill="none"/></svg>
 
@@ -1523,11 +1858,13 @@ footer .heart{ color:var(--flame-2); }
     <a href="#ionic">Ionic Compounds</a>
     <a href="#extraction">Extraction of Metals</a>
     <a href="#corrosion">Corrosion &amp; Alloys</a>
-    <a href="#glossary">Glossary</a>
-    <a href="#important">Important Reactions</a>
-    <a href="#remember">Things to Remember</a>
-    <a href="#revision">Quick Revision</a>
-    <a href="#exam">Exam Corner</a>
+    <a href="#ch3-glossary">Glossary</a>
+    <a href="#ch3-beyond">Beyond the Syllabus</a>
+    <a href="#ch3-important">Important Reactions</a>
+    <a href="#ch3-remember">Things to Remember</a>
+    <a href="#ch3-revision">Quick Revision</a>
+    <a href="#ch3-exam">Exam Corner</a>
+    <a href="#ch3-drag">Complete the Reaction</a>
   </nav>
 
   <main class="ch-content">
@@ -1579,6 +1916,7 @@ footer .heart{ color:var(--flame-2); }
         <div class="rxn"><code>3Fe(s) + 4H₂O(g) → Fe₃O₄(s) + 4H₂(g)</code></div>
       </div>
 
+      <div class="fact"><b>Did you know</b>Potassium and sodium react so violently with water that lab demonstrations are performed behind safety screens — even a pea-sized piece can ignite the hydrogen gas it produces, making a small flame or pop.</div>
       <div class="card">
         <h3>Reaction with dilute acids</h3>
         <div class="rxn"><code>Metal + Dilute acid → Salt + Hydrogen</code></div>
@@ -1610,7 +1948,7 @@ footer .heart{ color:var(--flame-2); }
 
       <div class="card">
         <h3>Metals vs Non-metals — quick comparison</h3>
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
           <caption>Physical property comparison</caption>
           <thead><tr><th>Property</th><th>Metals</th><th>Non-metals</th></tr></thead>
           <tbody>
@@ -1621,7 +1959,7 @@ footer .heart{ color:var(--flame-2); }
             <tr><td>Lustre</td><td>Lustrous</td><td>Dull (except iodine)</td></tr>
             <tr><td>Oxide nature</td><td>Basic</td><td>Acidic / neutral</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="mistake">
@@ -1637,6 +1975,7 @@ footer .heart{ color:var(--flame-2); }
         <div class="rxn"><code>Na → Na⁺ + e⁻</code></div>
         <div class="rxn"><code>Cl + e⁻ → Cl⁻</code><p class="rxn-note">Na⁺ + Cl⁻ → NaCl, held together by strong electrostatic force.</p></div>
       </div>
+      <div class="fact"><b>Interesting fact</b>Table salt's perfectly cubic crystal shape isn't a coincidence — it directly mirrors the orderly, repeating 3D lattice arrangement of Na⁺ and Cl⁻ ions packed together, which is why salt crystals reliably grow into cubes.</div>
       <div class="card">
         <h3>Properties of ionic compounds</h3>
         <ul>
@@ -1689,7 +2028,7 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="glossary">
+    <section class="section reveal" id="ch3-glossary">
       <div class="section-head"><span class="section-num">7</span><h2>📖 Glossary</h2></div>
       <div class="card">
         <dl class="glossary-grid">
@@ -1710,8 +2049,33 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="important">
-      <div class="section-head"><span class="section-num">8</span><h2>⚗️ Important Reactions to Remember</h2></div>
+    
+    <section class="section reveal" id="ch3-beyond">
+      <div class="section-head"><span class="section-num">8</span><h2>🌐 Beyond the Syllabus</h2></div>
+      <div class="card">
+        <h3>Human history is named after this chapter</h3>
+        <p>The Copper Age (~5000 BCE), Bronze Age (~3300 BCE, once people learned to alloy copper with tin), and Iron Age (~1200 BCE) aren't just historical labels — they're literally metallurgy milestones. Civilisation's timeline is, in a very real sense, the reactivity series being discovered one metal at a time.</p>
+      </div>
+      <div class="card">
+        <h3>"Rare earth" metals aren't actually rare</h3>
+        <p>Elements like neodymium (used in the powerful magnets inside phone speakers, headphones, and wind turbines) are fairly common in the Earth's crust. What's rare is finding them concentrated enough to mine economically — which is why a handful of countries, China especially, dominate global supply.</p>
+      </div>
+      <div class="card">
+        <h3>Titanium: the astronaut's metal</h3>
+        <p>Titanium's extraordinary strength-to-weight ratio and resistance to corrosion make it essential in jet engines, spacecraft frames, and hip/knee implants — the human body tolerates it exceptionally well since it doesn't react with body fluids, a direct consequence of its low reactivity.</p>
+      </div>
+      <div class="card">
+        <h3>Recycling aluminium saves 95% of the energy</h3>
+        <p>Producing aluminium from bauxite ore requires enormous electrical energy for electrolytic reduction. Recycling an aluminium can instead uses roughly 95% less energy than making a new one from ore — which is why aluminium is often called one of the most efficiently recyclable materials on Earth.</p>
+      </div>
+      <div class="card">
+        <h3>The "Mad Hatter" was a real occupational hazard</h3>
+        <p>18th- and 19th-century hat makers used mercury nitrate to treat felt, and prolonged exposure caused real neurological damage — tremors, mood swings, slurred speech. The phrase "mad as a hatter" and Lewis Carroll's character both trace back to this genuine industrial chemistry hazard.</p>
+      </div>
+    </section>
+
+    <section class="section reveal" id="ch3-important">
+      <div class="section-head"><span class="section-num">9</span><h2>⚗️ Important Reactions to Remember</h2></div>
       <div class="rxn"><span class="rxn-label">Metal + Oxygen</span><code>4Al(s) + 3O₂(g) → 2Al₂O₃(s)</code></div>
       <div class="rxn"><span class="rxn-label">Amphoteric oxide + acid</span><code>Al₂O₃ + 6HCl → 2AlCl₃ + 3H₂O</code></div>
       <div class="rxn"><span class="rxn-label">Amphoteric oxide + base</span><code>Al₂O₃ + 2NaOH → 2NaAlO₂ + H₂O</code></div>
@@ -1723,8 +2087,8 @@ footer .heart{ color:var(--flame-2); }
       <div class="rxn"><span class="rxn-label">Electrolysis of molten NaCl</span><code>Cathode: Na⁺ + e⁻ → Na &nbsp;·&nbsp; Anode: 2Cl⁻ → Cl₂ + 2e⁻</code></div>
     </section>
 
-    <section class="section reveal" id="remember">
-      <div class="section-head"><span class="section-num">9</span><h2>🧠 Things to Remember</h2></div>
+    <section class="section reveal" id="ch3-remember">
+      <div class="section-head"><span class="section-num">10</span><h2>🧠 Things to Remember</h2></div>
       <div class="notes-grid">
         <div class="sticky-note"><b>Reactivity decides everything</b>Extraction method, displacement outcome, and even storage (K/Na under kerosene) all trace back to the reactivity series.</div>
         <div class="sticky-note"><b>Ionic compounds don't conduct as solids</b>Ions are locked in a rigid lattice — only free to move (and conduct) once molten or dissolved.</div>
@@ -1734,8 +2098,8 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="revision">
-      <div class="section-head"><span class="section-num">10</span><h2>Quick-fire Revision</h2></div>
+    <section class="section reveal" id="ch3-revision">
+      <div class="section-head"><span class="section-num">11</span><h2>Quick-fire Revision</h2></div>
       <p style="color:var(--paper-2); font-family:var(--f-mono); font-size:.85rem; margin-top:-10px;">Tap a card to flip it.</p>
       <div class="flash-grid">
         <div class="flash"><div class="flash-inner"><div class="flash-face flash-front">Why is sodium stored under kerosene?</div><div class="flash-face flash-back">It's so reactive it catches fire on contact with air/moisture — kerosene keeps both away.</div></div></div>
@@ -1749,12 +2113,39 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="exam">
-      <div class="section-head"><span class="section-num">11</span><h2>📝 Exam Corner</h2></div>
+    <section class="section reveal" id="ch3-exam">
+      <div class="section-head"><span class="section-num">12</span><h2>📝 Exam Corner</h2></div>
       <div class="exam-q"><span class="marks">1 mark</span><p>Name a metal that exists as a liquid at room temperature.</p></div>
       <div class="exam-q"><span class="marks">2 marks</span><p>Why is sodium metal kept immersed in kerosene oil?</p></div>
       <div class="exam-q"><span class="marks">3 marks</span><p>Differentiate between roasting and calcination, giving one example of each.</p></div>
       <div class="exam-q"><span class="marks">5 marks</span><p>Explain the formation of an ionic compound (e.g. MgCl₂) with electron-dot structures, and describe two general properties of ionic compounds.</p></div>
+    </section>
+
+    
+    <section class="section reveal" id="ch3-drag">
+      <div class="section-head"><span class="section-num">13</span><h2>🧩 Complete the Reaction</h2></div>
+      <div class="drag-exercise">
+        <div class="drag-title">Reaction name</div>
+        <div class="drag-name">Thermit Reaction</div>
+        <div class="drag-equation">
+      <span class="eq-part">Fe₂O₃ +</span>
+      <span class="drop-zone" data-answer="2Al"></span>
+      <span class="eq-part">→</span>
+      <span class="drop-zone" data-answer="2Fe"></span>
+      <span class="eq-part">+</span>
+      <span class="drop-zone" data-answer="Al₂O₃"></span>
+        </div>
+        <div class="drag-pool">
+      <div class="drag-chip" data-value="2Fe">2Fe</div>
+      <div class="drag-chip" data-value="Al₂O₃">Al₂O₃</div>
+      <div class="drag-chip" data-value="2Ag">2Ag</div>
+      <div class="drag-chip" data-value="2Al">2Al</div>
+        </div>
+        <div class="drag-actions">
+          <button class="drag-reset" type="button">Reset</button>
+          <span class="drag-status"></span>
+        </div>
+      </div>
     </section>
 
     <div class="ch-footnav reveal">
@@ -1767,10 +2158,15 @@ footer .heart{ color:var(--flame-2); }
 
 
     </div>
-    <footer>
-      <span>छे Mistri 🧪 — made for last-minute revision, built to actually stick.</span>
-      <span>NCERT Class 10 Science · Chapter 3</span>
-    </footer>
+    
+<footer class="site-footer plain">
+  <div class="footer-bottom">
+    <span>छे Mistri 🧪 · Chapter 3</span>
+    <span class="dot-sep">·</span>
+    <span class="credit">Designed by <b>Harshit Chaubey</b></span>
+  </div>
+</footer>
+
   </div>
 
   <div class="page chapter" id="page-ch4" data-route="ch4" data-a="--c4-a" data-b="--c4-b" data-title="Ch.04 — Carbon &amp; Its Compounds | छे Mistri 🧪">
@@ -1779,6 +2175,7 @@ footer .heart{ color:var(--flame-2); }
     <section class="ch-hero wrap float-stickers">
       <section class="ch-hero wrap float-stickers">
   <div class="crumb"><a href="#home" data-route="home">The Shelf</a> / Ch. 04</div>
+  <div class="ch-stepper" aria-label="Chapter progress"><a href="#ch1" data-route="ch1" class="step-dot"><span>1</span></a><span class="step-line"></span><a href="#ch2" data-route="ch2" class="step-dot"><span>2</span></a><span class="step-line"></span><a href="#ch3" data-route="ch3" class="step-dot"><span>3</span></a><span class="step-line"></span><a href="#ch4" data-route="ch4" class="step-dot active"><span>4</span></a></div>
   <svg class="sticker s1" viewBox="0 0 60 60" fill="none">
     <path d="M30 8L48 18V38L30 48L12 38V18Z" stroke="var(--_a)" stroke-width="2" fill="none"/>
     <path class="bond-pulse" d="M30 48V8M12 18L48 38M48 18L12 38" stroke="var(--_b)" stroke-width="1" opacity=".5"/>
@@ -1814,11 +2211,13 @@ footer .heart{ color:var(--flame-2); }
     <a href="#properties">Chemical Properties</a>
     <a href="#groups">Ethanol &amp; Ethanoic Acid</a>
     <a href="#soaps">Soaps &amp; Detergents</a>
-    <a href="#glossary">Glossary</a>
-    <a href="#important">Important Reactions</a>
-    <a href="#remember">Things to Remember</a>
-    <a href="#revision">Quick Revision</a>
-    <a href="#exam">Exam Corner</a>
+    <a href="#ch4-glossary">Glossary</a>
+    <a href="#ch4-beyond">Beyond the Syllabus</a>
+    <a href="#ch4-important">Important Reactions</a>
+    <a href="#ch4-remember">Things to Remember</a>
+    <a href="#ch4-revision">Quick Revision</a>
+    <a href="#ch4-exam">Exam Corner</a>
+    <a href="#ch4-drag">Complete the Reaction</a>
   </nav>
 
   <main class="ch-content">
@@ -1868,6 +2267,7 @@ footer .heart{ color:var(--flame-2); }
       <div class="card">
         <p>A <b>homologous series</b> is a family of compounds with the same functional group and general formula, where each member differs from the next by a <b>–CH₂</b> unit (14 u in molecular mass). Members show a gradual change in physical properties but similar chemical properties.</p>
       </div>
+      <div class="fact"><b>Did you know</b>The meth-eth-prop-but naming system was formalised in 1892 at an international chemists' conference in Geneva. Before that, organic compounds had whimsical, inconsistent names — like "formic acid," from the Latin <i>formica</i> (ant), because it was first extracted by distilling ants.</div>
       <div class="card">
         <h3>Common functional groups</h3>
         <div class="kv">
@@ -1880,7 +2280,7 @@ footer .heart{ color:var(--flame-2); }
       </div>
       <div class="card">
         <h3>Alkanes vs Alkenes vs Alkynes</h3>
-        <table class="data-table">
+        <div class="table-scroll"><table class="data-table">
           <caption>Saturated vs unsaturated hydrocarbons</caption>
           <thead><tr><th>Series</th><th>Bond type</th><th>General formula</th><th>First member</th></tr></thead>
           <tbody>
@@ -1888,7 +2288,7 @@ footer .heart{ color:var(--flame-2); }
             <tr><td>Alkene</td><td>One double bond</td><td>C<sub>n</sub>H<sub>2n</sub></td><td>C₂H₄ (ethene)</td></tr>
             <tr><td>Alkyne</td><td>One triple bond</td><td>C<sub>n</sub>H<sub>2n-2</sub></td><td>C₂H₂ (ethyne)</td></tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <div class="mnemonic">
@@ -1934,6 +2334,7 @@ footer .heart{ color:var(--flame-2); }
 
     <section class="section reveal" id="groups">
       <div class="section-head"><span class="section-num">5</span><h2>Ethanol &amp; Ethanoic Acid — Two Key Compounds</h2></div>
+      <div class="fact"><b>Interesting fact</b>Breathalyzer tests run on the same oxidation chemistry taught in this chapter — they detect ethanol vapour in breath by oxidising it and measuring the electrical change it causes, turning a chemistry lesson into everyday traffic law enforcement.</div>
       <div class="card">
         <h3>Ethanol (C₂H₅OH)</h3>
         <ul>
@@ -1970,7 +2371,7 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="glossary">
+    <section class="section reveal" id="ch4-glossary">
       <div class="section-head"><span class="section-num">7</span><h2>📖 Glossary</h2></div>
       <div class="card">
         <dl class="glossary-grid">
@@ -1992,8 +2393,33 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="important">
-      <div class="section-head"><span class="section-num">8</span><h2>⚗️ Important Reactions to Remember</h2></div>
+    
+    <section class="section reveal" id="ch4-beyond">
+      <div class="section-head"><span class="section-num">8</span><h2>🌐 Beyond the Syllabus</h2></div>
+      <div class="card">
+        <h3>Discovered with sticky tape, worth a Nobel Prize</h3>
+        <p>Graphene — a single layer of carbon atoms in a hexagonal lattice — was first isolated in 2004 by Andre Geim and Konstantin Novoselov, using nothing more exotic than ordinary adhesive tape to peel layers off graphite. It's about 200 times stronger than steel by weight and conducts electricity better than copper. They won the 2010 Nobel Prize in Physics for it.</p>
+      </div>
+      <div class="card">
+        <h3>Buckyballs, named after an architect</h3>
+        <p>In 1985, Kroto, Curl, and Smalley discovered C₆₀ — a soccer-ball-shaped cage of 60 carbon atoms called a fullerene, or "buckyball." It's named after Buckminster Fuller, the architect famous for geodesic domes with the same structure. The discovery earned the 1996 Nobel Prize in Chemistry.</p>
+      </div>
+      <div class="card">
+        <h3>Fermentation is one of humanity's oldest technologies</h3>
+        <p>Yeast converting sugar into ethanol and CO₂ has been used by humans for over 5,000 years — archaeological evidence of beer brewing has been found in ancient Mesopotamia and China. Every glass of wine or loaf of leavened bread runs on the same carbon chemistry as the ethanol reactions in this chapter.</p>
+      </div>
+      <div class="card">
+        <h3>Nearly everything "plastic" starts here</h3>
+        <p>Crude oil is itself a vast natural mixture of hydrocarbons. Fractional distillation splits it into LPG, petrol, diesel, kerosene, and heavier fractions — and those heavier fractions are the starting material for the polymer industry: polythene bags, PET bottles, nylon, and synthetic fibres all trace back to carbon compound chemistry.</p>
+      </div>
+      <div class="card">
+        <h3>A 4,800-year-old soap recipe</h3>
+        <p>Archaeologists have found clay cylinders from ancient Babylon, dated to around 2800 BCE, inscribed with instructions for making soap from fats and ash — essentially the same saponification reaction taught in this chapter, discovered by trial and error millennia before anyone knew what an ester was.</p>
+      </div>
+    </section>
+
+    <section class="section reveal" id="ch4-important">
+      <div class="section-head"><span class="section-num">9</span><h2>⚗️ Important Reactions to Remember</h2></div>
       <div class="rxn"><span class="rxn-label">Combustion</span><code>CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l) + heat &amp; light</code></div>
       <div class="rxn"><span class="rxn-label">Oxidation of ethanol</span><code>CH₃CH₂OH --alkaline KMnO₄--&gt; CH₃COOH</code></div>
       <div class="rxn"><span class="rxn-label">Substitution</span><code>CH₄ + Cl₂ --sunlight--&gt; CH₃Cl + HCl</code></div>
@@ -2005,8 +2431,8 @@ footer .heart{ color:var(--flame-2); }
       <div class="rxn"><span class="rxn-label">Saponification</span><code>Ester + NaOH --Δ--&gt; Alcohol + Soap</code></div>
     </section>
 
-    <section class="section reveal" id="remember">
-      <div class="section-head"><span class="section-num">9</span><h2>🧠 Things to Remember</h2></div>
+    <section class="section reveal" id="ch4-remember">
+      <div class="section-head"><span class="section-num">10</span><h2>🧠 Things to Remember</h2></div>
       <div class="notes-grid">
         <div class="sticky-note"><b>Catenation + tetravalency</b>Together, these two properties explain why carbon alone forms millions of compounds.</div>
         <div class="sticky-note"><b>–CH₂ = 14u</b>That's the mass jump between consecutive members of any homologous series — a fast way to identify the series.</div>
@@ -2016,8 +2442,8 @@ footer .heart{ color:var(--flame-2); }
       </div>
     </section>
 
-    <section class="section reveal" id="revision">
-      <div class="section-head"><span class="section-num">10</span><h2>Quick-fire Revision</h2></div>
+    <section class="section reveal" id="ch4-revision">
+      <div class="section-head"><span class="section-num">11</span><h2>Quick-fire Revision</h2></div>
       <p style="color:var(--paper-2); font-family:var(--f-mono); font-size:.85rem; margin-top:-10px;">Tap a card to flip it.</p>
       <div class="flash-grid">
         <div class="flash"><div class="flash-inner"><div class="flash-face flash-front">Why does carbon form covalent, not ionic, bonds?</div><div class="flash-face flash-back">Losing or gaining 4 electrons both need too much energy — sharing electrons is far more stable.</div></div></div>
@@ -2031,12 +2457,39 @@ footer .heart{ color:var(--flame-2); }
     </section>
 
     
-    <section class="section reveal" id="exam">
-      <div class="section-head"><span class="section-num">11</span><h2>📝 Exam Corner</h2></div>
+    <section class="section reveal" id="ch4-exam">
+      <div class="section-head"><span class="section-num">12</span><h2>📝 Exam Corner</h2></div>
       <div class="exam-q"><span class="marks">1 mark</span><p>Why does carbon form covalent compounds rather than ionic ones?</p></div>
       <div class="exam-q"><span class="marks">2 marks</span><p>Write the chemical equation for esterification and name the products of the reaction.</p></div>
       <div class="exam-q"><span class="marks">3 marks</span><p>How does the cleansing action of soap work? Explain with the concept of a micelle.</p></div>
       <div class="exam-q"><span class="marks">5 marks</span><p>What is meant by a homologous series? List two of its characteristics and explain with an example.</p></div>
+    </section>
+
+    
+    <section class="section reveal" id="ch4-drag">
+      <div class="section-head"><span class="section-num">13</span><h2>🧩 Complete the Reaction</h2></div>
+      <div class="drag-exercise">
+        <div class="drag-title">Reaction name</div>
+        <div class="drag-name">Esterification Reaction</div>
+        <div class="drag-equation">
+      <span class="eq-part">CH₃COOH +</span>
+      <span class="drop-zone" data-answer="C₂H₅OH"></span>
+      <span class="eq-part">⇌</span>
+      <span class="drop-zone" data-answer="CH₃COOC₂H₅"></span>
+      <span class="eq-part">+</span>
+      <span class="drop-zone" data-answer="H₂O"></span>
+        </div>
+        <div class="drag-pool">
+      <div class="drag-chip" data-value="CH₃COOC₂H₅">CH₃COOC₂H₅</div>
+      <div class="drag-chip" data-value="H₂O">H₂O</div>
+      <div class="drag-chip" data-value="CH₃OH">CH₃OH</div>
+      <div class="drag-chip" data-value="C₂H₅OH">C₂H₅OH</div>
+        </div>
+        <div class="drag-actions">
+          <button class="drag-reset" type="button">Reset</button>
+          <span class="drag-status"></span>
+        </div>
+      </div>
     </section>
 
     <div class="ch-footnav reveal">
@@ -2049,10 +2502,15 @@ footer .heart{ color:var(--flame-2); }
 
 
     </div>
-    <footer>
-      <span>छे Mistri 🧪 — made for last-minute revision, built to actually stick.</span>
-      <span>NCERT Class 10 Science · Chapter 4</span>
-    </footer>
+    
+<footer class="site-footer plain">
+  <div class="footer-bottom">
+    <span>छे Mistri 🧪 · Chapter 4</span>
+    <span class="dot-sep">·</span>
+    <span class="credit">Designed by <b>Harshit Chaubey</b></span>
+  </div>
+</footer>
+
   </div>
 
 </main>
@@ -2330,6 +2788,124 @@ footer .heart{ color:var(--flame-2); }
         else if (e.key === 'h' || e.key === 'H'){ window.location.hash = '#home'; }
       });
     }
+  });
+
+  function initDragExercises(){
+    var activeDrag = null;
+
+    function cancelActiveDrag(){
+      if (!activeDrag) return;
+      var chip = activeDrag.chip;
+      chip.classList.remove('dragging');
+      chip.style.position = ''; chip.style.left = ''; chip.style.top = ''; chip.style.width = '';
+      activeDrag.pool.appendChild(chip);
+      activeDrag = null;
+    }
+    window.addEventListener('hashchange', cancelActiveDrag);
+
+    function checkExerciseComplete(exercise){
+      if (!exercise) return;
+      var zones = exercise.querySelectorAll('.drop-zone');
+      var allCorrect = Array.prototype.every.call(zones, function(z){ return z.classList.contains('correct'); });
+      var status = exercise.querySelector('.drag-status');
+      if (allCorrect && status){
+        status.textContent = '🎉 Correct — reaction complete!';
+        status.classList.add('win');
+      }
+    }
+
+    document.querySelectorAll('.drag-chip').forEach(function(chip){
+      chip.addEventListener('pointerdown', function(e){
+        if (chip.classList.contains('chip-locked')) return;
+        e.preventDefault();
+        var rect = chip.getBoundingClientRect();
+        activeDrag = {
+          chip: chip,
+          offsetX: e.clientX - rect.left,
+          offsetY: e.clientY - rect.top,
+          pool: chip.closest('.drag-pool')
+        };
+        try { chip.setPointerCapture(e.pointerId); } catch(err){}
+        chip.classList.add('dragging');
+        chip.style.width = rect.width + 'px';
+        document.body.appendChild(chip);
+        chip.style.left = (e.clientX - activeDrag.offsetX) + 'px';
+        chip.style.top = (e.clientY - activeDrag.offsetY) + 'px';
+      });
+
+      chip.addEventListener('pointermove', function(e){
+        if (!activeDrag || activeDrag.chip !== chip) return;
+        chip.style.left = (e.clientX - activeDrag.offsetX) + 'px';
+        chip.style.top = (e.clientY - activeDrag.offsetY) + 'px';
+
+        document.querySelectorAll('.drop-zone.drag-over').forEach(function(z){ z.classList.remove('drag-over'); });
+        chip.style.pointerEvents = 'none';
+        var target = document.elementFromPoint(e.clientX, e.clientY);
+        chip.style.pointerEvents = '';
+        var zone = target && target.closest('.drop-zone');
+        if (zone && !zone.classList.contains('filled')) zone.classList.add('drag-over');
+      });
+
+      function endDrag(e){
+        if (!activeDrag || activeDrag.chip !== chip) return;
+        chip.classList.remove('dragging');
+        document.querySelectorAll('.drop-zone.drag-over').forEach(function(z){ z.classList.remove('drag-over'); });
+
+        chip.style.pointerEvents = 'none';
+        var target = document.elementFromPoint(e.clientX, e.clientY);
+        chip.style.pointerEvents = '';
+        var zone = target && target.closest('.drop-zone');
+
+        chip.style.position = '';
+        chip.style.left = '';
+        chip.style.top = '';
+        chip.style.width = '';
+
+        if (zone && !zone.classList.contains('filled')){
+          var correct = zone.dataset.answer === chip.dataset.value;
+          if (correct){
+            zone.appendChild(chip);
+            zone.classList.add('filled', 'correct');
+            chip.classList.add('chip-locked');
+            checkExerciseComplete(zone.closest('.drag-exercise'));
+          } else {
+            zone.classList.add('incorrect');
+            setTimeout(function(){ zone.classList.remove('incorrect'); }, 400);
+            activeDrag.pool.appendChild(chip);
+          }
+        } else {
+          activeDrag.pool.appendChild(chip);
+        }
+        activeDrag = null;
+      }
+
+      chip.addEventListener('pointerup', endDrag);
+      chip.addEventListener('pointercancel', function(e){
+        if (!activeDrag || activeDrag.chip !== chip) return;
+        cancelActiveDrag();
+      });
+    });
+
+    document.querySelectorAll('.drag-reset').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var exercise = btn.closest('.drag-exercise');
+        var pool = exercise.querySelector('.drag-pool');
+        exercise.querySelectorAll('.drop-zone').forEach(function(zone){
+          var chip = zone.querySelector('.drag-chip');
+          if (chip){
+            chip.classList.remove('chip-locked');
+            pool.appendChild(chip);
+          }
+          zone.classList.remove('filled', 'correct', 'incorrect');
+        });
+        var status = exercise.querySelector('.drag-status');
+        if (status){ status.textContent = ''; status.classList.remove('win'); }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    initDragExercises();
   });
 
 })();
