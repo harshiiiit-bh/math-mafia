@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Human Eye Simulator - Professional Medical Visualization</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            grid-template-rows: 60px 1fr 100px;
+            height: 100vh;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .toolbar {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            overflow-x: auto;
+            background: rgba(20, 20, 40, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toolbar button {
+            padding: 8px 14px;
+            background: rgba(100, 150, 255, 0.2);
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            border-radius: 6px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .toolbar button:hover {
+            background: rgba(100, 150, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .toolbar button.active {
+            background: rgba(100, 150, 255, 0.6);
+            border-color: rgba(150, 200, 255, 0.8);
+        }
+
+        .divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 4px;
+        }
+
+        .sidebar-left {
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .sidebar-right {
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        #canvas {
+            grid-column: 2;
+            grid-row: 2;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1a1a3e 0%, #0f1450 100%);
+            touch-action: none;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .timeline {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        .panel {
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #64b5ff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(100, 150, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            background: rgba(100, 150, 255, 0.3);
+            border-color: rgba(100, 150, 255, 0.6);
+            color: #e0e0e0;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            padding: 8px 10px;
+            background: rgba(100, 150, 255, 0.1);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .list-item:hover {
+            background: rgba(100, 150, 255, 0.2);
+            border-color: rgba(100, 150, 255, 0.5);
+        }
+
+        .list-item.active {
+            background: rgba(100, 150, 255, 0.4);
+            border-color: rgba(100, 150, 255, 0.8);
+            color: #fff;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-size: 11px;
+            color: #64b5ff;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(100, 150, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #64b5ff, #42a5f5);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #64b5ff, #42a5f5);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+        }
+
+        .timeline-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 100%;
+            padding: 0 12px;
+        }
+
+        .timeline-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .timeline-buttons button {
+            padding: 6px 12px;
+            background: rgba(100, 150, 255, 0.2);
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            border-radius: 6px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .timeline-buttons button:hover {
+            background: rgba(100, 150, 255, 0.4);
+        }
+
+        .timeline-progress {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(100, 150, 255, 0.2);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #64b5ff, #42a5f5);
+            border-radius: 2px;
+            width: 0%;
+        }
+
+        .time-display {
+            font-size: 11px;
+            color: #64b5ff;
+            min-width: 50px;
+        }
+
+        .info-panel-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            color: #64b5ff;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 12px;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .search-box::placeholder {
+            color: #707070;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #e0e0e0;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        body.fullscreen .toolbar,
+        body.fullscreen .sidebar-left,
+        body.fullscreen .sidebar-right,
+        body.fullscreen .timeline {
+            display: none;
+        }
+
+        body.fullscreen #canvas {
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+        }
+
+        .loading-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #64b5ff;
+            font-size: 18px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-text" id="loadingText">Loading 3D Eye Model...</div>
+
+    <div class="container">
+        <div class="toolbar">
+            <button id="homeBtn">🏠 Home</button>
+            <button id="resetCameraBtn">🎥 Reset</button>
+            <button id="crossSectionBtn">✂️ Cross</button>
+            <button id="explodedBtn">💥 Exploded</button>
+            <button id="transparentBtn">👁️ Transparent</button>
+            <button id="xrayBtn">☢️ X-Ray</button>
+            <div class="divider"></div>
+            <button id="animationsBtn">▶️ Animate</button>
+            <button id="diseasesBtn">🦠 Diseases</button>
+            <button id="correctionsBtn">👓 Corrections</button>
+            <button id="labelToggleBtn">🏷️ Labels</button>
+            <button id="comparisonBtn">⚖️ Compare</button>
+            <div class="divider"></div>
+            <button id="quizBtn">❓ Quiz</button>
+            <button id="settingsBtn">⚙️ Settings</button>
+            <button id="fullscreenBtn">⛶ Fullscreen</button>
+        </div>
+
+        <div class="sidebar-left glass">
+            <div class="panel">
+                <div class="panel-title">Anatomy Explorer</div>
+                <input type="text" class="search-box" id="anatomySearch" placeholder="Search anatomy...">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="structures">Structures</button>
+                    <button class="tab-button" data-tab="visibility">Visibility</button>
+                </div>
+                <div id="anatomyTab" class="list"></div>
+                <div id="visibilityTab" class="hidden list"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Controls</div>
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span>Brightness</span>
+                        <span id="brightnessValue">100%</span>
+                    </label>
+                    <input type="range" id="brightnessSlider" min="0" max="200" value="100">
+                </div>
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span>Transparency</span>
+                        <span id="transparencyValue">0%</span>
+                    </label>
+                    <input type="range" id="transparencySlider" min="0" max="100" value="0">
+                </div>
+                <div class="slider-group">
+                    <label class="slider-label">
+                        <span>Camera FOV</span>
+                        <span id="fovValue">50°</span>
+                    </label>
+                    <input type="range" id="fovSlider" min="20" max="100" value="50">
+                </div>
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+        <div class="sidebar-right glass">
+            <div class="panel">
+                <div class="panel-title">Information</div>
+                <div class="info-panel-content" id="infoPanelContent">
+                    <div class="info-item">
+                        <div class="info-label">Select Structure</div>
+                        <div class="info-value">Click on the eye or choose from anatomy explorer.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Disease Simulator</div>
+                <div class="list" id="diseaseList"></div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Quick Actions</div>
+                <div class="list">
+                    <div class="list-item" id="accommodationBtn">🔍 Accommodation</div>
+                    <div class="list-item" id="pupilReflexBtn">👁️ Pupil Reflex</div>
+                    <div class="list-item" id="lightPathBtn">💡 Light Path</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline glass">
+            <div class="timeline-container">
+                <div class="timeline-buttons">
+                    <button id="playBtn">⏵ Play</button>
+                    <button id="pauseBtn">⏸ Pause</button>
+                    <button id="prevBtn">⏮ Prev</button>
+                    <button id="nextBtn">⏭ Next</button>
+                </div>
+                <div class="timeline-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                    <div class="time-display" id="timeDisplay">0:00 / 5:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@r128/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://gsap.com/gsap.min.js"></script>
+
+    <script>
+        class EyeSimulator {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.controls = null;
+                this.eyeModel = null;
+                this.parts = {};
+                this.selectedPart = null;
+                this.isAnimating = false;
+                this.animationProgress = 0;
+                this.currentDisease = null;
+
+                this.anatomyData = this.initAnatomyData();
+                this.diseaseData = this.initDiseaseData();
+                
+                this.init();
+                this.setupEventListeners();
+                this.populateUI();
+                this.animate();
+            }
+
+            init() {
+                console.log('Initializing EyeSimulator...');
+                
+                // Scene setup
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x0a0a1a);
+                this.scene.fog = new THREE.Fog(0x0a0a1a, 200, 500);
+
+                // Camera setup
+                const canvasWidth = window.innerWidth - 305;
+                const canvasHeight = window.innerHeight - 170;
+                
+                this.camera = new THREE.PerspectiveCamera(
+                    45,
+                    canvasWidth / canvasHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.set(0, 0, 50);
+
+                // Renderer setup
+                const canvas = document.getElementById('canvas');
+                this.renderer = new THREE.WebGLRenderer({
+                    canvas,
+                    antialias: true,
+                    alpha: true
+                });
+                this.renderer.setSize(canvasWidth, canvasHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.shadowMap.enabled = true;
+
+                // Controls
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.autoRotate = true;
+                this.controls.autoRotateSpeed = 2;
+                this.controls.enableZoom = true;
+                this.controls.enablePan = true;
+
+                // Lighting
+                this.setupLighting();
+
+                // Create eye
+                this.createEye();
+
+                // Hide loading text
+                document.getElementById('loadingText').style.display = 'none';
+
+                console.log('Initialization complete');
+
+                // Window resize
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+
+            setupLighting() {
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(50, 50, 50);
+                this.scene.add(directionalLight);
+
+                const pointLight = new THREE.PointLight(0x6495ff, 0.6);
+                pointLight.position.set(-50, -50, 50);
+                this.scene.add(pointLight);
+            }
+
+            createEye() {
+                console.log('Creating eye model...');
+                const eyeGroup = new THREE.Group();
+
+                // Sclera
+                const sclera = this.createSphere(20, 0xf5f5f5, 'Sclera');
+                eyeGroup.add(sclera);
+
+                // Cornea
+                const cornea = this.createSphere(20.3, 0xffffff, 'Cornea', 0.7);
+                eyeGroup.add(cornea);
+
+                // Iris
+                const iris = new THREE.Mesh(
+                    new THREE.SphereGeometry(7, 32, 16, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.3),
+                    new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.6 })
+                );
+                iris.position.z = 19.5;
+                this.parts['Iris'] = iris;
+                eyeGroup.add(iris);
+
+                // Pupil
+                const pupil = new THREE.Mesh(
+                    new THREE.CircleGeometry(3, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x000000 })
+                );
+                pupil.position.z = 20.1;
+                this.parts['Pupil'] = pupil;
+                eyeGroup.add(pupil);
+
+                // Lens
+                const lens = this.createSphere(8, 0xfffacd, 'Lens', 0.6);
+                lens.scale.set(1, 1, 0.5);
+                eyeGroup.add(lens);
+
+                // Retina
+                const retina = this.createSphere(19.5, 0x8B0000, 'Retina', 1, 0.4, 0x4D0000);
+                retina.scale.set(1, 1, -0.3);
+                eyeGroup.add(retina);
+
+                // Optic Disc
+                const opticDisc = new THREE.Mesh(
+                    new THREE.CircleGeometry(2, 32),
+                    new THREE.MeshStandardMaterial({ color: 0xFFA500, emissive: 0xFF8C00 })
+                );
+                opticDisc.position.set(-8, 0, -18);
+                opticDisc.rotation.y = Math.PI / 2;
+                this.parts['Optic Disc'] = opticDisc;
+                eyeGroup.add(opticDisc);
+
+                // Macula
+                const macula = new THREE.Mesh(
+                    new THREE.CircleGeometry(1.5, 32),
+                    new THREE.MeshStandardMaterial({ color: 0xFF6347, emissive: 0xFF4500 })
+                );
+                macula.position.set(0, 0, -18);
+                macula.rotation.y = Math.PI / 2;
+                this.parts['Macula'] = macula;
+                eyeGroup.add(macula);
+
+                // Ciliary Body
+                const ciliary = new THREE.Mesh(
+                    new THREE.TorusGeometry(8, 0.5, 16, 100),
+                    new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.7 })
+                );
+                ciliary.position.z = 18;
+                this.parts['Ciliary Body'] = ciliary;
+                eyeGroup.add(ciliary);
+
+                // Optic Nerve
+                const nerve = new THREE.Mesh(
+                    new THREE.ConeGeometry(2, 40, 32),
+                    new THREE.MeshStandardMaterial({ color: 0xFFD700, emissive: 0xFF8C00 })
+                );
+                nerve.position.z = -35;
+                nerve.rotation.z = Math.PI;
+                this.parts['Optic Nerve'] = nerve;
+                eyeGroup.add(nerve);
+
+                this.scene.add(eyeGroup);
+                this.eyeModel = eyeGroup;
+                console.log('Eye model created with', Object.keys(this.parts).length, 'parts');
+            }
+
+            createSphere(radius, color, name, opacity = 1, emissiveIntensity = 0, emissive = 0x000000) {
+                const mesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(radius, 64, 64),
+                    new THREE.MeshStandardMaterial({
+                        color,
+                        roughness: 0.4,
+                        metalness: 0.1,
+                        transparent: opacity < 1,
+                        opacity,
+                        emissive,
+                        emissiveIntensity
+                    })
+                );
+                this.parts[name] = mesh;
+                return mesh;
+            }
+
+            initAnatomyData() {
+                return {
+                    'Cornea': {
+                        name: 'Cornea',
+                        function: 'Transparent dome that covers the iris and lens; refracts light rays',
+                        importance: 'Critical for light refraction (75% of focusing power)',
+                        facts: 'The cornea is avascular and regenerates in 7-10 days',
+                        clinical: 'Corneal ulcers and keratoconus affect vision'
+                    },
+                    'Sclera': {
+                        name: 'Sclera',
+                        function: 'White outer layer providing structural support',
+                        importance: 'Maintains eye shape and protects internal structures',
+                        facts: 'Composed of tough fibrous connective tissue',
+                        clinical: 'Scleral implants used in advanced eye surgeries'
+                    },
+                    'Iris': {
+                        name: 'Iris',
+                        function: 'Controls pupil size and regulates light entry',
+                        importance: 'Regulates light intensity entering the eye',
+                        facts: 'Each iris is unique; determines eye color',
+                        clinical: 'Iris inflammation (iritis) causes pain'
+                    },
+                    'Pupil': {
+                        name: 'Pupil',
+                        function: 'Black opening allowing light to enter',
+                        importance: 'Primary light control mechanism',
+                        facts: 'Diameter ranges from 2-8mm',
+                        clinical: 'Pupil reactivity indicates neurological health'
+                    },
+                    'Lens': {
+                        name: 'Lens',
+                        function: 'Changes shape to focus light on the retina',
+                        importance: 'Fine focusing mechanism (25% of eye power)',
+                        facts: 'Lens is completely avascular',
+                        clinical: 'Cataracts occur from lens clouding'
+                    },
+                    'Retina': {
+                        name: 'Retina',
+                        function: 'Converts light to neural signals',
+                        importance: 'Vision processing begins here',
+                        facts: '120 million rods, 6 million cones',
+                        clinical: 'Retinal detachment is a medical emergency'
+                    },
+                    'Macula': {
+                        name: 'Macula',
+                        function: 'Central retina responsible for detailed vision',
+                        importance: 'Central vision and color perception',
+                        facts: 'Highest cone cell concentration',
+                        clinical: 'Macular degeneration causes central vision loss'
+                    },
+                    'Optic Disc': {
+                        name: 'Optic Disc',
+                        function: 'Optic nerve connection point; creates blind spot',
+                        importance: 'Signal transmission point',
+                        facts: 'Blind spot is 15° from center of vision',
+                        clinical: 'Optic disc cupping may indicate glaucoma'
+                    },
+                    'Optic Nerve': {
+                        name: 'Optic Nerve',
+                        function: 'Transmits visual signals to the brain',
+                        importance: 'Vision pathway to brain',
+                        facts: '1.2 million nerve fibers',
+                        clinical: 'Optic neuritis causes vision loss'
+                    },
+                    'Ciliary Body': {
+                        name: 'Ciliary Body',
+                        function: 'Produces aqueous humor and accommodation',
+                        importance: 'Lens focusing and fluid production',
+                        facts: 'Contains ciliary muscles',
+                        clinical: 'Ciliary dysfunction affects focus'
+                    }
+                };
+            }
+
+            initDiseaseData() {
+                return {
+                    'Normal': { name: 'Normal Vision', symptoms: 'Clear vision at all distances', explanation: 'Light focuses correctly on the retina', diagnosis: '20/20 visual acuity', treatment: 'Maintain eye health' },
+                    'Myopia': { name: 'Myopia (Nearsightedness)', symptoms: 'Blurred distance vision', explanation: 'Light focuses in front of retina', diagnosis: 'Visual acuity < 20/20', treatment: 'Glasses, contacts, LASIK', correction: 'Concave Lens' },
+                    'Hypermetropia': { name: 'Hypermetropia (Farsightedness)', symptoms: 'Blurred near vision', explanation: 'Light focuses behind retina', diagnosis: 'Hyperopic refraction', treatment: 'Glasses, contacts, LASIK', correction: 'Convex Lens' },
+                    'Presbyopia': { name: 'Presbyopia (Age-related)', symptoms: 'Difficulty focusing near', explanation: 'Lens loses elasticity', diagnosis: 'Age > 40 years', treatment: 'Reading glasses, bifocals', correction: 'Progressive Lens' },
+                    'Cataract': { name: 'Cataract', symptoms: 'Cloudy vision', explanation: 'Lens becomes opaque', diagnosis: 'Slit lamp shows opacity', treatment: 'Surgery with implant', correction: 'Artificial Lens' },
+                    'Glaucoma': { name: 'Glaucoma', symptoms: 'Often asymptomatic', explanation: 'High pressure damages optic nerve', diagnosis: 'Tonometry, visual field', treatment: 'Eye drops, laser, surgery', correction: 'Pressure therapy' },
+                    'Astigmatism': { name: 'Astigmatism', symptoms: 'Blurred vision all distances', explanation: 'Irregular cornea curvature', diagnosis: 'Keratometry abnormal', treatment: 'Toric glasses/contacts', correction: 'Cylindrical Lens' },
+                    'Macular Degeneration': { name: 'Macular Degeneration', symptoms: 'Central vision loss', explanation: 'Macula tissue degeneration', diagnosis: 'OCT imaging shows damage', treatment: 'Anti-VEGF injections', correction: 'Vision aids' }
+                };
+            }
+
+            setupEventListeners() {
+                document.getElementById('homeBtn').onclick = () => this.resetCamera();
+                document.getElementById('resetCameraBtn').onclick = () => this.resetCamera();
+                document.getElementById('transparentBtn').onclick = () => this.toggleTransparent();
+                document.getElementById('xrayBtn').onclick = () => this.toggleXray();
+                document.getElementById('explodedBtn').onclick = () => this.toggleExploded();
+
+                document.getElementById('brightnessSlider').oninput = (e) => {
+                    document.getElementById('brightnessValue').textContent = e.target.value + '%';
+                };
+
+                document.getElementById('transparencySlider').oninput = (e) => {
+                    const val = e.target.value / 100;
+                    document.getElementById('transparencyValue').textContent = e.target.value + '%';
+                    this.setTransparency(val);
+                };
+
+                document.getElementById('fovSlider').oninput = (e) => {
+                    document.getElementById('fovValue').textContent = e.target.value + '°';
+                    this.camera.fov = parseInt(e.target.value);
+                    this.camera.updateProjectionMatrix();
+                };
+
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.onclick = (e) => this.switchTab(e.target.dataset.tab);
+                });
+
+                this.renderer.domElement.addEventListener('click', (e) => this.onCanvasClick(e));
+                this.renderer.domElement.addEventListener('mousemove', (e) => this.onCanvasHover(e));
+
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+
+            populateUI() {
+                const anatomyTab = document.getElementById('anatomyTab');
+                anatomyTab.innerHTML = '';
+                Object.keys(this.anatomyData).forEach(part => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.textContent = part;
+                    item.onclick = () => this.selectPart(part);
+                    anatomyTab.appendChild(item);
+                });
+
+                const visibilityTab = document.getElementById('visibilityTab');
+                visibilityTab.innerHTML = '';
+                Object.keys(this.parts).forEach(name => {
+                    const label = document.createElement('label');
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.gap = '8px';
+                    label.style.padding = '6px 0';
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = true;
+                    checkbox.onchange = (e) => { this.parts[name].visible = e.target.checked; };
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(name));
+                    visibilityTab.appendChild(label);
+                });
+
+                const diseaseList = document.getElementById('diseaseList');
+                diseaseList.innerHTML = '';
+                Object.keys(this.diseaseData).forEach(disease => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.textContent = disease;
+                    item.onclick = () => this.selectDisease(disease);
+                    diseaseList.appendChild(item);
+                });
+            }
+
+            selectPart(partName) {
+                this.selectedPart = partName;
+                const data = this.anatomyData[partName];
+                
+                const infoPanel = document.getElementById('infoPanelContent');
+                infoPanel.innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Name</div>
+                        <div class="info-value">${data.name}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Function</div>
+                        <div class="info-value">${data.function}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Importance</div>
+                        <div class="info-value">${data.importance}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Facts</div>
+                        <div class="info-value">${data.facts}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Clinical</div>
+                        <div class="info-value">${data.clinical}</div>
+                    </div>
+                `;
+
+                if (this.parts[partName]) {
+                    this.parts[partName].material.emissive.setHex(0x6495ff);
+                    const pos = this.parts[partName].position;
+                    gsap.to(this.camera.position, {
+                        x: pos.x + 35, y: pos.y + 35, z: pos.z + 35,
+                        duration: 1, ease: 'power2.inOut'
+                    });
+                }
+
+                document.querySelectorAll('#anatomyTab .list-item').forEach(item => {
+                    item.classList.toggle('active', item.textContent === partName);
+                });
+            }
+
+            selectDisease(diseaseName) {
+                this.currentDisease = diseaseName;
+                const disease = this.diseaseData[diseaseName];
+
+                const infoPanel = document.getElementById('infoPanelContent');
+                infoPanel.innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">Disease</div>
+                        <div class="info-value">${disease.name}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Symptoms</div>
+                        <div class="info-value">${disease.symptoms}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Explanation</div>
+                        <div class="info-value">${disease.explanation}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Diagnosis</div>
+                        <div class="info-value">${disease.diagnosis}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Treatment</div>
+                        <div class="info-value">${disease.treatment}</div>
+                    </div>
+                `;
+
+                document.querySelectorAll('#diseaseList .list-item').forEach(item => {
+                    item.classList.toggle('active', item.textContent === diseaseName);
+                });
+            }
+
+            toggleTransparent() {
+                document.getElementById('transparentBtn').classList.toggle('active');
+                Object.entries(this.parts).forEach(([name, part]) => {
+                    if (['Sclera', 'Cornea'].includes(name)) {
+                        part.material.opacity = part.material.opacity < 0.5 ? 1 : 0.1;
+                    }
+                });
+            }
+
+            toggleXray() {
+                document.getElementById('xrayBtn').classList.toggle('active');
+                Object.values(this.parts).forEach(part => {
+                    part.material.transparent = true;
+                    part.material.opacity = part.material.opacity > 0.3 ? 0.3 : 1;
+                });
+            }
+
+            toggleExploded() {
+                document.getElementById('explodedBtn').classList.toggle('active');
+                Object.values(this.parts).forEach(part => {
+                    const offset = 10;
+                    const pos = part.position;
+                    const len = Math.sqrt(pos.x ** 2 + pos.y ** 2 + pos.z ** 2);
+                    const dir = len > 0 ? {x: pos.x/len, y: pos.y/len, z: pos.z/len} : {x: 0, y: 0, z: 1};
+                    gsap.to(part.position, {
+                        x: document.getElementById('explodedBtn').classList.contains('active') ? dir.x * offset : 0,
+                        y: document.getElementById('explodedBtn').classList.contains('active') ? dir.y * offset : 0,
+                        z: document.getElementById('explodedBtn').classList.contains('active') ? dir.z * offset : 0,
+                        duration: 1
+                    });
+                });
+            }
+
+            setTransparency(value) {
+                Object.values(this.parts).forEach(part => {
+                    part.material.transparent = true;
+                    part.material.opacity = 1 - value * 0.5;
+                });
+            }
+
+            resetCamera() {
+                gsap.to(this.camera.position, { x: 0, y: 0, z: 50, duration: 1 });
+            }
+
+            onCanvasClick(e) {
+                const rect = this.renderer.domElement.getBoundingClientRect();
+                const mouse = new THREE.Vector2(
+                    (e.clientX - rect.left) / rect.width * 2 - 1,
+                    -(e.clientY - rect.top) / rect.height * 2 + 1
+                );
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, this.camera);
+                const intersects = raycaster.intersectObjects(Object.values(this.parts));
+                if (intersects.length > 0) {
+                    const mesh = intersects[0].object;
+                    const name = Object.keys(this.parts).find(k => this.parts[k] === mesh);
+                    if (name) this.selectPart(name);
+                }
+            }
+
+            onCanvasHover(e) {
+                const rect = this.renderer.domElement.getBoundingClientRect();
+                const mouse = new THREE.Vector2(
+                    (e.clientX - rect.left) / rect.width * 2 - 1,
+                    -(e.clientY - rect.top) / rect.height * 2 + 1
+                );
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, this.camera);
+                const intersects = raycaster.intersectObjects(Object.values(this.parts));
+                const tooltip = document.getElementById('tooltip');
+                if (intersects.length > 0) {
+                    const name = Object.keys(this.parts).find(k => this.parts[k] === intersects[0].object);
+                    tooltip.textContent = name || '';
+                    tooltip.classList.add('show');
+                    tooltip.style.left = (e.clientX + 10) + 'px';
+                    tooltip.style.top = (e.clientY + 10) + 'px';
+                } else {
+                    tooltip.classList.remove('show');
+                }
+            }
+
+            onWindowResize() {
+                const w = window.innerWidth - 305;
+                const h = window.innerHeight - 170;
+                this.camera.aspect = w / h;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(w, h);
+            }
+
+            switchTab(tabName) {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+                document.getElementById('anatomyTab').classList.toggle('hidden', tabName !== 'structures');
+                document.getElementById('visibilityTab').classList.toggle('hidden', tabName !== 'visibility');
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            console.log('Page loaded, starting simulator...');
+            new EyeSimulator();
+        });
+    </script>
+</body>
+</html>
