@@ -1564,6 +1564,77 @@ button:disabled,input:disabled,select:disabled{opacity:.48;cursor:not-allowed!im
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
 }
 
+
+/* ---------- Dashboard refinements ---------- */
+.sr-only{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+.dashboard-focus{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative;isolation:isolate;
+  overflow:hidden;margin:0 0 16px;padding:clamp(22px,4vw,32px);border:1px solid rgba(212,175,55,.28);
+  border-radius:16px;background:linear-gradient(115deg,rgba(18,53,36,.94),rgba(21,26,23,.98) 72%);
+  box-shadow:0 18px 44px rgba(0,0,0,.16);
+}
+.dashboard-focus::after{
+  content:"";position:absolute;z-index:-1;width:260px;height:260px;right:10%;top:-170px;border-radius:50%;
+  background:radial-gradient(circle,rgba(212,175,55,.14),transparent 68%);pointer-events:none;
+}
+.dashboard-focus-copy{min-width:0;flex:1;}
+.dashboard-kicker{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--gold-soft);margin-bottom:9px;}
+.dashboard-focus-title{font-size:clamp(21px,3vw,28px);line-height:1.25;color:var(--cream);margin-bottom:7px;overflow-wrap:anywhere;}
+.dashboard-focus-detail{font-size:13px;line-height:1.7;color:var(--muted);}
+.dashboard-focus-track{height:5px;max-width:360px;margin-top:16px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;}
+.dashboard-focus-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--gold-soft),var(--gold));transition:width .25s ease;}
+.dashboard-focus-action{flex-shrink:0;min-height:44px;}
+.dashboard-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:34px;}
+.dashboard-stat{min-width:0;padding:17px 18px;border:1px solid var(--card-border);border-radius:12px;background:rgba(21,26,23,.78);}
+.dashboard-stat strong{display:block;font-family:'Oswald',sans-serif;font-size:clamp(20px,3vw,27px);line-height:1.2;color:var(--gold-soft);font-weight:600;overflow-wrap:anywhere;}
+.dashboard-stat span{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.5;}
+.chapter-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 18px;}
+.chapter-search-wrap{flex:1 1 240px;min-width:0;}
+.chapter-search-wrap input{
+  display:block;width:100%;min-height:45px;padding:11px 14px;border-radius:9px;border:1px solid var(--card-border);
+  color:var(--cream);background:var(--card);font:inherit;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;
+}
+.chapter-search-wrap input::placeholder{color:var(--muted);opacity:.85;}
+.chapter-search-wrap input:focus-visible{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.12);}
+.chapter-filter{display:flex;gap:6px;flex-wrap:wrap;}
+.chapter-filter button{
+  min-height:38px;padding:8px 11px;border:1px solid var(--card-border);border-radius:8px;background:transparent;
+  color:var(--muted);font:inherit;font-size:12px;white-space:nowrap;transition:background .15s,border-color .15s,color .15s;
+}
+.chapter-filter button:hover,.chapter-filter button.active{border-color:rgba(212,175,55,.65);background:rgba(212,175,55,.09);color:var(--gold-soft);}
+.chapter-filter button:focus-visible,.dashboard-focus-action:focus-visible,.chapter-no-results button:focus-visible{
+  outline:2px solid var(--gold-soft);outline-offset:3px;
+}
+.chapter-count{flex-basis:100%;margin:0;color:var(--muted);font-size:11px;}
+.chapter-no-results{margin-top:10px;text-align:center;}
+.chapter-no-results[hidden]{display:none!important;}
+.chapter-no-results p{margin-bottom:14px;}
+#chGrid .ch-card[hidden]{display:none!important;}
+#chGrid .ch-card[role="button"]:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-color:var(--gold);}
+@media(max-width:768px){
+  .dashboard-focus{align-items:stretch;flex-direction:column;gap:20px;}
+  .dashboard-focus-action{align-self:flex-start;}
+  .dashboard-stats{gap:8px;margin-bottom:28px;}
+  .dashboard-stat{padding:14px 12px;}
+  .dashboard-stat span{font-size:11px;}
+  .chapter-tools{align-items:stretch;}
+  .chapter-search-wrap{flex-basis:100%;}
+  .chapter-filter{width:100%;}
+}
+@media(max-width:420px){
+  .dashboard-focus{padding:20px;}
+  .dashboard-focus-action{width:100%;}
+  .dashboard-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .dashboard-stat{padding:12px 9px;}
+  .dashboard-stat strong{font-size:19px;}
+  .dashboard-stat span{font-size:10px;overflow-wrap:anywhere;}
+  .chapter-filter{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+  .chapter-filter button{width:100%;white-space:normal;}
+}
+
 </style>
 </head>
 <body>
@@ -2163,7 +2234,196 @@ function renderDashboard(){
     </div>
   \`;
   }).join('') || '<div class="empty">No chapters here yet.</div>';
+  enhanceDashboard();
 }
+
+function enhanceDashboard(){
+  const main = document.getElementById('main');
+  const grid = document.getElementById('chGrid');
+  if(!main || !grid) return;
+
+  const chapters = visibleChapters();
+  const progressRows = chapters.map(ch => {
+    const total = ch.practiceCount != null ? Number(ch.practiceCount) : Number(ch.exampleCount || 0) + Number(ch.exerciseCount || 0);
+    return { chapter: ch, total, pct: progressPct(ch.id, total) };
+  });
+  const inProgress = progressRows.find(row => row.pct > 0 && row.pct < 100);
+  const nextUp = inProgress || progressRows.find(row => row.pct === 0) || progressRows[0];
+
+  const summary = main.querySelector('.summary-card');
+  if(nextUp && summary){
+    const focus = document.createElement('section');
+    focus.className = 'dashboard-focus';
+    focus.setAttribute('aria-label', 'Continue learning');
+    const copy = document.createElement('div');
+    copy.className = 'dashboard-focus-copy';
+    const kicker = document.createElement('div');
+    kicker.className = 'dashboard-kicker';
+    kicker.textContent = nextUp.pct > 0 ? 'PICK UP WHERE YOU LEFT OFF' : 'YOUR NEXT STEP';
+    const title = document.createElement('h2');
+    title.className = 'dashboard-focus-title';
+    title.textContent = nextUp.chapter.title || ('Chapter ' + nextUp.chapter.chapterNum);
+    const detail = document.createElement('p');
+    detail.className = 'dashboard-focus-detail';
+    detail.textContent = (nextUp.chapter.branchName ? nextUp.chapter.branchName + ' · ' : '') +
+      'Chapter ' + nextUp.chapter.chapterNum + ' · ' + nextUp.pct + '% explored · ' + nextUp.total + ' practice items';
+    const track = document.createElement('div');
+    track.className = 'dashboard-focus-track';
+    const fill = document.createElement('div');
+    fill.className = 'dashboard-focus-fill';
+    fill.style.width = nextUp.pct + '%';
+    track.appendChild(fill);
+    copy.append(kicker, title, detail, track);
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.className = 'btn dashboard-focus-action';
+    action.textContent = nextUp.pct > 0 ? 'Continue chapter →' : 'Start chapter →';
+    action.addEventListener('click', () => navigate(sp('/chapter/' + nextUp.chapter.id)));
+    focus.append(copy, action);
+    summary.insertAdjacentElement('afterend', focus);
+
+    const readyQuestions = chapters.reduce((sum, ch) => sum + Math.max(0, Number(ch.gradableCount) || 0), 0);
+    const completedCount = progressRows.filter(row => row.total > 0 && row.pct >= 100).length;
+    const stats = document.createElement('section');
+    stats.className = 'dashboard-stats';
+    stats.setAttribute('aria-label', 'Study overview');
+    [
+      { value: String(chapters.length), label: 'Chapters in view' },
+      { value: String(readyQuestions), label: 'Auto-graded questions' },
+      { value: completedCount + ' / ' + chapters.length, label: 'Chapters completed' }
+    ].forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'dashboard-stat';
+      const value = document.createElement('strong');
+      value.textContent = item.value;
+      const label = document.createElement('span');
+      label.textContent = item.label;
+      card.append(value, label);
+      stats.appendChild(card);
+    });
+    focus.insertAdjacentElement('afterend', stats);
+  }
+
+  const chapterHeading = Array.from(main.querySelectorAll('.section-title'))
+    .find(el => el.textContent.trim().toLowerCase() === 'contents');
+  if(chapterHeading) chapterHeading.textContent = 'Your chapters';
+
+  const tools = document.createElement('section');
+  tools.className = 'chapter-tools';
+  tools.setAttribute('aria-label', 'Find and filter chapters');
+
+  const searchWrap = document.createElement('div');
+  searchWrap.className = 'chapter-search-wrap';
+  const label = document.createElement('label');
+  label.htmlFor = 'chapterSearch';
+  label.className = 'sr-only';
+  label.textContent = 'Search chapters';
+  const search = document.createElement('input');
+  search.id = 'chapterSearch';
+  search.type = 'search';
+  search.placeholder = 'Search chapters by name or number…';
+  search.setAttribute('autocomplete', 'off');
+  search.setAttribute('aria-describedby', 'chapterCount');
+  searchWrap.append(label, search);
+
+  const filters = document.createElement('div');
+  filters.id = 'chapterFilters';
+  filters.className = 'chapter-filter';
+  filters.setAttribute('role', 'group');
+  filters.setAttribute('aria-label', 'Filter chapters by progress');
+  [
+    ['all', 'All'],
+    ['in-progress', 'In progress'],
+    ['not-started', 'Not started'],
+    ['completed', 'Completed']
+  ].forEach((item, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.filter = item[0];
+    button.textContent = item[1];
+    button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+    if(index === 0) button.classList.add('active');
+    filters.appendChild(button);
+  });
+
+  const count = document.createElement('p');
+  count.id = 'chapterCount';
+  count.className = 'chapter-count';
+  count.setAttribute('aria-live', 'polite');
+
+  const noResults = document.createElement('div');
+  noResults.id = 'chapterNoResults';
+  noResults.className = 'empty chapter-no-results';
+  noResults.hidden = true;
+  const noResultsText = document.createElement('p');
+  noResultsText.textContent = 'No chapters match these filters.';
+  const clear = document.createElement('button');
+  clear.type = 'button';
+  clear.className = 'btn-outline';
+  clear.textContent = 'Clear search and filters';
+  clear.addEventListener('click', () => {
+    search.value = '';
+    setFilter('all');
+    updateGrid();
+    search.focus();
+  });
+  noResults.append(noResultsText, clear);
+
+  grid.parentNode.insertBefore(tools, grid);
+  grid.insertAdjacentElement('afterend', noResults);
+  tools.append(searchWrap, filters, count);
+
+  let activeFilter = 'all';
+  function setFilter(filter){
+    activeFilter = filter;
+    filters.querySelectorAll('button[data-filter]').forEach(button => {
+      const active = button.dataset.filter === filter;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+  function updateGrid(){
+    const query = search.value.trim().toLocaleLowerCase();
+    let shown = 0;
+    Array.from(grid.querySelectorAll('.ch-card')).forEach(card => {
+      const total = Number(card.dataset.total) || 0;
+      const pct = progressPct(card.dataset.id, total);
+      const text = card.textContent.toLocaleLowerCase();
+      const matchesSearch = !query || text.includes(query);
+      let matchesFilter = activeFilter === 'all';
+      if(activeFilter === 'in-progress') matchesFilter = pct > 0 && pct < 100;
+      if(activeFilter === 'not-started') matchesFilter = pct === 0;
+      if(activeFilter === 'completed') matchesFilter = total > 0 && pct >= 100;
+      const visible = matchesSearch && matchesFilter;
+      card.hidden = !visible;
+      if(visible) shown++;
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', 'Open ' + card.querySelector('h3').textContent);
+      if(!card.dataset.keyboardBound){
+        card.dataset.keyboardBound = 'true';
+        card.addEventListener('keydown', event => {
+          if(event.key === 'Enter' || event.key === ' '){
+            event.preventDefault();
+            navigate(sp('/chapter/' + card.dataset.id));
+          }
+        });
+      }
+    });
+    count.textContent = 'Showing ' + shown + ' of ' + chapters.length + ' chapters';
+    noResults.hidden = shown !== 0;
+    grid.hidden = shown === 0;
+  }
+  search.addEventListener('input', updateGrid);
+  filters.addEventListener('click', event => {
+    const button = event.target.closest('button[data-filter]');
+    if(!button) return;
+    setFilter(button.dataset.filter);
+    updateGrid();
+  });
+  updateGrid();
+}
+
 
 function renderPicker(key,title,sub,multi,onGo){
   const main = document.getElementById('main');
