@@ -311,8 +311,13 @@ function loadSubject(subjectId) {
     return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
   function paperGradableQids(paperId, chapterId) {
-    return pypPool.filter(q => q.paperId === paperId && q.gradable && (!chapterId || q.chapterId === chapterId)).sort((a, b) => a.order - b.order).map(q => q.qid);
+    return pypPool.filter(q => q.paperId === paperId && q.gradable && (!mcqOnly || isMcq(q)) && (!chapterId || q.chapterId === chapterId)).sort((a, b) => a.order - b.order).map(q => q.qid);
   }
+
+  // Include PYP difficulty values so chapterwise previous-paper setup filters use real options.
+  pypPool.forEach(q => {
+    if (q.difficulty && !DIFFICULTIES.includes(q.difficulty)) DIFFICULTIES.push(q.difficulty);
+  });
 
   // ---------- MCQ Practice pool (all subjects) ----------
   // Union of every MCQ / Assertion-Reason question this subject has, wherever it came from: chapter
@@ -321,7 +326,7 @@ function loadSubject(subjectId) {
   // each chapter's "MCQ" tab, where the student just reads, thinks, and reveals (no auto-grading).
   function mcqPracticePool(chapterIds) {
     const fromMain = questionPool.filter(q => isMc(q));
-    const fromPyp = pypPool.filter(q => isMc(q) && !q.isDuplicate);
+    const fromPyp = pypPool.filter(q => isMc(q) && q.gradable && !q.isDuplicate);
     let combined = [...fromMain, ...fromPyp];
     if (Array.isArray(chapterIds) && chapterIds.length) {
       combined = combined.filter(q => chapterIds.includes(q.chapterId));
@@ -376,11 +381,24 @@ function questionsPublic(qids) {
 // ---------- Tiny JSON-file DB (no native deps, easy to deploy anywhere) ----------
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) return { tests: {}, attempts: {} };
-  try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
-  catch { return { tests: {}, attempts: {} }; }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { tests: {}, attempts: {} };
+    return {
+      tests: parsed.tests && typeof parsed.tests === 'object' && !Array.isArray(parsed.tests) ? parsed.tests : {},
+      attempts: parsed.attempts && typeof parsed.attempts === 'object' && !Array.isArray(parsed.attempts) ? parsed.attempts : {}
+    };
+  } catch { return { tests: {}, attempts: {} }; }
 }
 function saveDB(db) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  const tempFile = DB_FILE + '.' + process.pid + '.' + crypto.randomBytes(4).toString('hex') + '.tmp';
+  try {
+    fs.writeFileSync(tempFile, JSON.stringify(db, null, 2), { encoding: 'utf8', mode: 0o600 });
+    fs.renameSync(tempFile, DB_FILE);
+  } catch (err) {
+    try { fs.unlinkSync(tempFile); } catch {}
+    throw err;
+  }
 }
 let db = loadDB();
 
@@ -619,7 +637,7 @@ app.post('/api/test/:code/submit', (req, res) => {
   let score = 0, marksScored = 0, marksTotal = 0;
   const breakdown = test.qids.map(qid => {
     const q = findQuestionByQid(qid);
-    const userAns = (answers && answers[qid]) || '';
+    const userAns = answers && answers[qid] != null ? answers[qid] : '';
     const correct = q ? checkAnswer(userAns, q.answer, q.options) : false;
     const marks = (q && typeof q.marks === 'number') ? q.marks : 0;
     if (correct) score++;
@@ -664,7 +682,7 @@ app.get('/api/:subject/pyp/papers', (req, res) => {
     return {
       id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
       questionCount: qs.length,
-      gradableCount: qs.filter(q => q.gradable).length,
+      gradableCount: qs.filter(q => q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0))).length,
       chapters: [...new Set(qs.map(q => q.chapterId))].sort()
     };
   }));
@@ -717,7 +735,7 @@ app.get('/api/:subject/pyp/paper/:id', (req, res) => {
   const qs = req.subj.pypPool.filter(q => q.paperId === p.id).sort((a, b) => a.order - b.order);
   res.json({
     id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
-    questions: qs.map(q => ({ qid: q.qid, chapterId: q.chapterId, chapter: q.chapter, branch: q.branch || null, chapterTitle: q.chapterTitle, topic: q.topic, difficulty: q.difficulty, marks: q.marks, question: q.question, gradable: q.gradable }))
+    questions: qs.map(q => ({ qid: q.qid, chapterId: q.chapterId, chapter: q.chapter, branch: q.branch || null, chapterTitle: q.chapterTitle, topic: q.topic, difficulty: q.difficulty, marks: q.marks, question: q.question, gradable: q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0)) }))
   });
 });
 
@@ -1512,10 +1530,14 @@ async function ensureSubject(subj){
   renderSubjectTabs();
   if(!state.chaptersCache[subj]){
     const [chRes, metaRes, branchRes] = await Promise.all([ fetch('/api/'+subj+'/chapters'), fetch('/api/'+subj+'/meta'), fetch('/api/'+subj+'/branches') ]);
-    state.chaptersCache[subj] = await chRes.json();
-    try{ state.metaCache[subj] = await metaRes.json(); }catch(e){ state.metaCache[subj] = { difficulties: [] }; }
-    try{ state.branchesCache[subj] = await branchRes.json(); }catch(e){ state.branchesCache[subj] = []; }
+    if(!chRes.ok || !metaRes.ok || !branchRes.ok) throw new Error('Unable to load subject resources. Please retry.');
+    const [chapters, meta, branches] = await Promise.all([chRes.json(), metaRes.json(), branchRes.json()]);
+    state.chaptersCache[subj] = Array.isArray(chapters) ? chapters : [];
+    state.metaCache[subj] = meta && typeof meta === 'object' ? meta : { difficulties: [] };
+    state.branchesCache[subj] = Array.isArray(branches) ? branches : [];
   }
+  // A slow response for the previous tab must not overwrite the subject chosen most recently.
+  if(state.subject !== subj) return;
   state.chapters = state.chaptersCache[subj];
   state.meta = state.metaCache[subj];
   renderBranchTabs();
@@ -1533,7 +1555,7 @@ function renderBranchTabs(){
   let bar = document.getElementById('branchTabs');
   const branches = state.branchesCache[state.subject] || [];
   if(!branches.length){
-    if(bar) bar.innerHTML = '';
+    if(bar) bar.remove();
     return;
   }
   if(!bar){
@@ -1570,6 +1592,7 @@ function route(){
   if(seg[0]==='s' && seg[1]){
     if(!SUBJECT_IDS.includes(seg[1])) return navigate('/s/maths');
     return ensureSubject(seg[1]).then(()=>{
+      if(state.subject !== seg[1] || location.pathname !== path) return;
       const sub = seg.slice(2);
       if(sub[0]==='chapter' && sub[1]) return openChapterPage(sub[1], qs.get('tab')||'notes');
       if(sub[0]==='pick' && sub[1]==='notes') return renderNotesPicker(sub[2]);
