@@ -8,6 +8,8 @@ test('MCQs accept a correct option letter when the key stores the full option te
   const options = ['2', '4', '6', '8'];
   assert.equal(checkAnswer('B', '4', options), true);
   assert.equal(checkAnswer('B', 'B', options), true);
+  assert.equal(checkAnswer('B', 'Option B', options), true);
+  assert.equal(checkAnswer('B', 'Choice B: 4', options), true);
   assert.equal(checkAnswer('A', '4', options), false);
 });
 
