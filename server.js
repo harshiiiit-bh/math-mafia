@@ -753,7 +753,7 @@ app.get('/api/:subject/pyp/papers', (req, res) => {
       id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
       questionCount: qs.length,
       gradableCount: qs.filter(q => q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0))).length,
-      chapters: [...new Set(qs.map(q => q.chapterId))].sort()
+      chapters: [...new Set(qs.map(q => q.chapterId).filter(Boolean))].sort()
     };
   }));
 });
@@ -773,9 +773,10 @@ app.get('/api/:subject/pyp/chapters', (req, res) => {
 app.get('/api/:subject/pyp/weightage', (req, res) => {
   const { pypPool, paperList } = req.subj;
   const unique = pypPool.filter(q => !q.isDuplicate);
-  const totalUnique = unique.length;
+  const mappedUnique = unique.filter(q => q.chapterId && req.subj.chapters[q.chapterId]);
+  const totalUnique = mappedUnique.length;
   const byChapter = {};
-  unique.forEach(q => {
+  mappedUnique.forEach(q => {
     if (!byChapter[q.chapterId]) {
       byChapter[q.chapterId] = { id: q.chapterId, chapterNum: q.chapter, title: q.chapterTitle, branch: q.branch || null, questionCount: 0, marks: 0, papers: new Set() };
     }
@@ -793,7 +794,8 @@ app.get('/api/:subject/pyp/weightage', (req, res) => {
   res.json({
     totalUniqueQuestions: totalUnique,
     totalRawQuestions: pypPool.length,
-    duplicatesFound: pypPool.length - totalUnique,
+    duplicatesFound: pypPool.length - unique.length,
+    unmappedQuestions: unique.length - mappedUnique.length,
     paperCount: paperList.length,
     chapters: rows
   });
@@ -2695,13 +2697,42 @@ async function renderPypWeightage(){
     return;
   }
   const dupNote = data.duplicatesFound > 0
-    ? \` (\${data.duplicatesFound} repeated question\${data.duplicatesFound===1?'':'s'} across papers auto-excluded, so this stays accurate)\`
+    ? \` (\${data.duplicatesFound} repeated question\${data.duplicatesFound===1?'':'s'} across papers auto-excluded)\`
+    : '';
+  const unmappedNote = data.unmappedQuestions > 0
+    ? \` (\${data.unmappedQuestions} question\${data.unmappedQuestions===1?'':'s'} could not be assigned to a chapter and are excluded from this chart)\`
     : '';
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">Chapter Weightage</div>
     <p style="color:var(--muted); margin-bottom:24px; font-size:14px;">
-      Based on ${'$'}{data.totalUniqueQuestions} unique question${'$'}{data.totalUniqueQuestions===1?'':'s'} across ${'$'}{data.paperCount} paper${'$'}{data.paperCount===1?'':'s'}${'$'}{esc(dupNote)}.
+      Based on ${'$'}{data.totalUniqueQuestions} unique question${'$'}{data.totalUniqueQuestions===1?'':'s'} across ${'$'}{data.paperCount} paper${'$'}{data.paperCount===1?'':'s'}${'
+    </p>
+    <div id="weightageList">
+      ${'$'}{data.chapters.map((c,i)=>\`
+      <div class="ch-card" style="margin-bottom:12px; cursor:pointer;" onclick="navigate(sp('/chapter/${'$'}{c.id}'))">
+        <div class="num">#${'$'}{i+1} · ${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum} — ${'$'}{esc(c.title)}</div>
+        <h3>${'$'}{c.questionCount} question${'$'}{c.questionCount===1?'':'s'}${'$'}{c.marks?' · '+c.marks+' marks total':''} · in ${'$'}{c.paperCount} paper${'$'}{c.paperCount===1?'':'s'}</h3>
+        <div class="progress-track"><div class="progress-fill" style="width:${'$'}{c.percent}%"></div></div>
+        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique PYP questions</div>
+      </div>\`).join('')}
+    </div>
+  \`;
+}
+}{esc(dupNote)}${'
+    </p>
+    <div id="weightageList">
+      ${'$'}{data.chapters.map((c,i)=>\`
+      <div class="ch-card" style="margin-bottom:12px; cursor:pointer;" onclick="navigate(sp('/chapter/${'$'}{c.id}'))">
+        <div class="num">#${'$'}{i+1} · ${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum} — ${'$'}{esc(c.title)}</div>
+        <h3>${'$'}{c.questionCount} question${'$'}{c.questionCount===1?'':'s'}${'$'}{c.marks?' · '+c.marks+' marks total':''} · in ${'$'}{c.paperCount} paper${'$'}{c.paperCount===1?'':'s'}</h3>
+        <div class="progress-track"><div class="progress-fill" style="width:${'$'}{c.percent}%"></div></div>
+        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique PYP questions</div>
+      </div>\`).join('')}
+    </div>
+  \`;
+}
+}{esc(unmappedNote)}.
     </p>
     <div id="weightageList">
       ${'$'}{data.chapters.map((c,i)=>\`
@@ -2728,6 +2759,7 @@ async function renderPypPaperDetail(id){
   const canAutoGrade = gradable.length > 0;
   const chapterCounts = {};
   data.questions.forEach(q=>{
+    if(!q.chapterId) return;
     if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
     chapterCounts[q.chapterId].count++;
     if(q.gradable) chapterCounts[q.chapterId].gradableCount++;
@@ -3380,7 +3412,7 @@ async function finishGangWar(){
   \`;
 }
 
-async async function viewLeaderboard(code){
+async function viewLeaderboard(code){
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Loading leaderboard…</div>';
   const routePath = location.pathname;
