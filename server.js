@@ -2827,9 +2827,10 @@ async function renderPypTestSetup(mode, chapterIds){
 // check '/api/quiz/check' and '/api/test/:code' which work across both question pools.
 async function startPypQuiz(opts){
   opts = opts || {};
-  const res = await fetch('/api/'+state.subject+'/pyp/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opts) });
-  const data = await res.json();
-  if(data.error){ alert(data.error); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/pyp/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opts) }); }
+  catch(err){ alert(err.message || 'Could not start this practice set.'); return; }
+  if(!Array.isArray(data.questions) || !data.questions.length){ alert('No gradable questions are available for this selection.'); return; }
   state.quiz = data.questions.map(q=>({...q, given:'', submitted:false, shownAt:null, timeSec:null}));
   state.quizIdx = 0; state.quizScore = 0; state.testStart = Date.now();
   navigate('/run/quiz');
@@ -2841,9 +2842,10 @@ function viewPypPaperChapter(paperId, chapterId){
 async function startPypSoloTest(opts){
   opts = opts || {};
   state.finishing = false;
-  const res = await fetch('/api/'+state.subject+'/pyp/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opts) });
-  const data = await res.json();
-  if(data.error || !data.questions.length){ alert(data.error||'No questions available.'); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/pyp/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opts) }); }
+  catch(err){ alert(err.message || 'Could not start this timed test.'); return; }
+  if(!Array.isArray(data.questions) || !data.questions.length){ alert('No gradable questions are available for this selection.'); return; }
   state.quiz = data.questions.map(q=>({...q, given:'', submitted:false, shownAt:null, timeSec:null}));
   state.quizIdx = 0; state.runnerMode = 'solo';
   state.timeLimitSeconds = opts.timeLimitSeconds || null;
@@ -2856,9 +2858,9 @@ async function startPypSoloTest(opts){
 }
 async function createPypGangWar(opts){
   opts = opts || {};
-  const res = await fetch('/api/'+state.subject+'/pyp/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...opts, creatorName: state.name}) });
-  const data = await res.json();
-  if(data.error){ alert(data.error); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/pyp/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...opts, creatorName: state.name}) }); }
+  catch(err){ alert(err.message || 'Could not create this challenge.'); return; }
   state.testCode = data.code;
   const main = document.getElementById('main');
   main.innerHTML = \`
@@ -2879,9 +2881,9 @@ async function createPypGangWar(opts){
 // ---------- Practice Quiz (practice quiz, instant feedback) ----------
 async function startQuiz(chapterIds, opts){
   opts = opts || {};
-  const res = await fetch('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||10, difficulty: opts.difficulty||'all'}) });
-  const data = await res.json();
-  if(data.error){ alert(data.error); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||10, difficulty: opts.difficulty||'all'}) }); }
+  catch(err){ alert(err.message || 'Could not generate this practice quiz.'); return; }
   state.quiz = data.questions.map(q=>({...q, given:'', submitted:false, shownAt:null, timeSec:null}));
   state.quizIdx = 0; state.quizScore = 0;
   state.timeLimitSeconds = opts.timeLimitSeconds || null;
@@ -3092,9 +3094,10 @@ function autoFinishOnTimeout(){
 async function startSoloTest(chapterIds, opts){
   opts = opts || {};
   state.finishing = false;
-  const res = await fetch('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||15, difficulty: opts.difficulty||'all'}) });
-  const data = await res.json();
-  if(data.error || !data.questions.length){ alert(data.error||'No questions available.'); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||15, difficulty: opts.difficulty||'all'}) }); }
+  catch(err){ alert(err.message || 'Could not generate this timed test.'); return; }
+  if(!Array.isArray(data.questions) || !data.questions.length){ alert('No gradable questions are available for this selection.'); return; }
   state.quiz = data.questions.map(q=>({...q, given:'', submitted:false, shownAt:null, timeSec:null}));
   state.quizIdx = 0; state.runnerMode = 'solo';
   state.timeLimitSeconds = opts.timeLimitSeconds || null;
@@ -3152,9 +3155,9 @@ async function finishSoloTest(){
 // ---------- Challenge Test (shared test code + leaderboard) ----------
 async function createGangWar(chapterIds, opts){
   opts = opts || {};
-  const res = await fetch('/api/'+state.subject+'/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||12, creatorName: state.name, mode:'squad', difficulty: opts.difficulty||'all', timeLimitSeconds: opts.timeLimitSeconds||null, readingTimeSeconds: opts.readingTimeSeconds||null}) });
-  const data = await res.json();
-  if(data.error){ alert(data.error); return; }
+  let data;
+  try{ data = await requestJson('/api/'+state.subject+'/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||12, creatorName: state.name, mode:'squad', difficulty: opts.difficulty||'all', timeLimitSeconds: opts.timeLimitSeconds||null, readingTimeSeconds: opts.readingTimeSeconds||null}) }); }
+  catch(err){ alert(err.message || 'Could not create this challenge.'); return; }
   state.testCode = data.code;
   const main = document.getElementById('main');
   main.innerHTML = \`
@@ -3255,9 +3258,11 @@ async function finishGangWar(){
 async function viewLeaderboard(code){
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Loading leaderboard…</div>';
-  const res = await fetch('/api/test/'+code+'/leaderboard');
-  const data = await res.json();
-  if(data.error){ alert(data.error); navigate(sp('')); return; }
+  const routePath = location.pathname;
+  let data;
+  try{ data = await requestJson('/api/test/'+encodeURIComponent(code)+'/leaderboard'); }
+  catch(err){ if(location.pathname===routePath) showRequestError(main,'Could not load this leaderboard. Please try again.'); return; }
+  if(location.pathname!==routePath) return;
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">Leaderboard — Code ${'$'}{esc(code)}</div>
@@ -3306,8 +3311,10 @@ async function renderMixPicker(){
   async function loadMixChapters(){
     const grid = document.getElementById('mixChGrid');
     grid.innerHTML = '<div class="empty">Loading…</div>';
-    const res = await fetch('/api/'+subjSel.value+'/chapters');
-    const chs = await res.json();
+    let chs;
+    try{ chs = await requestJson('/api/'+subjSel.value+'/chapters'); }
+    catch(err){ if(grid.isConnected) showRequestError(grid,'Could not load chapters for this subject. Try selecting it again.'); return; }
+    if(!grid.isConnected) return;
     grid.innerHTML = chs.map(c=>\`
       <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="this.classList.toggle('selected')">
         <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div><h3>${'$'}{esc(c.title)}</h3>
@@ -3352,12 +3359,16 @@ async function renderMixWarSetup(){
   const main = document.getElementById('main');
   if(!state.mixParts.length){ navigate('/mix/pick'); return; }
   main.innerHTML = '<div class="empty">Loading setup…</div>';
-  const rows = await Promise.all(state.mixParts.map(async (p,i)=>{
-    const sInfo = state.subjects.find(s=>s.id===p.subject) || {name:p.subject};
-    const metaRes = await fetch('/api/'+p.subject+'/meta');
-    const meta = await metaRes.json();
-    return { i, p, sInfo, difficulties: meta.difficulties||[] };
-  }));
+  const routePath = location.pathname;
+  let rows;
+  try{
+    rows = await Promise.all(state.mixParts.map(async (p,i)=>{
+      const sInfo = state.subjects.find(s=>s.id===p.subject) || {name:p.subject};
+      const meta = await requestJson('/api/'+p.subject+'/meta');
+      return { i, p, sInfo, difficulties: meta.difficulties||[] };
+    }));
+  }catch(err){ showRequestError(main,'Could not load test settings. Return to chapter selection and try again.'); return; }
+  if(location.pathname!==routePath) return;
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate('/mix/pick')">← Change Chapters</button></div>
     <div class="section-title">Mixed-Subject Challenge Setup</div>
@@ -3416,9 +3427,9 @@ async function renderMixWarSetup(){
 async function createMixGangWar(opts){
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Building the war…</div>';
-  const res = await fetch('/api/mix/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ parts: opts.parts, creatorName: state.name, timeLimitSeconds: opts.timeLimitSeconds, readingTimeSeconds: opts.readingTimeSeconds }) });
-  const data = await res.json();
-  if(data.error){ alert(data.error); renderMixWarSetup(); return; }
+  let data;
+  try{ data = await requestJson('/api/mix/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ parts: opts.parts, creatorName: state.name, timeLimitSeconds: opts.timeLimitSeconds, readingTimeSeconds: opts.readingTimeSeconds }) }); }
+  catch(err){ main.innerHTML = '<div class="empty">'+esc(err.message || 'Could not create the mixed-subject challenge.')+'<div style="margin-top:18px;"><button class="btn-outline" onclick="navigate(\\'/mix/setup\\')">Try again</button></div></div>'; return; }
   state.mixParts = [];
   state.testCode = data.code;
   main.innerHTML = \`
