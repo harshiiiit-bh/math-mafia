@@ -51,6 +51,13 @@ test('multi-part and proof answers are not sent to one-box auto-grading', () => 
   assert.equal(isGradable({ answer: '22338' }), true);
 });
 
+test('MCQ answer labels support more than six choices', () => {
+  const options = Array.from({ length: 26 }, (_, i) => 'Option ' + String.fromCharCode(65+i));
+  assert.equal(checkAnswer('Z', 'Z', options), true);
+  assert.equal(checkAnswer('Option Z', 'Z', options), true);
+  assert.equal(checkAnswer('Y', 'Z', options), false);
+});
+
 test('MCQs with invalid answer keys are excluded from graded pools', () => {
   assert.equal(isGradable({ answer: 'Z', options: ['one', 'two', 'three', 'four'] }), false);
   assert.equal(checkAnswer('Z', 'Z', ['one', 'two', 'three', 'four']), false);
