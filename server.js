@@ -526,8 +526,12 @@ app.post('/api/:subject/mcq/practice', (req, res) => {
   if (!Array.isArray(chapterIds) || !chapterIds.length) return res.status(400).json({ error: 'Pick at least one chapter' });
   const pool = req.subj.mcqPracticePool(chapterIds);
   if (!pool.length) return res.status(400).json({ error: 'No MCQ questions loaded for that selection yet' });
-  const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 300); // generous cap, ~100+/chapter is expected
-  res.json({ questions: shuffled.map(mcqPracticeItem) });
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  res.json({ questions: shuffled.slice(0, 300).map(mcqPracticeItem) });
 });
 
 // Practice mode sends the answer straight through (unlike graded tests) since there's no scoring —
@@ -1839,7 +1843,10 @@ async function initTicker(){
       (ch.examples||[]).forEach(e=>{ if(e.question) tickerPool.push({tag:ch.title, q:e.question}); });
     });
     if(!tickerPool.length) return;
-    tickerPool.sort(()=>Math.random()-0.5);
+    for (let i = tickerPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [tickerPool[i], tickerPool[j]] = [tickerPool[j], tickerPool[i]];
+    }
     rollTicker();
     if(!tickerTimer) tickerTimer = setInterval(rollTicker, 10000);
   }catch(err){ /* ticker is decorative, fail silently */ }
