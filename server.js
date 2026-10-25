@@ -2750,31 +2750,12 @@ function renderPypGrid(){
     return \`
     <div class="ch-card clickable" onclick="navigate(sp('/pyp/paper/${'$'}{p.id}'))">
       <div class="num">${'$'}{p.board?esc(p.board)+' · ':''}${'$'}{p.year}${'$'}{p.set?' Set '+p.set:''}${'$'}{stats.done?' · ✓':''}</div>
-      <h3>${'
+      <h3>${'$'}{p.gradableCount} test questions · ${'$'}{p.questionCount} entries${'$'}{p.totalMarks?' · '+p.totalMarks+' Marks':''}</h3>
       <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
       <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
     </div>\`;
   }).join('');
 }
-}{p.gradableCount} test questions · ${'
-      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
-    </div>\`;
-  }).join('');
-}
-}{p.questionCount} entries${'
-      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
-    </div>\`;
-  }).join('');
-}
-}{p.totalMarks?' · '+p.totalMarks+' Marks':''}</h3>
-      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
-    </div>\`;
-  }).join('');
-}
-
 async function renderPypWeightage(){
   replaceUrl(sp('/pyp/weightage'));
   const main = document.getElementById('main');
