@@ -30,17 +30,17 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const source = fs.readFileSync('server.js', 'utf8');
-          const match = source.match(/const FRONTEND_HTML\\s*=\\s*(`[\\s\\S]*`);\\s*$/);
+          const match = source.match(/const FRONTEND_HTML\s*=\s*(`[\s\S]*`);\s*$/);
           if (!match) throw new Error('FRONTEND_HTML template is missing');
           const html = new Function('return ' + match[1])();
-          const script = html.match(/<script>\\s*([\\s\\S]*?)\\s*<\\/script>/);
-          const style = html.match(/<style>([\\s\\S]*?)<\\/style>/);
+          const script = html.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
+          const style = html.match(/<style>([\s\S]*?)<\/style>/);
           if (!script) throw new Error('Embedded browser JavaScript is missing');
           if (!style) throw new Error('Embedded CSS is missing');
           new Function(script[1]);
           const css = style[1];
           if ((css.match(/{/g) || []).length !== (css.match(/}/g) || []).length) throw new Error('CSS braces are unbalanced');
-          const ids = [...html.slice(0, html.indexOf('<script>')).matchAll(/\\bid=["']([^"']+)["']/g)].map(m => m[1]);
+          const ids = [...html.slice(0, html.indexOf('<script>')).matchAll(/\bid=["']([^"']+)["']/g)].map(m => m[1]);
           const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
           if (duplicateIds.length) throw new Error('Duplicate static HTML IDs: ' + duplicateIds.join(', '));
           console.log('Embedded browser script, CSS structure and static IDs OK.');
