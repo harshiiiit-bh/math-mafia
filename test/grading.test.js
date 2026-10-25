@@ -15,6 +15,7 @@ test('MCQs accept a correct option text when the key stores a letter', () => {
   const options = ['Prime number', 'Composite number', 'Neither', 'Both'];
   assert.equal(checkAnswer('Prime number', 'A', options), true);
   assert.equal(checkAnswer('C', 'A', options), false);
+  assert.equal(checkAnswer('B', 'B (probability can never be negative)', options), true);
 });
 
 test('answer matching does not accept misleading partial numeric matches', () => {
