@@ -28,6 +28,7 @@ test('answer matching does not accept misleading partial numeric matches', () =>
   assert.equal(checkAnswer('No', 'No -- 6^n has no factor of 5.'), true);
   assert.equal(checkAnswer('Yes', 'Yes (because the graph crosses the axis)'), true);
   assert.equal(checkAnswer('13', '113'), false);
+  assert.equal(checkAnswer('HCF 13', 'HCF 13 -- LCM 182'), false);
 });
 
 test('math symbols and common units normalize predictably', () => {
