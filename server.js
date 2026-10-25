@@ -337,7 +337,7 @@ function loadSubject(subjectId) {
   })();
 
   const mcqOnly = MCQ_ONLY_SUBJECTS.includes(subjectId);
-  const isMcq = q => Array.isArray(q.options) && q.options.length > 0;
+  const isMcq = q => Array.isArray(q.options) && q.options.length > 0 && q.options.length <= 26;
 
   function shuffleArray(items) {
     const shuffled = [...items];
@@ -436,7 +436,7 @@ function loadSubject(subjectId) {
       combined = combined.filter(q => chapterIds.includes(q.chapterId));
     }
     return combined;
-    function isMc(q) { return Array.isArray(q.options) && q.options.length > 0; }
+    function isMc(q) { return Array.isArray(q.options) && q.options.length > 0 && q.options.length <= 26; }
   }
   function mcqChapterCounts() {
     const counts = {};
