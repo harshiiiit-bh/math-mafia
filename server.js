@@ -3340,21 +3340,22 @@ async function finishSoloTest(){
   if(state.finishing) return;
   state.finishing = true;
   clearInterval(state.testTimer);
-  const timeTaken = Math.floor((Date.now()-state.testStart)/1000);
+  const timeTaken = Math.max(0, Math.floor((Date.now()-state.testStart)/1000));
   let score = 0;
   try{
     for(const q of state.quiz){
-      const res = await fetch('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:q.given}) });
-      const data = await res.json();
-      if(!res.ok || data.error) throw new Error(data.error || 'Answer check failed');
-      q.correct = data.correct === true; q.correctAnswer = data.correctAnswer;
+      const data = await requestJson('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:q.given}) });
+      q.correct = data.correct === true;
+      q.correctAnswer = data.correctAnswer;
       if(q.correct) score++;
       if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid);
     }
   }catch(err){
     state.finishing = false;
     const main = document.getElementById('main');
-    main.innerHTML = '<div class="empty">We could not finish checking this test. Check your connection and retry.<div style="margin-top:18px;"><button class="btn" onclick="finishSoloTest()">Retry checking</button> <button class="btn-outline" onclick="navigate(sp(\\'\\'))">Back to Dashboard</button></div></div>';
+    main.innerHTML = '<div class="empty">We could not finish checking this test. Your answers are still here. Check your connection and retry.<div style="margin-top:18px;"><button type="button" class="btn" id="soloRetryCheck">Retry checking</button> <button type="button" class="btn-outline" id="soloReturnDashboard">Back to Dashboard</button></div></div>';
+    document.getElementById('soloRetryCheck').addEventListener('click', finishSoloTest);
+    document.getElementById('soloReturnDashboard').addEventListener('click', ()=>navigate(sp('')));
     return;
   }
   const incorrect = state.quiz.length - score;
@@ -3363,52 +3364,7 @@ async function finishSoloTest(){
   if(marksMode){
     let marksScored = 0, marksAvailable = 0;
     state.quiz.forEach(q=>{ if(typeof q.marks==='number'){ marksAvailable += q.marks; if(q.correct) marksScored += q.marks; } });
-    marksLine = \`<div class="sub" style="margin-top:4px;">Auto-gradable subset: ${'
-  const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
-  const main = document.getElementById('main');
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{score} / ${'$'}{state.quiz.length}</div>
-      <div class="sub">${'$'}{score} correct · ${'$'}{incorrect} incorrect — Job done in ${'$'}{mm}:${'$'}{ss}</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}${'$'}{r.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+r.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
-  \`;
-}
-
-// ---------- Challenge Test (shared test code + leaderboard) ----------}{marksAvailable} marks available · Your score: ${'
-  const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
-  const main = document.getElementById('main');
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{score} / ${'$'}{state.quiz.length}</div>
-      <div class="sub">${'$'}{score} correct · ${'$'}{incorrect} incorrect — Job done in ${'$'}{mm}:${'$'}{ss}</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}${'$'}{r.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+r.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
-  \`;
-}
-
-// ---------- Challenge Test (shared test code + leaderboard) ----------}{marksScored} / ${'
-  const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
-  const main = document.getElementById('main');
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{score} / ${'$'}{state.quiz.length}</div>
-      <div class="sub">${'$'}{score} correct · ${'$'}{incorrect} incorrect — Job done in ${'$'}{mm}:${'$'}{ss}</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}${'$'}{r.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+r.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
-  \`;
-}
-
-// ---------- Challenge Test (shared test code + leaderboard) ----------}{state.paperTotalMarks} official paper marks</div>\`;
+    marksLine = '<div class="sub" style="margin-top:4px;">Auto-gradable subset: '+marksAvailable+' marks available · Your score: '+marksScored+' / '+state.paperTotalMarks+' official paper marks</div>';
   }
   const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
   const main = document.getElementById('main');
@@ -3420,11 +3376,11 @@ async function finishSoloTest(){
       <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}${'$'}{r.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+r.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
+    ${'$'}{state.quiz.map(r => '<div class="ex-item"><div class="q">' + renderMedia(r.question) + (r.marks ? ' <span style="color:var(--gold-soft);font-size:12px;">(' + esc(r.marks) + ' marks)</span>' : '') + '</div><div class="feedback ' + (r.correct?'correct':'wrong') + '">' + (r.correct ? '✅ Correct' : '❌ Your answer: ' + esc(r.given||'(blank)') + ' — Correct: ' + renderMedia(r.correctAnswer||'')) + '<span class="time-tag">⏱ ' + (r.timeSec!=null ? esc(r.timeSec)+'s' : '—') + '</span></div></div>').join('')}
   \`;
 }
 
-// ---------- Challenge Test (shared test code + leaderboard) ----------
+
 async function createGangWar(chapterIds, opts){
   opts = opts || {};
   let data;
@@ -3492,133 +3448,68 @@ async function finishGangWar(){
   if(state.finishing) return;
   state.finishing = true;
   clearInterval(state.testTimer);
-  const timeTaken = Math.floor((Date.now()-state.testStart)/1000);
-  const answers = {}; const perQuestionSeconds = {};
-  state.quiz.forEach(q=>{ answers[q.qid] = q.given; perQuestionSeconds[q.qid] = q.timeSec; });
+  const timeTaken = Math.max(0, Math.floor((Date.now()-state.testStart)/1000));
+  const answers = {}, perQuestionSeconds = {};
+  state.quiz.forEach(q=>{ answers[q.qid] = q.given == null ? '' : q.given; perQuestionSeconds[q.qid] = q.timeSec; });
   const main = document.getElementById('main');
   let data;
   try{
-    const res = await fetch('/api/test/'+encodeURIComponent(state.testCode)+'/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: state.name, answers, timeTakenSeconds: timeTaken, perQuestionSeconds }) });
-    data = await res.json();
-    if(!res.ok || data.error) throw new Error(data.error || 'Test submission failed');
+    data = await requestJson('/api/test/'+encodeURIComponent(state.testCode)+'/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name:state.name, answers, timeTakenSeconds:timeTaken, perQuestionSeconds }) });
   }catch(err){
     state.finishing = false;
-    main.innerHTML = '<div class="empty">Your answers are still here, but submission failed. Check your connection and try again.<div style="margin-top:18px;"><button class="btn" onclick="finishGangWar()">Retry submission</button> <button class="btn-outline" onclick="navigate(sp(\\'\\'))">Back to Dashboard</button></div></div>';
+    main.innerHTML = '<div class="empty">Your answers are still here, but submission failed. Check your connection and try again.<div style="margin-top:18px;"><button type="button" class="btn" id="challengeRetrySubmit">Retry submission</button> <button type="button" class="btn-outline" id="challengeReturnDashboard">Back to Dashboard</button></div></div>';
+    document.getElementById('challengeRetrySubmit').addEventListener('click', finishGangWar);
+    document.getElementById('challengeReturnDashboard').addEventListener('click', ()=>navigate(sp('')));
     return;
   }
   state.quiz.forEach(q=>{ if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid); });
   const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
   const byQid = {}; (data.breakdown||[]).forEach(b=>byQid[b.qid]=b);
   const incorrect = data.total - data.score;
-  const marksLine = (data.marksTotal!=null) ? \`<div class="sub" style="margin-top:4px;">Auto-gradable subset: ${'
-
+  const marksLine = data.marksTotal!=null ? '<div class="sub" style="margin-top:4px;">Auto-gradable subset: '+data.marksTotal+' marks available · Your score: '+data.marksScored+' / '+(data.paperTotalMarks||data.marksTotal)+' official paper marks</div>' : '';
   main.innerHTML = \`
     <div class="result-hero">
       <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
-      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. Review your answers below.</div>
+      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}.</div>
       ${'$'}{marksLine}
-      <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
+      <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;flex-wrap:wrap;">
         <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
         <button class="btn-outline" onclick="navigate(sp(''))">Back to Dashboard</button>
       </div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(q=>{ const b = byQid[q.qid]||{}; return \`<div class="ex-item"><div class="q">${'$'}{renderMedia(q.question)}${'$'}{b.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+b.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{b.correct?'correct':'wrong'}">${'$'}{b.correct?'✅ Correct':'❌ Your answer: '+esc(q.given||'(blank)')+' — Correct: '+renderMedia(b.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{q.timeSec!=null?q.timeSec+'s':'—'}</span></div></div>\`; }).join('')}
+    ${'$'}{state.quiz.map(q=>{ const b=byQid[q.qid]||{}; return '<div class="ex-item"><div class="q">'+renderMedia(q.question)+(b.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+esc(b.marks)+' marks)</span>':'')+'</div><div class="feedback '+(b.correct?'correct':'wrong')+'">'+(b.correct?'✅ Correct':'❌ Your answer: '+esc(q.given||'(blank)')+' — Correct: '+renderMedia(b.correctAnswer||''))+'<span class="time-tag">⏱ '+(q.timeSec!=null?esc(q.timeSec)+'s':'—')+'</span></div></div>'; }).join('')}
   \`;
 }
-}{data.marksTotal} marks available · Your score: ${'
 
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
-      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. Review your answers below.</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
-        <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
-        <button class="btn-outline" onclick="navigate(sp(''))">Back to Dashboard</button>
-      </div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(q=>{ const b = byQid[q.qid]||{}; return \`<div class="ex-item"><div class="q">${'$'}{renderMedia(q.question)}${'$'}{b.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+b.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{b.correct?'correct':'wrong'}">${'$'}{b.correct?'✅ Correct':'❌ Your answer: '+esc(q.given||'(blank)')+' — Correct: '+renderMedia(b.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{q.timeSec!=null?q.timeSec+'s':'—'}</span></div></div>\`; }).join('')}
-  \`;
-}
-}{data.marksScored} / ${'
-
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
-      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. Review your answers below.</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
-        <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
-        <button class="btn-outline" onclick="navigate(sp(''))">Back to Dashboard</button>
-      </div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(q=>{ const b = byQid[q.qid]||{}; return \`<div class="ex-item"><div class="q">${'$'}{renderMedia(q.question)}${'$'}{b.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+b.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{b.correct?'correct':'wrong'}">${'$'}{b.correct?'✅ Correct':'❌ Your answer: '+esc(q.given||'(blank)')+' — Correct: '+renderMedia(b.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{q.timeSec!=null?q.timeSec+'s':'—'}</span></div></div>\`; }).join('')}
-  \`;
-}
-}{data.paperTotalMarks||data.marksTotal} official paper marks</div>\` : '';
-
-  main.innerHTML = \`
-    <div class="result-hero">
-      <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
-      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. Review your answers below.</div>
-      ${'$'}{marksLine}
-      <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
-        <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
-        <button class="btn-outline" onclick="navigate(sp(''))">Back to Dashboard</button>
-      </div>
-    </div>
-    <div class="section-title" style="margin-top:20px;">Breakdown</div>
-    ${'$'}{state.quiz.map(q=>{ const b = byQid[q.qid]||{}; return \`<div class="ex-item"><div class="q">${'$'}{renderMedia(q.question)}${'$'}{b.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+b.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{b.correct?'correct':'wrong'}">${'$'}{b.correct?'✅ Correct':'❌ Your answer: '+esc(q.given||'(blank)')+' — Correct: '+renderMedia(b.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{q.timeSec!=null?q.timeSec+'s':'—'}</span></div></div>\`; }).join('')}
-  \`;
-}
 
 async function viewLeaderboard(code){
   const main = document.getElementById('main');
-  main.innerHTML = '<div class="empty">Loading leaderboard…</div>';
   const routePath = location.pathname;
+  main.innerHTML = '<div class="empty">Loading leaderboard…</div>';
   let data;
   try{ data = await requestJson('/api/test/'+encodeURIComponent(code)+'/leaderboard'); }
   catch(err){ if(location.pathname===routePath) showRequestError(main,'Could not load this leaderboard. Please try again.'); return; }
   if(location.pathname!==routePath) return;
-  main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
-    <div class="section-title">Leaderboard — Code ${'$'}{esc(code)}</div>
-    <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Started by ${'$'}{esc(data.creatorName)} · ${'$'}{data.total} questions</p>
-    <div id="lbList"></div>
-    <div style="margin-top:20px; text-align:center;">
-      <button class="btn-outline" id="lbRefresh">Refresh</button>
-    </div>
-  \`;
-  document.getElementById('lbRefresh').addEventListener('click', ()=>viewLeaderboard(code));
+  main.innerHTML = '<div class="crumbs"><button type="button" id="lbBack">← Dashboard</button></div>' +
+    '<div class="section-title">Leaderboard — Code '+esc(code)+'</div>' +
+    '<p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Started by '+esc(data.creatorName||'Anonymous')+' · '+esc(data.total)+' questions</p>' +
+    '<div id="lbList"></div><div style="margin-top:20px;text-align:center;"><button type="button" class="btn-outline" id="lbRefresh">Refresh</button></div>';
+  document.getElementById('lbBack').addEventListener('click',()=>navigate(sp('')));
+  document.getElementById('lbRefresh').addEventListener('click',()=>viewLeaderboard(code));
   const list = document.getElementById('lbList');
-  if(!data.leaderboard.length){ list.innerHTML = '<div class="empty">No one has taken this test yet. Be the first.</div>'; return; }
-  list.innerHTML = data.leaderboard.map((a,i)=>{
-    const mm = String(Math.floor(a.timeTakenSeconds/60)).padStart(2,'0'), ss = String(a.timeTakenSeconds%60).padStart(2,'0');
-    const incorrect = data.total - a.score;
-    const marksBit = (a.marksTotal!=null) ? \` <span style="color:var(--gold-soft);">· ${'
-    return \`<div class="lb-row ${'$'}{i===0?'top1':''}"><div class="rank">#${'$'}{i+1}</div><div class="name">${'$'}{esc(a.name)}</div><div class="score">${'$'}{a.score}✓ ${'$'}{incorrect}✗${'$'}{marksBit}</div><div class="time">${'$'}{mm}:${'$'}{ss}</div></div>\`;
+  const leaderboardRows = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+  if(!leaderboardRows.length){ list.innerHTML = '<div class="empty">No one has taken this test yet. Be the first.</div>'; return; }
+  list.innerHTML = leaderboardRows.map((attempt,index)=>{
+    const seconds = Math.max(0, Number(attempt.timeTakenSeconds)||0);
+    const mm = String(Math.floor(seconds/60)).padStart(2,'0'), ss = String(seconds%60).padStart(2,'0');
+    const incorrect = Math.max(0, Number(data.total)||0) - (Number(attempt.score)||0);
+    const marksBit = attempt.marksTotal!=null ? ' <span style="color:var(--gold-soft);">· '+esc(attempt.marksScored)+'/'+esc(attempt.paperTotalMarks||attempt.marksTotal)+' official marks (subset max '+esc(attempt.marksTotal)+')</span>' : '';
+    return '<div class="lb-row '+(index===0?'top1':'')+'"><div class="rank">#'+(index+1)+'</div><div class="name">'+esc(attempt.name||'Anonymous')+'</div><div class="score">'+esc(attempt.score)+'✓ '+incorrect+'✗'+marksBit+'</div><div class="time">'+mm+':'+ss+'</div></div>';
   }).join('');
 }
 
-// ---------- Mix Subjects Challenge Test: pull chapters from several subjects into one combined war ----------}{a.marksScored}/${'
-    return \`<div class="lb-row ${'$'}{i===0?'top1':''}"><div class="rank">#${'$'}{i+1}</div><div class="name">${'$'}{esc(a.name)}</div><div class="score">${'$'}{a.score}✓ ${'$'}{incorrect}✗${'$'}{marksBit}</div><div class="time">${'$'}{mm}:${'$'}{ss}</div></div>\`;
-  }).join('');
-}
 
-// ---------- Mix Subjects Challenge Test: pull chapters from several subjects into one combined war ----------}{a.paperTotalMarks||a.marksTotal} official marks (subset max ${'
-    return \`<div class="lb-row ${'$'}{i===0?'top1':''}"><div class="rank">#${'$'}{i+1}</div><div class="name">${'$'}{esc(a.name)}</div><div class="score">${'$'}{a.score}✓ ${'$'}{incorrect}✗${'$'}{marksBit}</div><div class="time">${'$'}{mm}:${'$'}{ss}</div></div>\`;
-  }).join('');
-}
-
-// ---------- Mix Subjects Challenge Test: pull chapters from several subjects into one combined war ----------}{a.marksTotal})</span>\` : '';
-    return \`<div class="lb-row ${'$'}{i===0?'top1':''}"><div class="rank">#${'$'}{i+1}</div><div class="name">${'$'}{esc(a.name)}</div><div class="score">${'$'}{a.score}✓ ${'$'}{incorrect}✗${'$'}{marksBit}</div><div class="time">${'$'}{mm}:${'$'}{ss}</div></div>\`;
-  }).join('');
-}
-
-// ---------- Mix Subjects Challenge Test: pull chapters from several subjects into one combined war ----------
 async function renderMixPicker(){
   const main = document.getElementById('main');
   if(!state.subjects.length) await loadSubjects();
