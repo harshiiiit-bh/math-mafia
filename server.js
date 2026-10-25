@@ -2821,88 +2821,25 @@ async function renderPypPaperDetail(id){
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">${'$'}{data.board?esc(data.board)+' — ':''}${'$'}{data.year}${'$'}{data.set?' (Set '+data.set+')':''}${'$'}{stats.done?' ✓':''}</div>
-    <p style="color:var(--muted); margin-bottom:12px; font-size:14px;">${'
-    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-    <div class="mode-grid" style="margin-bottom:28px;">
-      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
-      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
-      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
-    </div>
-    <div class="section-title">Chapters Covered</div>
-    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
-    <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
-    </div>
-  \`;
-  if(!canAutoGrade){
-    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
-  }
-  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
-  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
-  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
-}
-}{data.questions.length} listed entries${'
-    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-    <div class="mode-grid" style="margin-bottom:28px;">
-      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
-      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
-      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
-    </div>
-    <div class="section-title">Chapters Covered</div>
-    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
-    <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
-    </div>
-  \`;
-  if(!canAutoGrade){
-    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
-  }
-  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
-  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
-  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
-}
-}{data.totalMarks?' · '+data.totalMarks+' official marks':''} · ${'
-    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
-    <div class="mode-grid" style="margin-bottom:28px;">
-      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
-      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
-      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
-    </div>
-    <div class="section-title">Chapters Covered</div>
-    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
-    <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
-    </div>
-  \`;
-  if(!canAutoGrade){
-    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
-  }
-  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
-  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
-  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
-}
-}{gradable.length} questions in scored tests</p>
+    <p style="color:var(--muted); margin-bottom:12px; font-size:14px;">${'$'}{data.questions.length} listed entries${'$'}{data.totalMarks?' · '+data.totalMarks+' official marks':''} · ${'$'}{gradable.length} questions in scored tests</p>
     <p style="color:var(--muted); margin:-4px 0 20px; font-size:13px;">Questions with a/b alternatives use one variant per test. Multi-part answers that cannot be reliably auto-scored are excluded.</p>
     <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
     <div class="mode-grid" style="margin-bottom:28px;">
-      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
-      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
-      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
+      <button class="mode-card" id="pypPracticeBtn" ${'$'}{canAutoGrade ? '' : 'disabled'}><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
+      <button class="mode-card" id="pypSoloBtn" ${'$'}{canAutoGrade ? '' : 'disabled'}><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — with auto-gradable questions.</p></button>
+      <button class="mode-card" id="pypWarBtn" ${'$'}{canAutoGrade ? '' : 'disabled'}><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this paper.</p></button>
     </div>
     <div class="section-title">Chapters Covered</div>
-    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Choose a chapter to practice the auto-gradable questions from this paper.</p>
     <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+      ${'$'}{Object.values(chapterCounts).map(ch => '<button type="button" class="ch-card clickable pyp-chapter-card" data-chapter="' + esc(ch.id) + '" style="width:100%;color:var(--cream);font-family:inherit;">' + (ch.branch ? '<div class="num">' + esc(branchName(state.subject,ch.branch)) + '</div>' : '') + '<h3>' + esc(ch.title) + '</h3><div class="stats"><span>' + ch.count + ' auto-gradable question' + (ch.count===1?'':'s') + '</span></div></button>').join('')}
     </div>
   \`;
-  if(!canAutoGrade){
-    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
-  }
-  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
-  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
-  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
+  main.querySelectorAll('.pyp-chapter-card').forEach(card=>card.addEventListener('click',()=>viewPypPaperChapter(id,card.dataset.chapter)));
+  document.getElementById('pypPracticeBtn').addEventListener('click',()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
+  document.getElementById('pypSoloBtn').addEventListener('click',()=>{ if(canAutoGrade) navigate(sp('/pyp/paper/'+id+'/setup/solo')); });
+  document.getElementById('pypWarBtn').addEventListener('click',()=>{ if(canAutoGrade) navigate(sp('/pyp/paper/'+id+'/setup/war')); });
 }
-
 // Full-paper time setup: hours+minutes and reading time for a whole PYP paper (marking is out of the
 // paper's official totalMarks, shown here so the host knows what the "full test" is graded against).
 async function renderPypPaperSetup(id, mode){
