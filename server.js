@@ -141,8 +141,20 @@ function loadSubject(subjectId) {
         console.error(`[Math Mafia] Skipping broken file data/${subjectId}/${f}: ${err.message}`);
         return;
       }
-      const branch = raw.branch || null;
-      const id = chapterCompositeId(branch, raw.chapter);
+      if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Number.isInteger(Number(raw.chapter)) || Number(raw.chapter) < 1){
+        console.error(`[Math Mafia] Skipping invalid chapter data/${subjectId}/${f}: expected an object with a positive integer chapter number`);
+        return;
+      }
+      const branch = typeof raw.branch === 'string' && raw.branch.trim() ? raw.branch.trim() : null;
+      const chapterNum = Number(raw.chapter);
+      const id = chapterCompositeId(branch, chapterNum);
+      if(Object.prototype.hasOwnProperty.call(chapters, id)){
+        console.error(`[Math Mafia] Skipping duplicate chapter id ${id} in data/${subjectId}/${f}`);
+        return;
+      }
+      raw.chapter = chapterNum;
+      raw.title = typeof raw.title === 'string' && raw.title.trim() ? raw.title.trim() : `Chapter ${chapterNum}`;
+      for(const key of ['notes','formulas','examples','exercises']) if(!Array.isArray(raw[key])) raw[key] = [];
       raw.id = id;
       raw.branch = branch;
       chapters[id] = raw;
@@ -154,17 +166,24 @@ function loadSubject(subjectId) {
   });
 
   const questionPool = [];
+  const usedQuestionIds = new Set();
   chapterList.forEach(ch => {
-    (ch.exercises || []).forEach(ex => {
-      if (isGradable(ex)) {
-        questionPool.push({
-          qid: `${subjectId}:${ch.id}-${ex.id}`,
-          subject: subjectId, chapterId: ch.id, chapter: ch.chapter, branch: ch.branch, chapterTitle: ch.title,
-          topic: ex.topic, difficulty: ex.difficulty, question: mcqDisplayQuestion(ex),
-          answer: ex.answer, source: ex.source, options: Array.isArray(ex.options) ? ex.options : null,
-          type: mcqType(ex), assertion: ex.assertion || null, reason: ex.reason || null
-        });
+    (ch.exercises || []).forEach((ex, idx) => {
+      if (!isGradable(ex)) return;
+      const exerciseId = ex.id != null && String(ex.id).trim() ? String(ex.id).trim() : String(idx + 1);
+      const qid = `${subjectId}:${ch.id}-${exerciseId}`;
+      if(usedQuestionIds.has(qid)){
+        console.error(`[Math Mafia] Skipping duplicate question id ${qid}`);
+        return;
       }
+      usedQuestionIds.add(qid);
+      questionPool.push({
+        qid,
+        subject: subjectId, chapterId: ch.id, chapter: ch.chapter, branch: ch.branch, chapterTitle: ch.title,
+        topic: ex.topic, difficulty: ex.difficulty, question: mcqDisplayQuestion(ex),
+        answer: ex.answer, source: ex.source, options: Array.isArray(ex.options) ? ex.options : null,
+        type: mcqType(ex), assertion: ex.assertion || null, reason: ex.reason || null
+      });
     });
   });
 
@@ -183,14 +202,36 @@ function loadSubject(subjectId) {
         console.error(`[Math Mafia] Skipping broken file data/${subjectId}/mcq/${f}: ${err.message}`);
         return;
       }
-      const branch = raw.branch || (Object.values(chapters).find(c => c.chapter === raw.chapter) || {}).branch || null;
-      const chapterId = chapterCompositeId(branch, raw.chapter);
-      const chapterTitle = (chapters[chapterId] && chapters[chapterId].title) || ('Chapter ' + raw.chapter);
-      (raw.questions || []).forEach((ex, idx) => {
+      if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Number.isInteger(Number(raw.chapter)) || !Array.isArray(raw.questions)){
+        console.error(`[Math Mafia] Skipping invalid MCQ bank data/${subjectId}/mcq/${f}`);
+        return;
+      }
+      const chapterNum = Number(raw.chapter);
+      const matchingChapters = Object.values(chapters).filter(ch => ch.chapter === chapterNum);
+      if(!raw.branch && matchingChapters.length !== 1){
+        console.error(`[Math Mafia] Skipping ambiguous MCQ bank data/${subjectId}/mcq/${f}: add an explicit branch`);
+        return;
+      }
+      const branch = typeof raw.branch === 'string' && raw.branch.trim() ? raw.branch.trim() : matchingChapters[0].branch || null;
+      const chapterId = chapterCompositeId(branch, chapterNum);
+      const chapter = chapters[chapterId];
+      if(!chapter){
+        console.error(`[Math Mafia] Skipping MCQ bank data/${subjectId}/mcq/${f}: chapter ${chapterId} does not exist`);
+        return;
+      }
+      const chapterTitle = chapter.title;
+      raw.questions.forEach((ex, idx) => {
         if (!isGradable(ex)) return; // Never add broken answer keys to scored test pools
+        const itemId = ex.id != null && String(ex.id).trim() ? String(ex.id).trim() : String(idx + 1);
+        const qid = `${subjectId}:mcq-${chapterId}-${itemId}`;
+        if(usedQuestionIds.has(qid)){
+          console.error(`[Math Mafia] Skipping duplicate question id ${qid}`);
+          return;
+        }
+        usedQuestionIds.add(qid);
         questionPool.push({
-          qid: `${subjectId}:mcq-${chapterId}-${ex.id != null ? ex.id : idx + 1}`,
-          subject: subjectId, chapterId, chapter: raw.chapter, branch, chapterTitle,
+          qid,
+          subject: subjectId, chapterId, chapter: chapterNum, branch, chapterTitle,
           topic: ex.topic, difficulty: ex.difficulty, question: mcqDisplayQuestion(ex),
           answer: ex.answer, source: 'MCQ Bank', options: ex.options,
           type: mcqType(ex) || 'mcq', assertion: ex.assertion || null, reason: ex.reason || null
