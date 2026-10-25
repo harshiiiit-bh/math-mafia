@@ -3309,12 +3309,13 @@ async function renderMixPicker(){
   subjSel.value = state.subject;
 
   async function loadMixChapters(){
+    const requestedSubject = subjSel.value;
     const grid = document.getElementById('mixChGrid');
     grid.innerHTML = '<div class="empty">Loading…</div>';
     let chs;
-    try{ chs = await requestJson('/api/'+subjSel.value+'/chapters'); }
-    catch(err){ if(grid.isConnected) showRequestError(grid,'Could not load chapters for this subject. Try selecting it again.'); return; }
-    if(!grid.isConnected) return;
+    try{ chs = await requestJson('/api/'+requestedSubject+'/chapters'); }
+    catch(err){ if(grid.isConnected && subjSel.value===requestedSubject) showRequestError(grid,'Could not load chapters for this subject. Try selecting it again.'); return; }
+    if(!grid.isConnected || subjSel.value!==requestedSubject) return;
     grid.innerHTML = chs.map(c=>\`
       <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="this.classList.toggle('selected')">
         <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div><h3>${'$'}{esc(c.title)}</h3>
