@@ -1,7 +1,7 @@
 {
   "name": "math-mafia",
   "version": "1.0.0",
-  "description": "Class 10 Maths - Math Mafia",
+  "description": "Class 10 learning studio for Maths, Science and Social Science",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,5 +9,8 @@
   },
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
