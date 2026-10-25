@@ -31,6 +31,22 @@ async function main() {
     assert.equal(await page.locator('#chGrid .ch-card').count(), 14, 'Maths dashboard should expose 14 chapters');
     await assertNoHorizontalOverflow(page, 'Desktop dashboard');
 
+    // Dashboard refinements: search, progress filters, and a helpful no-results state.
+    await page.locator('#chapterSearch').fill('Polynomials');
+    assert.equal(await page.locator('#chGrid .ch-card:visible').count(), 1, 'Chapter search should narrow to Polynomials');
+    assert.match(await page.locator('#chGrid .ch-card:visible').first().innerText(), /Polynomials/);
+    await page.locator('#chapterSearch').fill('this-chapter-does-not-exist');
+    await page.locator('#chapterNoResults').waitFor({ state: 'visible' });
+    await page.locator('#chapterNoResults button').click();
+    assert.equal(await page.locator('#chGrid .ch-card:visible').count(), 14, 'Clearing search should restore all chapters');
+    await page.locator('#chapterFilters button[data-filter="completed"]').click();
+    await page.locator('#chapterNoResults').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#chGrid .ch-card:visible').count(), 0, 'A fresh profile should have no completed chapters');
+    await page.locator('#chapterFilters button[data-filter="not-started"]').click();
+    assert.equal(await page.locator('#chGrid .ch-card:visible').count(), 14, 'Not started should show untouched chapters');
+    await page.locator('#chapterFilters button[data-filter="all"]').click();
+    assert.equal(await page.locator('#chGrid .ch-card:visible').count(), 14, 'All filter should restore every chapter');
+
     // Chapter tabs: notes, formulas, practice bank and MCQ filters.
     await page.locator('#chGrid .ch-card').filter({ hasText: 'Real Numbers' }).click();
     await page.locator('#chBody .note-item').first().waitFor();
