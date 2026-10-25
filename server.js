@@ -2658,6 +2658,7 @@ async function renderPypPaperDetail(id){
   catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load this paper. Return to the paper list and try again.'); return; }
   if(state.subject!==subject || location.pathname!==routePath) return;
   const gradable = data.questions.filter(q=>q.gradable);
+  const canAutoGrade = gradable.length > 0;
   const chapterCounts = {};
   data.questions.forEach(q=>{
     if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
@@ -2676,12 +2677,15 @@ async function renderPypPaperDetail(id){
       <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
     </div>
     <div class="section-title">Chapters Covered</div>
-    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter to practice just its questions from this paper.</p>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
     <div class="chapter-grid">
-      ${'$'}{Object.values(chapterCounts).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
     </div>
   \`;
-  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>startPypQuiz({paperId:id}));
+  if(!canAutoGrade){
+    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
+  }
+  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
   document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
   document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
 }
@@ -2778,9 +2782,17 @@ async function renderPypPicker(mode){
 
 async function renderPypTestSetup(mode, chapterIds){
   const main = document.getElementById('main');
-  chapterIds = chapterIds || [];
+  const subject = state.subject;
+  const routePath = location.pathname;
+  chapterIds = Array.isArray(chapterIds) ? chapterIds.map(String) : [];
+  let availableChapters;
+  try{ availableChapters = await loadPypChapters(); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load previous-paper chapters. Please try again.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
+  const eligibleIds = new Set(availableChapters.filter(ch=>Number(ch.gradableCount||0)>0).map(ch=>String(ch.id)));
+  chapterIds = chapterIds.filter(id=>eligibleIds.has(id));
   if(!chapterIds.length){
-    main.innerHTML = \`<div class="empty">No chapters selected.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>\`;
+    main.innerHTML = \`<div class="empty">No selected chapter has auto-gradable previous-paper questions. Return to Previous Papers and choose a chapter with eligible questions.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>\`;
     return;
   }
   const modeInfo = {
