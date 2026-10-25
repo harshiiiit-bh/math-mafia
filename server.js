@@ -2572,9 +2572,13 @@ function renderPypGrid(){
 async function renderPypWeightage(){
   replaceUrl(sp('/pyp/weightage'));
   const main = document.getElementById('main');
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Crunching the numbers…</div>';
-  const res = await fetch('/api/'+state.subject+'/pyp/weightage');
-  const data = await res.json();
+  let data;
+  try{ data = await requestJson('/api/'+subject+'/pyp/weightage'); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load chapter weightage. Please try again.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   if(!data.chapters || !data.chapters.length){
     main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
@@ -2605,10 +2609,13 @@ async function renderPypWeightage(){
 
 async function renderPypPaperDetail(id){
   const main = document.getElementById('main');
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Loading paper…</div>';
-  const res = await fetch('/api/'+state.subject+'/pyp/paper/'+id);
-  const data = await res.json();
-  if(data.error){ alert(data.error); navigate(sp('/pyp')); return; }
+  let data;
+  try{ data = await requestJson('/api/'+subject+'/pyp/paper/'+encodeURIComponent(id)); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load this paper. Return to the paper list and try again.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   const gradable = data.questions.filter(q=>q.gradable);
   const chapterCounts = {};
   data.questions.forEach(q=>{
@@ -2642,10 +2649,13 @@ async function renderPypPaperDetail(id){
 // paper's official totalMarks, shown here so the host knows what the "full test" is graded against).
 async function renderPypPaperSetup(id, mode){
   const main = document.getElementById('main');
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Loading paper…</div>';
-  const res = await fetch('/api/'+state.subject+'/pyp/paper/'+id);
-  const data = await res.json();
-  if(data.error){ alert(data.error); navigate(sp('/pyp')); return; }
+  let data;
+  try{ data = await requestJson('/api/'+subject+'/pyp/paper/'+encodeURIComponent(id)); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load full-paper setup. Return to the paper and try again.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   const gradable = data.questions.filter(q=>q.gradable);
   const defSeconds = gradable.length ? Math.max(600, gradable.length*90) : 900;
   const defHours = Math.floor(defSeconds/3600), defMinutes = Math.round((defSeconds%3600)/60);
@@ -2689,8 +2699,13 @@ async function renderPypPaperSetup(id, mode){
 async function renderPypPicker(mode){
   const titleMap = { quiz:'Chapterwise Practice', solo:'Chapterwise Timed Test', war:'Chapterwise Challenge Test' };
   const main = document.getElementById('main');
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Loading chapters…</div>';
-  const pypChapters = await loadPypChapters();
+  let pypChapters;
+  try{ pypChapters = await loadPypChapters(); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load previous-paper chapters. Please try again.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">${'$'}{esc(titleMap[mode]||'Pick Chapters')}</div>
