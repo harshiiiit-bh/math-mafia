@@ -49,7 +49,7 @@ Chapter JSON files are loaded at startup. Restart the server after changing cont
 
 Scoring is deliberately conservative: MCQ answers can be provided as an option letter or option text, and simple numeric/fraction answers are normalized before comparison. It does not use substring guessing, because that can award points for incorrect answers such as `112` when the key is `12`.
 
-Proof-based and multi-part answers are excluded from one-box auto-graded pools and remain available in the practice bank. The checker is **not** a symbolic algebra engine, so equivalent algebraic expressions may need a consistent answer format in the content JSON. Check answer keys before publishing a question bank.
+Proof-based, multi-part, image-solution and blank-stem answers are excluded from one-box auto-graded pools and remain available in the practice bank. Full-paper tests select only one version of each internal-choice pair (for example, `22a`/`22b`) instead of scoring both alternatives. Their result shows the official paper total and the smaller mark total available from auto-gradable questions, so a student can see what was actually scored. The checker is **not** a symbolic algebra engine, so equivalent algebraic expressions may need a consistent answer format in the content JSON. Check answer keys before publishing a question bank.
 
 ## Deployment note
 
