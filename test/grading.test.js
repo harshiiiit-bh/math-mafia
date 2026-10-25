@@ -29,6 +29,8 @@ test('math symbols and common units normalize predictably', () => {
   assert.equal(normalizeAnswer('3 × 2'), '3x2');
   assert.equal(checkAnswer('12 cm', '12'), true);
   assert.equal(checkAnswer('x²', 'x^2'), true);
+  assert.equal(checkAnswer('12m', '12'), false);
+  assert.equal(checkAnswer('12s', '12'), false);
 });
 
 test('empty answers are wrong and valid zero answers remain gradable', () => {
