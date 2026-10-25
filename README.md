@@ -31,7 +31,7 @@ Run the grading regression tests with:
 npm test
 ```
 
-The repository's GitHub Actions workflow checks JavaScript syntax, runs the grading regression tests, starts the Express app, and smoke-tests the subjects, Maths chapters and homepage on pushes and pull requests to `main`.
+The repository's GitHub Actions workflow checks backend and embedded browser JavaScript, verifies CSS/static IDs, runs the grading regression tests, starts the Express app, smoke-tests its APIs and challenge scoring, and runs Chromium UI checks across chapter tabs, quiz flows, previous-paper screens, and mobile overflow on pushes and pull requests to `main`.
 
 ## Content layout
 
