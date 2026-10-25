@@ -1294,7 +1294,8 @@ a{color:var(--gold-soft);text-underline-offset:3px;}
 .btn-ghost:hover{color:var(--cream);border-color:var(--card-border);background:rgba(255,255,255,.035);}
 .rec-clock{font-size:10.5px;color:var(--accent);border-color:rgba(168,179,197,.18);letter-spacing:.04em;}
 .rec-dot{background:var(--accent);animation:none;width:6px;height:6px;}
-.subject-tabs{gap:8px;padding:12px clamp(16px,3vw,38px);background:rgba(10,16,28,.84);border-color:rgba(168,179,197,.13);}
+.subject-tabs{top:68px;gap:8px;padding:12px clamp(16px,3vw,38px);background:rgba(10,16,28,.84);border-color:rgba(168,179,197,.13);}
+.branch-tabs{top:130px;}
 .subj-tab{font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0;border-radius:12px;padding:9px 15px;background:rgba(255,255,255,.025);border-color:rgba(168,179,197,.17);color:var(--muted);}
 .subj-tab:hover{border-color:rgba(142,216,186,.58);color:var(--cream);}
 .subj-tab.active{border-color:rgba(142,216,186,.72);color:var(--accent);background:rgba(142,216,186,.09);}
