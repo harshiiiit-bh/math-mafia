@@ -260,11 +260,12 @@ function loadSubject(subjectId) {
       q.isDuplicate = false;
       q.duplicateOf = null;
       if (!norm) return;
-      if (seenByExactText.has(norm)) { q.isDuplicate = true; q.duplicateOf = seenByExactText.get(norm); return; }
+      const exactKey = q.chapterId != null ? String(q.chapterId) + '\u0000' + norm : String(q.qid) + '\u0000' + norm;
+      if (seenByExactText.has(exactKey)) { q.isDuplicate = true; q.duplicateOf = seenByExactText.get(exactKey); return; }
       const bucket = keptByChapter[q.chapterId] || (keptByChapter[q.chapterId] = []);
       const near = bucket.find(o => textSimilarity(norm, o.norm) >= SIMILARITY_DUPLICATE_THRESHOLD);
       if (near) { q.isDuplicate = true; q.duplicateOf = near.qid; return; }
-      seenByExactText.set(norm, q.qid);
+      seenByExactText.set(exactKey, q.qid);
       bucket.push({ qid: q.qid, norm });
     });
   })();
