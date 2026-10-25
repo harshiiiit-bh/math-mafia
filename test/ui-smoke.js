@@ -82,7 +82,7 @@ async function main() {
     await page.locator('#pypSoloBtn').waitFor();
     assert.match(await page.locator('#main').innerText(), /questions in scored tests/i);
     await page.locator('#pypSoloBtn').click();
-    await page.locator('#pypSetupGo').waitFor();
+    await page.locator('#paperSetupGo').waitFor();
     await page.locator('.crumbs button').first().click();
     await page.locator('#pypSoloBtn').waitFor();
     await assertNoHorizontalOverflow(page, 'Desktop paper detail');
