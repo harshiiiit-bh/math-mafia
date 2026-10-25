@@ -2693,20 +2693,15 @@ async function renderPypWeightage(){
     main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">Chapter Weightage</div>
-    <div class="empty">No previous year papers uploaded yet. Check back soon.</div>\`;
+    <div class="empty">No mapped previous-paper chapter data is available yet.</div>\`;
     return;
   }
-  const dupNote = data.duplicatesFound > 0
-    ? \` (\${data.duplicatesFound} repeated question\${data.duplicatesFound===1?'':'s'} across papers auto-excluded)\`
-    : '';
-  const unmappedNote = data.unmappedQuestions > 0
-    ? \` (\${data.unmappedQuestions} question\${data.unmappedQuestions===1?'':'s'} could not be assigned to a chapter and are excluded from this chart)\`
-    : '';
+  const dupNote = data.duplicatesFound > 0 ? ' (' + data.duplicatesFound + ' repeated question' + (data.duplicatesFound===1?'':'s') + ' across papers auto-excluded)' : '';
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">Chapter Weightage</div>
     <p style="color:var(--muted); margin-bottom:24px; font-size:14px;">
-      Based on ${'$'}{data.totalUniqueQuestions} unique question${'$'}{data.totalUniqueQuestions===1?'':'s'} across ${'$'}{data.paperCount} paper${'$'}{data.paperCount===1?'':'s'}${'
+      Based on ${'$'}{data.totalUniqueQuestions} unique question${'$'}{data.totalUniqueQuestions===1?'':'s'} across ${'$'}{data.paperCount} paper${'$'}{data.paperCount===1?'':'s'}${'$'}{esc(dupNote)}.
     </p>
     <div id="weightageList">
       ${'$'}{data.chapters.map((c,i)=>\`
@@ -2714,38 +2709,18 @@ async function renderPypWeightage(){
         <div class="num">#${'$'}{i+1} · ${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum} — ${'$'}{esc(c.title)}</div>
         <h3>${'$'}{c.questionCount} question${'$'}{c.questionCount===1?'':'s'}${'$'}{c.marks?' · '+c.marks+' marks total':''} · in ${'$'}{c.paperCount} paper${'$'}{c.paperCount===1?'':'s'}</h3>
         <div class="progress-track"><div class="progress-fill" style="width:${'$'}{c.percent}%"></div></div>
-        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique PYP questions</div>
+        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique mapped questions</div>
       </div>\`).join('')}
     </div>
   \`;
+  if(Number(data.unmappedQuestions||0)>0){
+    const note = document.createElement('p');
+    note.style.cssText = 'color:var(--muted);font-size:13px;margin-top:12px;';
+    note.textContent = data.unmappedQuestions + ' unique question' + (data.unmappedQuestions===1?'':'s') + ' could not be assigned to a chapter and are excluded from this chart.';
+    const list = document.getElementById('weightageList');
+    if(list) list.before(note);
+  }
 }
-}{esc(dupNote)}${'
-    </p>
-    <div id="weightageList">
-      ${'$'}{data.chapters.map((c,i)=>\`
-      <div class="ch-card" style="margin-bottom:12px; cursor:pointer;" onclick="navigate(sp('/chapter/${'$'}{c.id}'))">
-        <div class="num">#${'$'}{i+1} · ${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum} — ${'$'}{esc(c.title)}</div>
-        <h3>${'$'}{c.questionCount} question${'$'}{c.questionCount===1?'':'s'}${'$'}{c.marks?' · '+c.marks+' marks total':''} · in ${'$'}{c.paperCount} paper${'$'}{c.paperCount===1?'':'s'}</h3>
-        <div class="progress-track"><div class="progress-fill" style="width:${'$'}{c.percent}%"></div></div>
-        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique PYP questions</div>
-      </div>\`).join('')}
-    </div>
-  \`;
-}
-}{esc(unmappedNote)}.
-    </p>
-    <div id="weightageList">
-      ${'$'}{data.chapters.map((c,i)=>\`
-      <div class="ch-card" style="margin-bottom:12px; cursor:pointer;" onclick="navigate(sp('/chapter/${'$'}{c.id}'))">
-        <div class="num">#${'$'}{i+1} · ${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum} — ${'$'}{esc(c.title)}</div>
-        <h3>${'$'}{c.questionCount} question${'$'}{c.questionCount===1?'':'s'}${'$'}{c.marks?' · '+c.marks+' marks total':''} · in ${'$'}{c.paperCount} paper${'$'}{c.paperCount===1?'':'s'}</h3>
-        <div class="progress-track"><div class="progress-fill" style="width:${'$'}{c.percent}%"></div></div>
-        <div class="progress-label"><span class="pct">${'$'}{c.percent}%</span> of unique PYP questions</div>
-      </div>\`).join('')}
-    </div>
-  \`;
-}
-
 async function renderPypPaperDetail(id){
   const main = document.getElementById('main');
   const subject = state.subject;
