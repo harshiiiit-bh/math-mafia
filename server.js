@@ -1905,7 +1905,7 @@ function renderMedia(raw){
 }
 
 // ---------- MCQ options (click-to-answer, no typing) ----------
-const MCQ_LETTERS = ['A','B','C','D','E','F'];
+const MCQ_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 // The server only sends back the correct answer's text (e.g. from the data file's "answer" field),
 // which may itself be a bare letter ("B") or the full option text. Map either shape to a letter so
 // the matching option button can be highlighted once the question is submitted.
@@ -1917,18 +1917,18 @@ function normalizeMcqText(value){
 function mcqCorrectLetter(q){
   if(q.correctAnswer==null || !Array.isArray(q.options) || !q.options.length) return null;
   const ca = String(q.correctAnswer).trim();
-  const prefixed = ca.match(/^(?:option|choice)\\s+([A-F])(?:[.):\\-]\\s*(.*))?$/i);
+  const prefixed = ca.match(/^(?:option|choice)\\s+([A-Z])(?:[.):\\-]\\s*(.*))?$/i);
   if(prefixed){
     const index = prefixed[1].toUpperCase().charCodeAt(0)-65;
     const rest = (prefixed[2]||'').trim();
     if(index>=0 && index<q.options.length && (!rest || /^\\([^()]*\\)$/.test(rest) || normalizeMcqText(rest)===normalizeMcqText(q.options[index]))) return String.fromCharCode(65+index);
   }
-  const bare = ca.match(/^\\(?([A-F])\\)?[.)]?$/i);
+  const bare = ca.match(/^\\(?([A-Z])\\)?[.)]?$/i);
   if(bare){
     const index = bare[1].toUpperCase().charCodeAt(0)-65;
     if(index>=0 && index<q.options.length) return String.fromCharCode(65+index);
   }
-  const labelled = ca.match(/^\\(?([A-F])\\)?(?:[.)]|\\s+(?=\\())\\s*(.*)$/i);
+  const labelled = ca.match(/^\\(?([A-Z])\\)?(?:[.)]|\\s+(?=\\())\\s*(.*)$/i);
   if(labelled){
     const index = labelled[1].toUpperCase().charCodeAt(0)-65;
     const rest = labelled[2].trim();
@@ -2188,7 +2188,7 @@ function wirePracticeToggles(container, chapterId, chapterTitle, items){
 
 // ---------- MCQ Practice (click an option, see correct/incorrect instantly — same feel as Practice Quiz,
 // but every item on the page is independent and nothing is submitted to the server or scored) ----------
-const MCQ_LETTERS_PRACTICE = ['A','B','C','D','E','F'];
+const MCQ_LETTERS_PRACTICE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 function mcqPracticeCorrectIndex(item){
   const letter = mcqCorrectLetter({ correctAnswer: item.answer, options: item.options || [] });
   return letter ? letter.charCodeAt(0)-65 : -1;
