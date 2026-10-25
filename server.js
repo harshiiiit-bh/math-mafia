@@ -2466,20 +2466,30 @@ async function renderTestSetup(mode, chapterIds){
 
 // ---------- Previous Year Papers (PYP) ----------
 async function loadPypPapers(){
-  if(!state.pypPapers || state.pypPapersSubject !== state.subject){
-    const res = await fetch('/api/'+state.subject+'/pyp/papers');
+  const subject = state.subject;
+  if(!state.pypPapers || state.pypPapersSubject !== subject){
+    const res = await fetch('/api/'+subject+'/pyp/papers');
     if(!res.ok) throw new Error('Could not load previous-year papers.');
-    state.pypPapers = await res.json();
-    state.pypPapersSubject = state.subject;
+    const papers = await res.json();
+    if(state.subject === subject){
+      state.pypPapers = Array.isArray(papers) ? papers : [];
+      state.pypPapersSubject = subject;
+    }
+    return Array.isArray(papers) ? papers : [];
   }
   return state.pypPapers;
 }
 async function loadPypChapters(){
-  if(!state.pypChapters || state.pypChaptersSubject !== state.subject){
-    const res = await fetch('/api/'+state.subject+'/pyp/chapters');
+  const subject = state.subject;
+  if(!state.pypChapters || state.pypChaptersSubject !== subject){
+    const res = await fetch('/api/'+subject+'/pyp/chapters');
     if(!res.ok) throw new Error('Could not load previous-year-paper chapters.');
-    state.pypChapters = await res.json();
-    state.pypChaptersSubject = state.subject;
+    const chapters = await res.json();
+    if(state.subject === subject){
+      state.pypChapters = Array.isArray(chapters) ? chapters : [];
+      state.pypChaptersSubject = subject;
+    }
+    return Array.isArray(chapters) ? chapters : [];
   }
   return state.pypChapters;
 }
@@ -2500,9 +2510,16 @@ function renderPypHome(){
     <div class="section-title">By Year</div>
     <div class="chapter-grid" id="pypGrid"><div class="empty">Loading papers…</div></div>
   \`;
-  loadPypPapers().then(renderPypGrid).catch(()=>{
+  const subject = state.subject;
+  const routePath = location.pathname;
+  loadPypPapers().then(papers=>{
+    if(state.subject !== subject || location.pathname !== routePath || !document.getElementById('pypGrid')) return;
+    state.pypPapers = papers;
+    state.pypPapersSubject = subject;
+    renderPypGrid();
+  }).catch(()=>{
     const grid = document.getElementById('pypGrid');
-    if(grid) grid.innerHTML = '<div class="empty">Could not load papers right now. Please refresh and try again.</div>';
+    if(state.subject === subject && location.pathname === routePath && grid) grid.innerHTML = '<div class="empty">Could not load papers right now. Please refresh and try again.</div>';
   });
 }
 
