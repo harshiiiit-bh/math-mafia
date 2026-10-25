@@ -1,0 +1,27 @@
+name: Quality checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  grading-and-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check server syntax
+        run: node --check server.js
+      - name: Check grading module syntax
+        run: node --check lib/grading.js
+      - name: Run grading regression tests
+        run: npm test
