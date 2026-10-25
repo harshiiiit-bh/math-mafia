@@ -122,7 +122,10 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const data = JSON.parse(fs.readFileSync('/tmp/math-mafia-full-paper-quiz.json', 'utf8'));
-          if (!Array.isArray(data.questions) || data.questions.length < 40) throw new Error('Full-paper practice did not return the expected gradable subset');
+          if (!Array.isArray(data.questions) || data.questions.length < 30 || data.questions.length >= 53) throw new Error('Full-paper practice did not return a filtered auto-gradable subset');
+          const practiceIds = data.questions.map(q => q.qid);
+          const alternativePrefixes = ['22','24','28','29','33','34','36iii','37iii','38iii'];
+          for (const prefix of alternativePrefixes) if (practiceIds.includes('maths:pyp-2026-set1-'+prefix+'a') && practiceIds.includes('maths:pyp-2026-set1-'+prefix+'b')) throw new Error('Full-paper practice included both internal-choice variants for '+prefix);
           console.log('Full-paper question filtering OK:', data.questions.length, 'gradable questions.');
           NODE
 
@@ -135,10 +138,13 @@ jobs:
           const fs = require('node:fs');
           const joined = JSON.parse(fs.readFileSync('/tmp/math-mafia-pyp-joined.json', 'utf8'));
           const submitted = JSON.parse(fs.readFileSync('/tmp/math-mafia-pyp-submit.json', 'utf8'));
-          if (!Array.isArray(joined.questions) || joined.questions.length < 40) throw new Error('PYP challenge retrieval returned too few graded questions');
+          if (!Array.isArray(joined.questions) || joined.questions.length < 30 || joined.questions.length >= 53) throw new Error('PYP challenge retrieval did not filter alternatives/ungradable questions');
+          const joinedIds = joined.questions.map(q => q.qid);
+          const alternativePrefixes = ['22','24','28','29','33','34','36iii','37iii','38iii'];
+          for (const prefix of alternativePrefixes) if (joinedIds.includes('maths:pyp-2026-set1-'+prefix+'a') && joinedIds.includes('maths:pyp-2026-set1-'+prefix+'b')) throw new Error('PYP challenge included both internal-choice variants for '+prefix);
           if (joined.paperTotalMarks !== 80) throw new Error('Full-paper maximum marks not preserved');
           if (submitted.total !== joined.questions.length || submitted.score !== 0) throw new Error('PYP submission total/score mismatch');
-          if (submitted.paperTotalMarks !== 80 || !(submitted.marksTotal > 0)) throw new Error('PYP marks mode did not calculate the graded subset');
+          if (submitted.paperTotalMarks !== 80 || !(submitted.marksTotal > 0) || submitted.marksTotal > 80) throw new Error('PYP marks mode did not calculate a valid auto-gradable subset');
           console.log('Full-paper challenge create/join/submit and marks breakdown OK.');
           NODE
 
