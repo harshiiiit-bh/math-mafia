@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  grading-and-syntax:
+  grading-and-smoke-test:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -19,9 +19,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Check server syntax
         run: node --check server.js
       - name: Check grading module syntax
         run: node --check lib/grading.js
       - name: Run grading regression tests
         run: npm test
+      - name: Smoke test the running app
+        shell: bash
+        run: |
+          set -euo pipefail
+          PORT=4173 node server.js > /tmp/math-mafia-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:4173/api/subjects -o /tmp/math-mafia-subjects.json; then
+              break
+            fi
+            sleep 1
+          done
+
+          node -e "const fs=require('node:fs'); const subjects=JSON.parse(fs.readFileSync('/tmp/math-mafia-subjects.json','utf8')); if(!Array.isArray(subjects)||!subjects.some(s=>s.id==='maths')) process.exit(1); console.log('Subjects endpoint OK:', subjects.map(s=>s.id).join(', '));"
+          curl --fail --silent http://127.0.0.1:4173/api/maths/chapters -o /tmp/math-mafia-chapters.json
+          node -e "const fs=require('node:fs'); const chapters=JSON.parse(fs.readFileSync('/tmp/math-mafia-chapters.json','utf8')); if(!Array.isArray(chapters)||!chapters.length) process.exit(1); console.log('Maths chapters endpoint OK:', chapters.length, 'chapters');"
+          curl --fail --silent http://127.0.0.1:4173/ -o /tmp/math-mafia-home.html
+          grep -q 'Math Mafia — Class 10 Learning Studio' /tmp/math-mafia-home.html
+          grep -q 'Premium design system' server.js
+          echo 'Homepage and app shell OK.'
