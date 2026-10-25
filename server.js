@@ -1934,7 +1934,7 @@ function renderDashboard(){
     <div class="summary-card">
       <div class="summary-left">
         <div class="summary-rank">${'$'}{rankTitle(overall.pct)}</div>
-        <div class="summary-sub">${'$'}{overall.viewed} of ${'$'}{overall.total} questions cracked in ${'$'}{esc(subjInfo?subjInfo.name:state.subject)}</div>
+        <div class="summary-sub">${'$'}{overall.viewed} of ${'$'}{overall.total} practice items explored in ${'$'}{esc(subjInfo?subjInfo.name:state.subject)}</div>
       </div>
       <div class="summary-right">
         <div class="summary-pct">${'$'}{overall.pct}%</div>
@@ -1949,8 +1949,8 @@ function renderDashboard(){
       <button class="mode-card" onclick="goto('soloPicker')"><span class="icon">🎯</span><h3>Timed Test</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Timed MCQ test on one or many chapters. Just you and the clock.' : 'Timed test on one or many chapters. Just you and the clock.'}</p></button>
       <button class="mode-card" onclick="goto('createWar')"><span class="icon">🤝</span><h3>Start a Challenge Test</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Pick chapters, get a code, challenge your crew on MCQs.' : 'Pick chapters, get a code, challenge your crew. Leaderboard included.'}</p></button>
       <button class="mode-card" onclick="goto('mcqPractice')"><span class="icon">🧠</span><h3>MCQ Practice</h3><p>Read, think, reveal — every MCQ &amp; Assertion-Reason question on file. No typing, no scoring.</p></button>
-      <button class="mode-card" onclick="navigate('/mix/pick')"><span class="icon">🌐</span><h3>Mix Subjects War</h3><p>Blend chapters from every subject into one Challenge Test.</p></button>
-      <button class="mode-card" onclick="goto('joinWar')"><span class="icon">🔑</span><h3>Join a Challenge Test</h3><p>Got a code from a friend? Enter it and take them down.</p></button>
+      <button class="mode-card" onclick="navigate('/mix/pick')"><span class="icon">🌐</span><h3>Mixed-Subject Challenge</h3><p>Blend chapters from every subject into one Challenge Test.</p></button>
+      <button class="mode-card" onclick="goto('joinWar')"><span class="icon">🔑</span><h3>Join a Challenge Test</h3><p>Enter a friend's code and compare your results.</p></button>
       <button class="mode-card" onclick="navigate(sp('/pyp'))"><span class="icon">📜</span><h3>Previous Papers</h3><p>Real board papers, year-wise and chapter-wise, with every test mode.</p></button>
     </div>
     <div class="section-title">Contents</div>
@@ -2065,12 +2065,12 @@ function getOverallProgress(){
   return { viewed, total, pct: total ? Math.round((viewed/total)*100) : 0 };
 }
 function rankTitle(pct){
-  if(pct >= 100) return "The Don";
-  if(pct >= 75) return "Underboss";
-  if(pct >= 50) return "Capo";
-  if(pct >= 25) return "Soldier";
-  if(pct > 0) return "Associate";
-  return "Rookie";
+  if(pct >= 100) return "Mastered";
+  if(pct >= 75) return "Advanced";
+  if(pct >= 50) return "On Track";
+  if(pct >= 25) return "Building Momentum";
+  if(pct > 0) return "Getting Started";
+  return "Not Started";
 }
 function markPracticeViewed(chapterId, pid){
   const prog = getProgress();
@@ -2092,7 +2092,7 @@ function markPracticeViewed(chapterId, pid){
     const rankEl = document.querySelector('.summary-left .summary-rank');
     if(rankEl) rankEl.textContent = rankTitle(overall.pct);
     const subEl = document.querySelector('.summary-left .summary-sub');
-    if(subEl) subEl.textContent = overall.viewed + ' of ' + overall.total + ' questions cracked across the syndicate';
+    if(subEl) subEl.textContent = overall.viewed + ' of ' + overall.total + ' practice items explored across the syndicate';
     const fillEl = document.querySelector('.summary-right .progress-fill');
     if(fillEl) fillEl.style.width = overall.pct + '%';
   }
@@ -2842,7 +2842,7 @@ function renderQuizDone(){
   main.innerHTML = \`
     <div class="result-hero">
       <div class="big">${'$'}{state.quizScore} / ${'$'}{state.quiz.length}</div>
-      <div class="sub">Heist complete. Not bad, ${'$'}{esc(state.name)}.</div>
+      <div class="sub">Practice complete. Nice work, ${'$'}{esc(state.name)}.</div>
       <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
@@ -2904,7 +2904,7 @@ function renderTimedRunner(){
     </div>
     <div class="nav-row">
       <button class="btn-outline" id="prevBtn" ${'$'}{state.quizIdx===0?'disabled':''}>← Previous</button>
-      <button class="btn" id="actionBtn">${'$'}{q.submitted ? (isLast?(isWar?'Submit to the Family':'Finish Job'):'Next →') : 'Submit Answer'}</button>
+      <button class="btn" id="actionBtn">${'$'}{q.submitted ? (isLast?(isWar?'Submit Test':'Finish Test'):'Next →') : 'Submit Answer'}</button>
     </div>
   \`;
   const input = document.getElementById('qAns');
@@ -3075,7 +3075,7 @@ async function finishGangWar(){
   main.innerHTML = \`
     <div class="result-hero">
       <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
-      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. The family is watching.</div>
+      <div class="sub">${'$'}{data.score} correct · ${'$'}{incorrect} incorrect — Submitted in ${'$'}{mm}:${'$'}{ss}. Review your answers below.</div>
       ${'$'}{marksLine}
       <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
         <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
@@ -3119,7 +3119,7 @@ async function renderMixPicker(){
   if(!state.subjects.length) await loadSubjects();
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
-    <div class="section-title">Mix Subjects War</div>
+    <div class="section-title">Mixed-Subject Challenge</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Add chapters from as many subjects as you want — your crew answers one combined test.</p>
     <div id="mixPartsList"></div>
     <div class="setup-box" style="margin-top:16px;">
@@ -3195,7 +3195,7 @@ async function renderMixWarSetup(){
   }));
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate('/mix/pick')">← Change Chapters</button></div>
-    <div class="section-title">Mix Subjects War Setup</div>
+    <div class="section-title">Mixed-Subject Challenge Setup</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Set how many questions to pull from each subject.</p>
     ${'$'}{rows.map(r=>\`
       <div class="setup-box" style="margin-bottom:14px;">
