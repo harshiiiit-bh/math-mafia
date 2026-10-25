@@ -42,13 +42,13 @@ test('math symbols and common units normalize predictably', () => {
 test('empty answers are wrong and valid zero answers remain gradable', () => {
   assert.equal(checkAnswer('', '0'), false);
   assert.equal(checkAnswer('0', 0), true);
-  assert.equal(isGradable({ answer: 0 }), true);
+  assert.equal(isGradable({ question: 'Calculate the result', answer: 0 }), true);
 });
 
 test('multi-part and proof answers are not sent to one-box auto-grading', () => {
-  assert.equal(isGradable({ answer: '(i) 3 (ii) 4' }), false);
-  assert.equal(isGradable({ answer: 'Proof: show that the expression is irrational by contradiction.' }), false);
-  assert.equal(isGradable({ answer: '22338' }), true);
+  assert.equal(isGradable({ question: 'Find the requested values', answer: '(i) 3 (ii) 4' }), false);
+  assert.equal(isGradable({ question: 'Prove that the expression is irrational.', answer: 'Proof: show that the expression is irrational by contradiction.' }), false);
+  assert.equal(isGradable({ question: 'Find the LCM.', answer: '22338' }), true);
 });
 
 test('MCQ answer labels support more than six choices', () => {
@@ -58,6 +58,14 @@ test('MCQ answer labels support more than six choices', () => {
   assert.equal(checkAnswer('Y', 'Z', options), false);
 });
 
+test('image solutions, proof prompts and blank stems are not auto-graded', () => {
+  assert.equal(isGradable({ question: 'Prove that √3 is irrational.', answer: 'assets/maths/answers/2026-set1/q26.png' }), false);
+  assert.equal(isGradable({ question: 'Find the result.', answer: 'assets/maths/answers/2026-set1/q27.png' }), false);
+  assert.equal(isGradable({ question: 'Show that x = 3.', answer: 'x = 3' }), false);
+  assert.equal(isGradable({ question: '', answer: '42' }), false);
+  assert.equal(isGradable({ question: 'Assertion and reason', assertion: 'A', reason: 'R', answer: 'A', options: ['A', 'B', 'C', 'D'] }), true);
+});
+
 test('option lists beyond the A–Z UI limit are not auto-gradable', () => {
   const options = Array.from({ length: 27 }, (_, i) => 'Option ' + (i + 1));
   assert.equal(isGradable({ answer: 'Option 27', options }), false);
@@ -65,7 +73,7 @@ test('option lists beyond the A–Z UI limit are not auto-gradable', () => {
 });
 
 test('MCQs with invalid answer keys are excluded from graded pools', () => {
-  assert.equal(isGradable({ answer: 'Z', options: ['one', 'two', 'three', 'four'] }), false);
+  assert.equal(isGradable({ question: 'Select the correct option.', answer: 'Z', options: ['one', 'two', 'three', 'four'] }), false);
   assert.equal(checkAnswer('Z', 'Z', ['one', 'two', 'three', 'four']), false);
-  assert.equal(isGradable({ answer: 'two', options: ['one', 'two', 'three', 'four'] }), true);
+  assert.equal(isGradable({ question: 'Select the correct option.', answer: 'two', options: ['one', 'two', 'three', 'four'] }), true);
 });
