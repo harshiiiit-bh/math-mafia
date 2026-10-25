@@ -1319,7 +1319,8 @@ main{width:100%;max-width:1280px;margin:0 auto;padding:clamp(24px,3.2vw,44px) cl
 .count-row input[type=number]{max-width:100%;border-radius:11px!important;border:1px solid #344157!important;background:#0D1523!important;color:var(--cream)!important;padding:12px!important;}
 .count-row .val{font-size:13px;font-weight:500;color:var(--muted);line-height:1.5;text-align:left;}
 .radio-opt{align-items:flex-start;line-height:1.5;color:var(--cream);font-size:14px;}
-.radio-opt input{margin-top:4px;}
+.setup-box label.radio-opt{display:flex;margin-bottom:0;}
+.radio-opt input{margin-top:4px;flex:0 0 auto;}
 .btn,.btn-outline{
   min-height:44px;padding:12px 18px;border-radius:12px;
   font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:0;text-transform:none;
