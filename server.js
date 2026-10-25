@@ -1904,6 +1904,18 @@ async function requestJson(url, options){
 function showRequestError(container, message){
   if(container) container.innerHTML = '<div class="empty">'+esc(message || 'Something went wrong. Please try again.')+'</div>';
 }
+function renderUnavailableFeature(main, subjectName, featureName){
+  main.innerHTML = '<div class="crumbs"><button id="unavailableBack">← Dashboard</button></div>' +
+    '<div class="empty"><h2 style="margin-bottom:12px;">' + esc(featureName) + ' isn’t ready yet</h2>' +
+    '<p style="margin:0 auto;max-width:640px;">' + esc(subjectName) + ' has no chapter question bank uploaded yet. The rest of this section is hidden so you do not run into empty tests or broken controls.</p>' +
+    '<p style="margin:12px auto 0;max-width:640px;">You can still explore any uploaded short notes, or switch to Maths to continue practicing.</p></div>' +
+    '<div class="nav-row" style="margin-top:18px;justify-content:center;">' +
+    '<button class="btn" id="unavailableNotes">Browse Short Notes</button>' +
+    '<button class="btn-outline" id="unavailableMaths">Open Maths</button></div>';
+  document.getElementById('unavailableBack').addEventListener('click', ()=>navigate(sp('')));
+  document.getElementById('unavailableNotes').addEventListener('click', ()=>goto('notesPicker'));
+  document.getElementById('unavailableMaths').addEventListener('click', ()=>switchSubject('maths'));
+}
 
 // Renders question/answer text that may contain diagram images:
 //  - inline markers like "...text... [DIAGRAM: assets/questions/2026-set1/q4.png] ...text..."
@@ -1986,6 +1998,8 @@ function renderDashboard(){
   replaceUrl(sp(''));
   renderSubjectTabs();
   const main = document.getElementById('main');
+  const subjectInfo = (state.subjects||[]).find(s=>s.id===state.subject);
+  if(!state.chapters.length){ renderUnavailableFeature(main, subjectInfo ? subjectInfo.name : state.subject, 'Chapter lessons and auto-graded tests'); return; }
   const overall = getOverallProgress();
   const subjInfo = (state.subjects||[]).find(s=>s.id===state.subject);
   main.innerHTML = \`
@@ -2031,6 +2045,12 @@ function renderDashboard(){
 
 function renderPicker(key,title,sub,multi,onGo){
   const main = document.getElementById('main');
+  const availableChapters = visibleChapters().filter(c => Number(c.gradableCount||0) > 0);
+  if(!availableChapters.length){
+    const subjectInfo = (state.subjects||[]).find(s=>s.id===state.subject);
+    renderUnavailableFeature(main, subjectInfo ? subjectInfo.name : state.subject, title);
+    return;
+  }
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">${'$'}{esc(title)}</div>
@@ -2041,7 +2061,7 @@ function renderPicker(key,title,sub,multi,onGo){
     </div>
   \`;
   const grid = document.getElementById('pickGrid');
-  grid.innerHTML = visibleChapters().map(c => \`
+  grid.innerHTML = availableChapters.map(c => \`
     <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="toggleChapter(this,'${'$'}{c.id}',${'$'}{multi})">
       <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div>
       <h3>${'$'}{esc(c.title)}</h3>
@@ -2246,6 +2266,12 @@ function handleMcqPracticeClick(btn){
 function renderMcqPicker(){
   replaceUrl(sp('/pick/mcqpractice'));
   const main = document.getElementById('main');
+  const availableChapters = visibleChapters().filter(c => Number(c.mcqCount||0) > 0);
+  if(!availableChapters.length){
+    const subjectInfo = (state.subjects||[]).find(s=>s.id===state.subject);
+    renderUnavailableFeature(main, subjectInfo ? subjectInfo.name : state.subject, 'MCQ practice');
+    return;
+  }
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">MCQ Practice</div>
@@ -2256,7 +2282,7 @@ function renderMcqPicker(){
     </div>
   \`;
   const grid = document.getElementById('mcqPickGrid');
-  grid.innerHTML = visibleChapters().map(c => \`
+  grid.innerHTML = availableChapters.map(c => \`
     <div class="ch-card selectable" data-id="${'$'}{c.id}" onclick="toggleChapter(this,'${'$'}{c.id}',true)">
       <div class="num">${'$'}{c.branchName ? esc(c.branchName)+' · ' : ''}CH ${'$'}{c.chapterNum}</div>
       <h3>${'$'}{esc(c.title)}</h3>
@@ -2706,6 +2732,11 @@ async function renderPypPicker(mode){
   try{ pypChapters = await loadPypChapters(); }
   catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load previous-paper chapters. Please try again.'); return; }
   if(state.subject!==subject || location.pathname!==routePath) return;
+  if(!pypChapters.length){
+    main.innerHTML = '<div class="crumbs"><button id="emptyPypBack">← Previous Papers</button></div><div class="section-title">'+esc(titleMap[mode]||'Previous Papers')+'</div><div class="empty">No auto-gradable previous-paper questions are available for chapterwise tests yet.</div>';
+    document.getElementById('emptyPypBack').addEventListener('click',()=>navigate(sp('/pyp')));
+    return;
+  }
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">${'$'}{esc(titleMap[mode]||'Pick Chapters')}</div>
