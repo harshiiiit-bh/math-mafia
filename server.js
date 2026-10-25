@@ -2591,16 +2591,33 @@ async function renderTestSetup(mode, chapterIds){
 
   const countInput = document.getElementById('countInput');
   const countAvail = document.getElementById('countAvail');
+  const setupGoButton = document.getElementById('setupGo');
   async function refreshAvailable(){
+    const subject = state.subject;
+    const routePath = location.pathname;
+    const difficulty = diffSel.value;
+    if(setupGoButton) setupGoButton.disabled = true;
+    countAvail.textContent = 'Checking available questions…';
     try{
-      const res = await fetch('/api/'+state.subject+'/pool-count', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, difficulty: diffSel.value}) });
-      const data = await res.json();
-      const max = Math.max(data.count, 0);
+      const data = await requestJson('/api/'+subject+'/pool-count', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, difficulty}) });
+      if(state.subject!==subject || location.pathname!==routePath || diffSel.value!==difficulty) return;
+      const max = Math.max(0, Number(data.count)||0);
       countAvail.textContent = max + ' gradable question' + (max===1?'':'s') + ' available';
       countInput.max = String(max || 1);
       if(max && parseInt(countInput.value,10) > max) countInput.value = max;
-    }catch(e){ countAvail.textContent=''; }
+      if(setupGoButton) setupGoButton.disabled = max===0;
+    }catch(e){
+      if(state.subject===subject && location.pathname===routePath){
+        countAvail.textContent = 'Could not check question availability. Change difficulty or retry.';
+        if(setupGoButton) setupGoButton.disabled = true;
+      }
+    }
   }
+  countInput.addEventListener('change', ()=>{
+    const max = Number(countInput.max)||0;
+    const requested = Math.max(1, parseInt(countInput.value,10)||1);
+    countInput.value = String(max ? Math.min(requested,max) : requested);
+  });
   diffSel.addEventListener('change', refreshAvailable);
   refreshAvailable();
 
@@ -2609,7 +2626,10 @@ async function renderTestSetup(mode, chapterIds){
   document.getElementById('readingOn').addEventListener('change', (e)=>{ document.getElementById('readingRow').style.display = e.target.checked ? 'flex' : 'none'; });
 
   document.getElementById('setupGo').addEventListener('click', ()=>{
-    const count = Math.max(1, parseInt(countInput.value,10) || modeInfo.defCount);
+    const available = Number(countInput.max)||0;
+    if(!available) return;
+    const requested = Math.max(1, parseInt(countInput.value,10) || modeInfo.defCount);
+    const count = Math.min(requested,available);
     const difficulty = diffSel.value;
     const noTimer = document.getElementById('timerNone').checked;
     const hours = Math.max(0, parseInt(document.getElementById('hoursInput').value,10) || 0);
@@ -2941,16 +2961,31 @@ async function renderPypTestSetup(mode, chapterIds){
 
   const countInput = document.getElementById('pypCountInput');
   const countAvail = document.getElementById('pypCountAvail');
+  const pypSetupGoButton = document.getElementById('pypSetupGo');
   async function refreshAvailable(){
+    const difficulty = diffSel.value;
+    if(pypSetupGoButton) pypSetupGoButton.disabled = true;
+    countAvail.textContent = 'Checking available questions…';
     try{
-      const res = await fetch('/api/'+state.subject+'/pyp/pool-count', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, difficulty: diffSel.value}) });
-      const data = await res.json();
-      const max = Math.max(data.count, 0);
+      const data = await requestJson('/api/'+subject+'/pyp/pool-count', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, difficulty}) });
+      if(state.subject!==subject || location.pathname!==routePath || diffSel.value!==difficulty) return;
+      const max = Math.max(0, Number(data.count)||0);
       countAvail.textContent = max + ' gradable question' + (max===1?'':'s') + ' available';
       countInput.max = String(max || 1);
       if(max && parseInt(countInput.value,10) > max) countInput.value = max;
-    }catch(e){ countAvail.textContent=''; }
+      if(pypSetupGoButton) pypSetupGoButton.disabled = max===0;
+    }catch(e){
+      if(state.subject===subject && location.pathname===routePath){
+        countAvail.textContent = 'Could not check question availability. Change difficulty or retry.';
+        if(pypSetupGoButton) pypSetupGoButton.disabled = true;
+      }
+    }
   }
+  countInput.addEventListener('change', ()=>{
+    const max = Number(countInput.max)||0;
+    const requested = Math.max(1, parseInt(countInput.value,10)||1);
+    countInput.value = String(max ? Math.min(requested,max) : requested);
+  });
   diffSel.addEventListener('change', refreshAvailable);
   refreshAvailable();
 
@@ -2959,7 +2994,10 @@ async function renderPypTestSetup(mode, chapterIds){
   document.getElementById('pypReadingOn').addEventListener('change', (e)=>{ document.getElementById('pypReadingRow').style.display = e.target.checked ? 'flex' : 'none'; });
 
   document.getElementById('pypSetupGo').addEventListener('click', ()=>{
-    const count = Math.max(1, parseInt(countInput.value,10) || modeInfo.defCount);
+    const available = Number(countInput.max)||0;
+    if(!available) return;
+    const requested = Math.max(1, parseInt(countInput.value,10) || modeInfo.defCount);
+    const count = Math.min(requested,available);
     const difficulty = diffSel.value;
     const noTimer = document.getElementById('pypTimerNone').checked;
     const hours = Math.max(0, parseInt(document.getElementById('pypHoursInput').value,10) || 0);
