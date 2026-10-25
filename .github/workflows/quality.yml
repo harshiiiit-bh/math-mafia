@@ -21,6 +21,10 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Install browser test runner
+        run: npm install --no-save --no-package-lock playwright
+      - name: Install Chromium for UI smoke tests
+        run: npx playwright install --with-deps chromium
       - name: Check server syntax
         run: node --check server.js
       - name: Check grading module syntax
@@ -153,3 +157,4 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/ -o /tmp/math-mafia-home.html
           grep -q 'Math Mafia — Class 10 Learning Studio' /tmp/math-mafia-home.html
           echo 'Homepage and invalid-notes validation OK.'
+          node test/ui-smoke.js
