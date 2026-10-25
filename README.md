@@ -1,28 +1,56 @@
-# Math Mafia — Class 10 Maths Study Site
+# Math Mafia
 
-## What's inside
-- `server.js` — the entire app: Express backend + embedded frontend (single file, as requested)
-- `data/ch01.json ... ch05.json` — chapter content (notes, formulas, examples, exercises). Add ch06.json, ch07.json, etc. as more chapters get processed — the server auto-loads every .json file in /data on startup, no code changes needed.
-- `db.json` — auto-created at runtime, stores Gang War test codes + leaderboard attempts. Safe to delete to reset all test history.
+A Class 10 learning studio for Maths, Science and Social Science. Math Mafia brings chapter resources, question practice, timed tests and friendly shared challenges into one responsive interface.
 
-## Features live right now
-- Name-gate entry (required, Enter submits)
-- The Intel — chapter-wise notes
-- Cheat Sheet — chapter-wise formula sheet
-- Quick Heist — instant-feedback practice quiz, multi-chapter
-- Solo Job — timed test, single or multiple chapters
-- Gang War — create a test, get a 6-character code, share with friends. Everyone gets the same questions. Leaderboard sorts by score then time taken.
-- Practice Bank tab — browse every NCERT exercise per chapter with answers, untimed.
+## What it includes
+
+- **Chapter learning:** notes, formula sheets, worked examples and a browsable practice bank.
+- **MCQ practice:** multiple-choice and Assertion–Reason questions with instant answer reveal.
+- **Practice quizzes:** build question sets from selected chapters and see feedback after each response.
+- **Timed tests:** practice under a time limit, with per-question navigation and a results breakdown.
+- **Shared challenges:** create a short join code, share the same question set and compare scores on a leaderboard.
+- **Previous papers:** browse available papers, practice by chapter and inspect question-weightage summaries where paper data exists.
+- **Progress tracking:** reading/practice progress and the selected name are stored locally in the browser.
+
+The site runs as a small Express application. `server.js` contains the API and embedded frontend; chapter content is loaded from JSON files in `data/`.
 
 ## Run locally
-```
+
+Requirements: Node.js 20 or newer.
+
+```bash
 npm install
 npm start
 ```
-Then open http://localhost:3000
 
-## Known v1 limitation (important)
-Auto-graded quizzes/tests only pull from exercises whose answers are short and single-part (a number, a short phrase) — multi-part questions like "(i)...(ii)...(iii)..." and proof-based questions are excluded from grading since they can't be checked with one text box. They're still fully visible in the Practice Bank tab. This will improve a lot once your PYQ/MIQ files are processed, since those are usually already MCQ-formatted — perfect for auto-grading. We can also split multi-part NCERT questions into individual gradable sub-questions later if you want more NCERT-based test volume.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy online
-Ask Claude for the step-by-step (Render/Railway are the easiest free options for a Node app like this).
+Run the grading regression tests with:
+
+```bash
+npm test
+```
+
+The repository's GitHub Actions workflow also checks JavaScript syntax and runs the grading tests on pushes and pull requests to `main`.
+
+## Content layout
+
+- `data/maths/<chapter-number>.json`, `data/science/<chapter-number>.json`, and `data/sst/<chapter-number>.json`: chapter notes, formulas, examples and exercises.
+- `data/<subject>/mcq/`: optional dedicated MCQ banks.
+- `data/<subject>/pyp/`: optional previous-year/sample papers.
+- `notes/<subject>/`: optional static HTML short notes; Science and SST can also be organized by branch.
+- `lib/grading.js`: centralized answer normalization, MCQ key handling and gradability rules.
+- `test/grading.test.js`: regression coverage for the answer checker.
+- `db.json`: created at runtime for shared test codes and leaderboard attempts.
+
+Chapter JSON files are loaded at startup. Restart the server after changing content so it reloads the data.
+
+## Scoring behavior and limitations
+
+Scoring is deliberately conservative: MCQ answers can be provided as an option letter or option text, and simple numeric/fraction answers are normalized before comparison. It does not use substring guessing, because that can award points for incorrect answers such as `112` when the key is `12`.
+
+Proof-based and multi-part answers are excluded from one-box auto-graded pools and remain available in the practice bank. The checker is **not** a symbolic algebra engine, so equivalent algebraic expressions may need a consistent answer format in the content JSON. Check answer keys before publishing a question bank.
+
+## Deployment note
+
+This application writes shared test codes and attempts to `db.json`. A hosting environment that uses an ephemeral filesystem can lose that data when the instance restarts or redeploys. Use persistent storage or migrate the shared-test records to a managed database before relying on long-term leaderboards.
