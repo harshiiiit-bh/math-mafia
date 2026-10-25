@@ -2778,6 +2778,7 @@ function viewPypPaperChapter(paperId, chapterId){
 }
 async function startPypSoloTest(opts){
   opts = opts || {};
+  state.finishing = false;
   const res = await fetch('/api/'+state.subject+'/pyp/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(opts) });
   const data = await res.json();
   if(data.error || !data.questions.length){ alert(data.error||'No questions available.'); return; }
@@ -3028,6 +3029,7 @@ function autoFinishOnTimeout(){
 // ---------- Timed Test (timed, local only) ----------
 async function startSoloTest(chapterIds, opts){
   opts = opts || {};
+  state.finishing = false;
   const res = await fetch('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||15, difficulty: opts.difficulty||'all'}) });
   const data = await res.json();
   if(data.error || !data.questions.length){ alert(data.error||'No questions available.'); return; }
@@ -3043,15 +3045,25 @@ async function startSoloTest(chapterIds, opts){
 }
 
 async function finishSoloTest(){
+  if(state.finishing) return;
+  state.finishing = true;
   clearInterval(state.testTimer);
   const timeTaken = Math.floor((Date.now()-state.testStart)/1000);
   let score = 0;
-  for(const q of state.quiz){
-    const res = await fetch('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:q.given}) });
-    const data = await res.json();
-    q.correct = data.correct; q.correctAnswer = data.correctAnswer;
-    if(data.correct) score++;
-    if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid);
+  try{
+    for(const q of state.quiz){
+      const res = await fetch('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:q.given}) });
+      const data = await res.json();
+      if(!res.ok || data.error) throw new Error(data.error || 'Answer check failed');
+      q.correct = data.correct === true; q.correctAnswer = data.correctAnswer;
+      if(q.correct) score++;
+      if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid);
+    }
+  }catch(err){
+    state.finishing = false;
+    const main = document.getElementById('main');
+    main.innerHTML = '<div class="empty">We could not finish checking this test. Check your connection and retry.<div style="margin-top:18px;"><button class="btn" onclick="finishSoloTest()">Retry checking</button> <button class="btn-outline" onclick="navigate(sp(\\'\\'))">Back to Dashboard</button></div></div>';
+    return;
   }
   const incorrect = state.quiz.length - score;
   const marksMode = state.quiz.some(q=>q.paperId) && state.paperTotalMarks;
@@ -3115,11 +3127,18 @@ function renderJoinWar(){
 }
 
 async function joinGangWar(code){
+  state.finishing = false;
   const main = document.getElementById('main');
-  main.innerHTML = '<div class="empty">Entering the war…</div>';
-  const res = await fetch('/api/test/'+code);
-  const data = await res.json();
-  if(data.error){ alert(data.error); navigate(sp('')); return; }
+  main.innerHTML = '<div class="empty">Entering the challenge…</div>';
+  let data;
+  try{
+    const res = await fetch('/api/test/'+encodeURIComponent(code));
+    data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Could not open this challenge.');
+  }catch(err){
+    main.innerHTML = '<div class="empty">Could not load this challenge. Check your connection and try again.<div style="margin-top:18px;"><button class="btn-outline" onclick="navigate(\\'/pick/join\\')">Back to Join</button></div></div>';
+    return;
+  }
   state.testCode = code;
   state.quiz = data.questions.map(q=>({...q, given:'', submitted:false, shownAt:null, timeSec:null}));
   state.quizIdx = 0; state.runnerMode = 'war';
@@ -3133,18 +3152,29 @@ async function joinGangWar(code){
 }
 
 async function finishGangWar(){
+  if(state.finishing) return;
+  state.finishing = true;
   clearInterval(state.testTimer);
   const timeTaken = Math.floor((Date.now()-state.testStart)/1000);
   const answers = {}; const perQuestionSeconds = {};
   state.quiz.forEach(q=>{ answers[q.qid] = q.given; perQuestionSeconds[q.qid] = q.timeSec; });
-  const res = await fetch('/api/test/'+state.testCode+'/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: state.name, answers, timeTakenSeconds: timeTaken, perQuestionSeconds }) });
-  const data = await res.json();
+  const main = document.getElementById('main');
+  let data;
+  try{
+    const res = await fetch('/api/test/'+encodeURIComponent(state.testCode)+'/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: state.name, answers, timeTakenSeconds: timeTaken, perQuestionSeconds }) });
+    data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Test submission failed');
+  }catch(err){
+    state.finishing = false;
+    main.innerHTML = '<div class="empty">Your answers are still here, but submission failed. Check your connection and try again.<div style="margin-top:18px;"><button class="btn" onclick="finishGangWar()">Retry submission</button> <button class="btn-outline" onclick="navigate(sp(\\'\\'))">Back to Dashboard</button></div></div>';
+    return;
+  }
   state.quiz.forEach(q=>{ if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid); });
   const mm = String(Math.floor(timeTaken/60)).padStart(2,'0'), ss = String(timeTaken%60).padStart(2,'0');
   const byQid = {}; (data.breakdown||[]).forEach(b=>byQid[b.qid]=b);
   const incorrect = data.total - data.score;
   const marksLine = (data.marksTotal!=null) ? \`<div class="sub" style="margin-top:4px;">Marked ${'$'}{data.marksScored} / ${'$'}{data.paperTotalMarks||data.marksTotal} (auto-gradable questions only)</div>\` : '';
-  const main = document.getElementById('main');
+
   main.innerHTML = \`
     <div class="result-hero">
       <div class="big">${'$'}{data.score} / ${'$'}{data.total}</div>
