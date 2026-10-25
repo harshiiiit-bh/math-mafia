@@ -1864,11 +1864,14 @@ let tickerIdx = 0;
 let tickerTimer = null;
 let tickerLoadedFor = null;
 async function initTicker(){
-  if(tickerLoadedFor === state.subject) return; // already have this subject's pool loaded
-  tickerLoadedFor = state.subject;
+  const subject = state.subject;
+  const chapters = [...state.chapters];
+  if(tickerLoadedFor === subject) return; // already have this subject's pool loaded
+  tickerLoadedFor = subject;
   tickerPool = []; tickerIdx = 0;
   try{
-    const chData = await Promise.all(state.chapters.map(c => fetch('/api/'+state.subject+'/chapter/'+c.id).then(r=>r.json())));
+    const chData = await Promise.all(chapters.map(c => fetch('/api/'+subject+'/chapter/'+encodeURIComponent(c.id)).then(r=>{ if(!r.ok) throw new Error('Chapter request failed'); return r.json(); })));
+    if(state.subject !== subject || tickerLoadedFor !== subject) return;
     chData.forEach(ch=>{
       (ch.exercises||[]).forEach(e=>{ if(e.question) tickerPool.push({tag:ch.title, q:e.question}); });
       (ch.examples||[]).forEach(e=>{ if(e.question) tickerPool.push({tag:ch.title, q:e.question}); });
@@ -2345,6 +2348,8 @@ function renderChapterView(ch, tab){
   replaceUrl(sp('/chapter/'+ch.id+'?tab='+tab));
   const main = document.getElementById('main');
   const branchLabel = ch.branch ? branchName(state.subject, ch.branch) + ' · ' : '';
+  const chapterMeta = state.chapters.find(item => item.id === ch.id) || {};
+  const canAutoGrade = Number(chapterMeta.gradableCount || 0) > 0;
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">${'$'}{esc(branchLabel)}CH ${'$'}{ch.chapter} — ${'$'}{esc(ch.title)}</div>
@@ -2362,6 +2367,13 @@ function renderChapterView(ch, tab){
     </div>
     <div id="chBody"></div>
   \`;
+  if(!canAutoGrade){
+    main.querySelectorAll('.mode-grid .mode-card').forEach(button=>{
+      button.disabled = true;
+      const description = button.querySelector('p');
+      if(description) description.textContent = 'Automatic scoring is not available for this chapter yet. Use the Practice Bank for longer or multi-part answers.';
+    });
+  }
   document.querySelectorAll('.tab').forEach(t=>{
     t.addEventListener('click', ()=>{
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -2432,9 +2444,9 @@ function renderMcqTabBody(body, items){
 // ---------- Test setup page: difficulty, question count, timer (shared by Quiz / Solo / Challenge Test) ----------
 async function renderTestSetup(mode, chapterIds){
   const main = document.getElementById('main');
-  chapterIds = (chapterIds||[]).filter(id => state.chapters.some(c=>c.id===id));
+  chapterIds = (chapterIds||[]).filter(id => state.chapters.some(c=>c.id===id && Number(c.gradableCount||0)>0));
   if(!chapterIds.length){
-    main.innerHTML = \`<div class="empty">No chapters selected.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp(''))">← Dashboard</button></div>\`;
+    main.innerHTML = \`<div class="empty">No selected chapter has auto-gradable questions yet. Use the Practice Bank for longer or multi-part answers.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp(''))">← Dashboard</button></div>\`;
     return;
   }
   const titles = chapterIds.map(id => { const c = state.chapters.find(x=>x.id===id); if(!c) return ''; return (c.branchName?c.branchName+' · ':'')+'CH '+c.chapterNum+' — '+c.title; }).filter(Boolean);
