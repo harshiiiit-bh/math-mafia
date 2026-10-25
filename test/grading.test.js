@@ -47,5 +47,6 @@ test('multi-part and proof answers are not sent to one-box auto-grading', () => 
 
 test('MCQs with invalid answer keys are excluded from graded pools', () => {
   assert.equal(isGradable({ answer: 'Z', options: ['one', 'two', 'three', 'four'] }), false);
+  assert.equal(checkAnswer('Z', 'Z', ['one', 'two', 'three', 'four']), false);
   assert.equal(isGradable({ answer: 'two', options: ['one', 'two', 'three', 'four'] }), true);
 });
