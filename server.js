@@ -1610,6 +1610,10 @@ function route(){
       if(sub[0]==='pyp' && sub[1]==='weightage') return renderPypWeightage();
       if(sub[0]==='pyp') return renderPypHome();
       return renderDashboard();
+    }).catch(err=>{
+      if(location.pathname !== path) return;
+      const main = document.getElementById('main');
+      if(main) main.innerHTML = '<div class="empty">Could not load this subject. Check your connection and refresh the page.</div>';
     });
   }
 
@@ -1889,6 +1893,18 @@ function rollTicker(){
 
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+async function requestJson(url, options){
+  const response = await fetch(url, options);
+  let data;
+  try{ data = await response.json(); }
+  catch(err){ throw new Error(response.ok ? 'The server returned an invalid response.' : 'Request failed ('+response.status+').'); }
+  if(!response.ok || (data && typeof data === 'object' && data.error)) throw new Error((data && data.error) || 'Request failed ('+response.status+').');
+  return data;
+}
+function showRequestError(container, message){
+  if(container) container.innerHTML = '<div class="empty">'+esc(message || 'Something went wrong. Please try again.')+'</div>';
+}
+
 // Renders question/answer text that may contain diagram images:
 //  - inline markers like "...text... [DIAGRAM: assets/questions/2026-set1/q4.png] ...text..."
 //  - or a bare answer field that is JUST an image path, e.g. "assets/answers/2026-set1/q26.png"
@@ -2062,8 +2078,10 @@ async function renderNotesPicker(branchId){
     return;
   }
 
-  const res = await fetch('/api/'+subj+'/notes'+(branchId?('/'+branchId):''));
-  const data = await res.json();
+  let data;
+  try{ data = await requestJson('/api/'+subj+'/notes'+(branchId?('/'+branchId):'')); }
+  catch(err){ if(state.subject===subj) showRequestError(main,'Could not load notes. Please try again.'); return; }
+  if(state.subject !== subj) return;
   const files = data.files || [];
   const crumbLabel = branchId ? branchName(subj, branchId) : sInfo.name;
   main.innerHTML = \`
@@ -2256,9 +2274,13 @@ async function renderMcqPractice(chapterIds){
   const main = document.getElementById('main');
   if(!chapterIds || !chapterIds.length){ navigate(sp('/pick/mcqpractice')); return; }
   replaceUrl(sp('/mcqpractice?ch='+chapterIds.join(',')));
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Loading MCQs…</div>';
-  const res = await fetch('/api/'+state.subject+'/mcq/practice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds}) });
-  const data = await res.json();
+  let data;
+  try{ data = await requestJson('/api/'+subject+'/mcq/practice', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds}) }); }
+  catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,err.message||'Could not load MCQs.'); return; }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   if(data.error){
     main.innerHTML = \`<div class="empty">${'$'}{esc(data.error)}</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp('/pick/mcqpractice'))">← Change Chapters</button></div>\`;
     return;
@@ -2275,10 +2297,17 @@ async function renderMcqPractice(chapterIds){
 // ---------- Chapter page (its own dedicated URL: /chapter/:id) ----------
 async function openChapterPage(id, tab){
   const main = document.getElementById('main');
+  const subject = state.subject;
+  const routePath = location.pathname;
   main.innerHTML = '<div class="empty">Loading chapter…</div>';
-  const res = await fetch('/api/'+state.subject+'/chapter/'+id);
-  if(!res.ok){ main.innerHTML = '<div class="empty">Chapter not found.</div><div class="crumbs"><button onclick="navigate(sp(\\'\\'))">← Dashboard</button></div>'; return; }
-  const ch = await res.json();
+  let ch;
+  try{ ch = await requestJson('/api/'+subject+'/chapter/'+encodeURIComponent(id)); }
+  catch(err){
+    if(state.subject!==subject || location.pathname!==routePath) return;
+    main.innerHTML = '<div class="empty">This chapter could not be loaded. Return to the dashboard and try again.</div><div class="crumbs"><button onclick="navigate(sp(\\'\\'))">← Dashboard</button></div>';
+    return;
+  }
+  if(state.subject!==subject || location.pathname!==routePath) return;
   state.currentChapter = ch;
   renderChapterView(ch, tab || 'notes');
 }
