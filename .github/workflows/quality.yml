@@ -118,6 +118,30 @@ jobs:
           console.log('Challenge create/join/submit/leaderboard flow OK.');
           NODE
 
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/maths/pyp/quiz/generate -H 'Content-Type: application/json' -d '{"paperId":"2026-set1"}' -o /tmp/math-mafia-full-paper-quiz.json
+          node <<'NODE'
+          const fs = require('node:fs');
+          const data = JSON.parse(fs.readFileSync('/tmp/math-mafia-full-paper-quiz.json', 'utf8'));
+          if (!Array.isArray(data.questions) || data.questions.length < 40) throw new Error('Full-paper practice did not return the expected gradable subset');
+          console.log('Full-paper question filtering OK:', data.questions.length, 'gradable questions.');
+          NODE
+
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/maths/pyp/test/create -H 'Content-Type: application/json' -d '{"paperId":"2026-set1","creatorName":"CI paper","timeLimitSeconds":60}' -o /tmp/math-mafia-pyp-challenge.json
+          pyp_code=$(node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync('/tmp/math-mafia-pyp-challenge.json','utf8')).code)")
+          curl --fail --silent "http://127.0.0.1:4173/api/test/$pyp_code" -o /tmp/math-mafia-pyp-joined.json
+          curl --fail --silent -X POST "http://127.0.0.1:4173/api/test/$pyp_code/submit" -H 'Content-Type: application/json' -d '{"name":"CI paper","answers":{},"timeTakenSeconds":1,"perQuestionSeconds":{}}' -o /tmp/math-mafia-pyp-submit.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const joined = JSON.parse(fs.readFileSync('/tmp/math-mafia-pyp-joined.json', 'utf8'));
+          const submitted = JSON.parse(fs.readFileSync('/tmp/math-mafia-pyp-submit.json', 'utf8'));
+          if (!Array.isArray(joined.questions) || joined.questions.length < 40) throw new Error('PYP challenge retrieval returned too few graded questions');
+          if (joined.paperTotalMarks !== 80) throw new Error('Full-paper maximum marks not preserved');
+          if (submitted.total !== joined.questions.length || submitted.score !== 0) throw new Error('PYP submission total/score mismatch');
+          if (submitted.paperTotalMarks !== 80 || !(submitted.marksTotal > 0)) throw new Error('PYP marks mode did not calculate the graded subset');
+          console.log('Full-paper challenge create/join/submit and marks breakdown OK.');
+          NODE
+
           note_status=$(curl --silent --output /tmp/math-mafia-invalid-note.json --write-out '%{http_code}' http://127.0.0.1:4173/api/maths/notes/not-a-real-section)
           test "$note_status" = "404"
           curl --fail --silent http://127.0.0.1:4173/ -o /tmp/math-mafia-home.html
