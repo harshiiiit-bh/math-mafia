@@ -25,6 +25,26 @@ jobs:
         run: node --check server.js
       - name: Check grading module syntax
         run: node --check lib/grading.js
+      - name: Check embedded browser JavaScript and static UI
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const source = fs.readFileSync('server.js', 'utf8');
+          const match = source.match(/const FRONTEND_HTML\\s*=\\s*(`[\\s\\S]*`);\\s*$/);
+          if (!match) throw new Error('FRONTEND_HTML template is missing');
+          const html = new Function('return ' + match[1])();
+          const script = html.match(/<script>\\s*([\\s\\S]*?)\\s*<\\/script>/);
+          const style = html.match(/<style>([\\s\\S]*?)<\\/style>/);
+          if (!script) throw new Error('Embedded browser JavaScript is missing');
+          if (!style) throw new Error('Embedded CSS is missing');
+          new Function(script[1]);
+          const css = style[1];
+          if ((css.match(/{/g) || []).length !== (css.match(/}/g) || []).length) throw new Error('CSS braces are unbalanced');
+          const ids = [...html.slice(0, html.indexOf('<script>')).matchAll(/\\bid=["']([^"']+)["']/g)].map(m => m[1]);
+          const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+          if (duplicateIds.length) throw new Error('Duplicate static HTML IDs: ' + duplicateIds.join(', '));
+          console.log('Embedded browser script, CSS structure and static IDs OK.');
+          NODE
       - name: Run grading regression tests
         run: npm test
       - name: Smoke test the running app
@@ -36,16 +56,70 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
           for attempt in $(seq 1 20); do
-            if curl --fail --silent http://127.0.0.1:4173/api/subjects -o /tmp/math-mafia-subjects.json; then
-              break
-            fi
+            if curl --fail --silent http://127.0.0.1:4173/api/subjects -o /tmp/math-mafia-subjects.json; then break; fi
             sleep 1
           done
 
-          node -e "const fs=require('node:fs'); const subjects=JSON.parse(fs.readFileSync('/tmp/math-mafia-subjects.json','utf8')); if(!Array.isArray(subjects)||!subjects.some(s=>s.id==='maths')) process.exit(1); console.log('Subjects endpoint OK:', subjects.map(s=>s.id).join(', '));"
           curl --fail --silent http://127.0.0.1:4173/api/maths/chapters -o /tmp/math-mafia-chapters.json
-          node -e "const fs=require('node:fs'); const chapters=JSON.parse(fs.readFileSync('/tmp/math-mafia-chapters.json','utf8')); if(!Array.isArray(chapters)||!chapters.length) process.exit(1); console.log('Maths chapters endpoint OK:', chapters.length, 'chapters');"
+          curl --fail --silent http://127.0.0.1:4173/api/maths/meta -o /tmp/math-mafia-meta.json
+          curl --fail --silent http://127.0.0.1:4173/api/maths/notes -o /tmp/math-mafia-notes.json
+          curl --fail --silent http://127.0.0.1:4173/api/maths/pyp/papers -o /tmp/math-mafia-papers.json
+          curl --fail --silent http://127.0.0.1:4173/api/maths/pyp/paper/2026-set1 -o /tmp/math-mafia-paper.json
+          curl --fail --silent http://127.0.0.1:4173/api/maths/pyp/weightage -o /tmp/math-mafia-weightage.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const read = path => JSON.parse(fs.readFileSync(path, 'utf8'));
+          const subjects = read('/tmp/math-mafia-subjects.json');
+          const chapters = read('/tmp/math-mafia-chapters.json');
+          const notes = read('/tmp/math-mafia-notes.json');
+          const papers = read('/tmp/math-mafia-papers.json');
+          const paper = read('/tmp/math-mafia-paper.json');
+          const weightage = read('/tmp/math-mafia-weightage.json');
+          if (!Array.isArray(subjects) || !subjects.some(s => s.id === 'maths')) throw new Error('Subjects endpoint failed');
+          if (!Array.isArray(chapters) || chapters.length !== 14) throw new Error('Expected 14 Maths chapters');
+          if (!notes.files || !notes.files.length) throw new Error('Maths notes endpoint failed');
+          if (!Array.isArray(papers) || !papers.length) throw new Error('PYP paper list is empty');
+          if (!paper.questions || !paper.questions.length) throw new Error('PYP paper detail is empty');
+          if (!Array.isArray(weightage.chapters)) throw new Error('PYP weightage endpoint failed');
+          console.log('Core read endpoints OK:', chapters.length, 'chapters,', papers.length, 'papers,', paper.questions.length, 'paper questions.');
+          NODE
+
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/maths/quiz/generate -H 'Content-Type: application/json' -d '{"chapterIds":["9"],"count":2,"difficulty":"all"}' -o /tmp/math-mafia-quiz.json
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/maths/mcq/practice -H 'Content-Type: application/json' -d '{"chapterIds":["1"]}' -o /tmp/math-mafia-mcq.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const quiz = JSON.parse(fs.readFileSync('/tmp/math-mafia-quiz.json', 'utf8'));
+          const mcq = JSON.parse(fs.readFileSync('/tmp/math-mafia-mcq.json', 'utf8'));
+          if (!Array.isArray(quiz.questions) || quiz.questions.length !== 2) throw new Error('Quiz generation failed');
+          if (!Array.isArray(mcq.questions) || !mcq.questions.length || !mcq.questions[0].options.length) throw new Error('MCQ practice generation failed');
+          fs.writeFileSync('/tmp/math-mafia-answer-check.json', JSON.stringify({ qid: mcq.questions[0].qid, answer: mcq.questions[0].answer }));
+          console.log('Quiz and MCQ generation OK.');
+          NODE
+
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/quiz/check -H 'Content-Type: application/json' --data-binary @/tmp/math-mafia-answer-check.json -o /tmp/math-mafia-answer-check-result.json
+          node -e "const r=require('/tmp/math-mafia-answer-check-result.json'); if(r.correct!==true) throw new Error('MCQ answer checker failed'); console.log('MCQ answer check OK.');"
+
+          curl --fail --silent -X POST http://127.0.0.1:4173/api/maths/test/create -H 'Content-Type: application/json' -d '{"chapterIds":["9"],"count":2,"creatorName":"CI smoke","mode":"squad","difficulty":"all","timeLimitSeconds":60,"readingTimeSeconds":null}' -o /tmp/math-mafia-challenge.json
+          challenge_code=$(node -e "process.stdout.write(JSON.parse(require('node:fs').readFileSync('/tmp/math-mafia-challenge.json','utf8')).code)")
+          curl --fail --silent "http://127.0.0.1:4173/api/test/$challenge_code" -o /tmp/math-mafia-joined.json
+          curl --fail --silent -X POST "http://127.0.0.1:4173/api/test/$challenge_code/submit" -H 'Content-Type: application/json' -d '{"name":"CI smoke","answers":{},"timeTakenSeconds":1,"perQuestionSeconds":{}}' -o /tmp/math-mafia-submit.json
+          curl --fail --silent "http://127.0.0.1:4173/api/test/$challenge_code/leaderboard" -o /tmp/math-mafia-leaderboard.json
+
+          node <<'NODE'
+          const fs = require('node:fs');
+          const joined = JSON.parse(fs.readFileSync('/tmp/math-mafia-joined.json', 'utf8'));
+          const submitted = JSON.parse(fs.readFileSync('/tmp/math-mafia-submit.json', 'utf8'));
+          const leaderboard = JSON.parse(fs.readFileSync('/tmp/math-mafia-leaderboard.json', 'utf8'));
+          if (!Array.isArray(joined.questions) || joined.questions.length !== 2) throw new Error('Challenge retrieval failed');
+          if (submitted.total !== 2 || submitted.score !== 0) throw new Error('Challenge submission failed');
+          if (!Array.isArray(leaderboard.leaderboard) || leaderboard.leaderboard.length !== 1) throw new Error('Leaderboard update failed');
+          console.log('Challenge create/join/submit/leaderboard flow OK.');
+          NODE
+
+          note_status=$(curl --silent --output /tmp/math-mafia-invalid-note.json --write-out '%{http_code}' http://127.0.0.1:4173/api/maths/notes/not-a-real-section)
+          test "$note_status" = "404"
           curl --fail --silent http://127.0.0.1:4173/ -o /tmp/math-mafia-home.html
           grep -q 'Math Mafia — Class 10 Learning Studio' /tmp/math-mafia-home.html
-          grep -q 'Premium design system' server.js
-          echo 'Homepage and app shell OK.'
+          echo 'Homepage and invalid-notes validation OK.'
