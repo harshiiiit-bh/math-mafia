@@ -186,7 +186,7 @@ function loadSubject(subjectId) {
       const chapterId = chapterCompositeId(branch, raw.chapter);
       const chapterTitle = (chapters[chapterId] && chapters[chapterId].title) || ('Chapter ' + raw.chapter);
       (raw.questions || []).forEach((ex, idx) => {
-        if (!Array.isArray(ex.options) || !ex.options.length || !ex.answer) return; // MCQ bank items must be gradable MCQs
+        if (!isGradable(ex)) return; // Never add broken answer keys to scored test pools
         questionPool.push({
           qid: `${subjectId}:mcq-${chapterId}-${ex.id != null ? ex.id : idx + 1}`,
           subject: subjectId, chapterId, chapter: raw.chapter, branch, chapterTitle,
@@ -422,7 +422,11 @@ app.post('/api/mix/test/create', (req, res) => {
     const chLabels = part.chapterIds.map(id => subj.chapters[id]?.title).filter(Boolean);
     chaptersLabel.push(`${subjInfo ? subjInfo.name : part.subject}: ${chLabels.join(', ')}`);
   }
-  qids = qids.sort(() => Math.random() - 0.5); // shuffle across subjects so it's a true mix, not blocks
+  // Fisher–Yates gives each mixed-subject ordering a fair shuffle.
+  for (let i = qids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [qids[i], qids[j]] = [qids[j], qids[i]];
+  }
   const code = genCode();
   db.tests[code] = {
     code, mode: 'mix', subjects: subjectsUsed, qids, creatorName: creatorName || 'Anonymous',
