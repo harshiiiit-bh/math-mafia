@@ -1498,7 +1498,7 @@ button:disabled,input:disabled,select:disabled{opacity:.48;cursor:not-allowed!im
 
 <script>
 const SUBJECT_IDS = ['maths','science','sst'];
-const state = { name: '', subject: localStorage.getItem('sm_subject') || 'maths', branch: 'all', subjects: [], chaptersCache: {}, metaCache: {}, branchesCache: {}, view: 'dashboard', selectedChapters: [], chapters: [], meta: null, currentChapter: null, quiz: null, quizIdx: 0, quizScore: 0, testCode: null, testTimer: null, testStart: null, timeLimitSeconds: null, readingTimeSeconds: null, paperTotalMarks: null, runnerMode: null, warMeta: null, pypPapers: null, pypChapters: null, mixParts: [] };
+const state = { name: '', subject: localStorage.getItem('sm_subject') || 'maths', branch: 'all', subjects: [], chaptersCache: {}, metaCache: {}, branchesCache: {}, view: 'dashboard', selectedChapters: [], chapters: [], meta: null, currentChapter: null, quiz: null, quizIdx: 0, quizScore: 0, testCode: null, testTimer: null, testStart: null, timeLimitSeconds: null, readingTimeSeconds: null, paperTotalMarks: null, runnerMode: null, finishing: false, warMeta: null, pypPapers: null, pypChapters: null, mixParts: [] };
 
 // Builds a URL under the CURRENT subject, e.g. sp('/chapter/3') -> '/s/maths/chapter/3'
 function sp(path){ return '/s/' + state.subject + (path || ''); }
@@ -2864,18 +2864,50 @@ function renderQuizQuestion(){
 
 async function checkQuizAnswer(q){
   if(q.submitted){
+    if(q.advancing) return;
+    q.advancing = true;
     state.quizIdx++;
-    if(state.quizIdx >= state.quiz.length){ clearInterval(state.testTimer); renderQuizDone(); } else { renderQuizQuestion(); }
+    if(state.quizIdx >= state.quiz.length){
+      clearInterval(state.testTimer);
+      renderQuizDone();
+    } else {
+      renderQuizQuestion();
+    }
     return;
   }
-  const val = (q.options && q.options.length) ? (q.given||'') : document.getElementById('qAns').value;
-  const res = await fetch('/api/quiz/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({qid:q.qid, answer:val}) });
-  const data = await res.json();
-  q.given = val; q.submitted = true; q.correct = data.correct; q.correctAnswer = data.correctAnswer;
-  q.timeSec = Math.max(0, Math.round((Date.now()-q.shownAt)/1000));
-  if(data.correct) state.quizScore++;
-  if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid);
-  renderQuizQuestion();
+  if(q.checking) return;
+
+  const input = document.getElementById('qAns');
+  const val = (q.options && q.options.length) ? (q.given||'') : (input ? input.value : '');
+  const submitButton = document.getElementById('qSubmit');
+  if(submitButton){ submitButton.disabled = true; submitButton.textContent = 'Checking…'; }
+  q.checking = true;
+
+  try{
+    const res = await fetch('/api/quiz/check', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({qid:q.qid, answer:val})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Answer check failed');
+
+    q.given = val;
+    q.submitted = true;
+    q.checking = false;
+    q.correct = data.correct === true;
+    q.correctAnswer = data.correctAnswer;
+    q.timeSec = Math.max(0, Math.round((Date.now()-q.shownAt)/1000));
+    if(q.correct) state.quizScore++;
+    if(q.paperId) markPypQuestionAnswered(q.paperId, q.qid);
+    renderQuizQuestion();
+  } catch(err){
+    q.checking = false;
+    const button = document.getElementById('qSubmit');
+    if(button){ button.disabled = false; button.textContent = 'Try Again'; }
+    const feedback = document.getElementById('qFeedback');
+    if(feedback) feedback.innerHTML = '<div class="feedback wrong">Could not check your answer. Check your connection and try again.</div>';
+  }
 }
 
 function renderQuizDone(){
