@@ -1585,7 +1585,10 @@ function branchName(subjectId, branchId){
 
 // ---------- Router (every screen is a real, dedicated, back-button-friendly page) ----------
 function navigate(path){
-  if(location.pathname + location.search !== path){ history.pushState(null, '', path); }
+  if(location.pathname + location.search !== path){
+    if(state.testTimer){ clearInterval(state.testTimer); state.testTimer = null; }
+    history.pushState(null, '', path);
+  }
   route();
 }
 function replaceUrl(path){
@@ -1648,6 +1651,8 @@ function switchBranch(id){
 
 function route(){
   const path = location.pathname;
+  const runnerPath = /^\\/run\\/(?:quiz|solo|war)$/.test(path) || /^\\/war\\/[^/]+$/.test(path);
+  if(!runnerPath && state.testTimer){ clearInterval(state.testTimer); state.testTimer = null; }
   const qs = new URLSearchParams(location.search);
   const seg = path.split('/').filter(Boolean);
 
@@ -1734,6 +1739,10 @@ document.getElementById('gateForm').addEventListener('submit', e=>{
   enterApp(val);
 });
 document.getElementById('switchBtn').addEventListener('click', ()=>{
+  if(state.testTimer){ clearInterval(state.testTimer); state.testTimer = null; }
+  state.quiz = null; state.quizIdx = 0; state.quizScore = 0;
+  state.runnerMode = null; state.finishing = false; state.readingActive = false;
+  state.name = '';
   localStorage.removeItem('sm_name');
   appEl.classList.remove('active'); gate.style.display='flex'; nameInput.value=''; nameInput.focus();
 });
@@ -2202,11 +2211,16 @@ function toggleChapter(el,id,multi){
 
 // ---------- Progress tracking (per-name, stored locally) ----------
 function progressKey(){ return 'sm_progress_' + state.subject + '_' + (state.name || 'guest'); }
-function getProgress(){ try{ return JSON.parse(localStorage.getItem(progressKey()) || '{}'); }catch(e){ return {}; } }
+function getProgress(){
+  try{
+    const value = JSON.parse(localStorage.getItem(progressKey()) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }catch(e){ return {}; }
+}
 function progressPct(chapterId, total){
   if(!total) return 0;
   const prog = getProgress();
-  const viewed = Math.min((prog[chapterId] || []).length, total);
+  const viewed = Math.min(Array.isArray(prog[chapterId]) ? prog[chapterId].length : 0, total);
   return Math.round((viewed/total)*100);
 }
 function getOverallProgress(){
@@ -2215,7 +2229,7 @@ function getOverallProgress(){
   state.chapters.forEach(c=>{
     const t = c.practiceCount != null ? c.practiceCount : c.exampleCount + c.exerciseCount;
     total += t;
-    viewed += Math.min((prog[c.id] || []).length, t);
+    viewed += Math.min(Array.isArray(prog[c.id]) ? prog[c.id].length : 0, t);
   });
   return { viewed, total, pct: total ? Math.round((viewed/total)*100) : 0 };
 }
@@ -2229,7 +2243,7 @@ function rankTitle(pct){
 }
 function markPracticeViewed(chapterId, pid){
   const prog = getProgress();
-  const arr = prog[chapterId] || [];
+  const arr = Array.isArray(prog[chapterId]) ? prog[chapterId] : [];
   if(!arr.includes(pid)){ arr.push(pid); prog[chapterId] = arr; localStorage.setItem(progressKey(), JSON.stringify(prog)); }
   const card = document.querySelector('.ch-card[data-id="'+chapterId+'"]');
   if(card){
@@ -2255,14 +2269,20 @@ function markPracticeViewed(chapterId, pid){
 
 // ---------- PYP progress tracking (per paper, per-name, stored locally — same pattern as chapter progress) ----------
 function pypProgressKey(){ return 'sm_pyp_progress_' + state.subject + '_' + (state.name || 'guest'); }
-function getPypProgress(){ try{ return JSON.parse(localStorage.getItem(pypProgressKey()) || '{}'); }catch(e){ return {}; } }
+function getPypProgress(){
+  try{
+    const value = JSON.parse(localStorage.getItem(pypProgressKey()) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  }catch(e){ return {}; }
+}
 function markPypQuestionAnswered(paperId, qid){
   const prog = getPypProgress();
-  const arr = prog[paperId] || [];
+  const arr = Array.isArray(prog[paperId]) ? prog[paperId] : [];
   if(!arr.includes(qid)){ arr.push(qid); prog[paperId] = arr; localStorage.setItem(pypProgressKey(), JSON.stringify(prog)); }
 }
 function pypPaperStats(paperId, gradableCount){
-  const answered = (getPypProgress()[paperId] || []).length;
+  const stored = getPypProgress()[paperId];
+  const answered = Array.isArray(stored) ? stored.length : 0;
   const pct = gradableCount ? Math.min(100, Math.round((answered/gradableCount)*100)) : 0;
   return { answered, pct, done: gradableCount > 0 && answered >= gradableCount };
 }
