@@ -2750,7 +2750,25 @@ function renderPypGrid(){
     return \`
     <div class="ch-card clickable" onclick="navigate(sp('/pyp/paper/${'$'}{p.id}'))">
       <div class="num">${'$'}{p.board?esc(p.board)+' · ':''}${'$'}{p.year}${'$'}{p.set?' Set '+p.set:''}${'$'}{stats.done?' · ✓':''}</div>
-      <h3>${'$'}{p.questionCount} Questions${'$'}{p.totalMarks?' · '+p.totalMarks+' Marks':''}</h3>
+      <h3>${'
+      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
+    </div>\`;
+  }).join('');
+}
+}{p.gradableCount} test questions · ${'
+      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
+    </div>\`;
+  }).join('');
+}
+}{p.questionCount} entries${'
+      <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+      <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
+    </div>\`;
+  }).join('');
+}
+}{p.totalMarks?' · '+p.totalMarks+' Marks':''}</h3>
       <div class="progress-track"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
       <div class="progress-label"><span class="pct">${'$'}{stats.pct}%</span> complete</div>
     </div>\`;
@@ -2808,20 +2826,82 @@ async function renderPypPaperDetail(id){
   try{ data = await requestJson('/api/'+subject+'/pyp/paper/'+encodeURIComponent(id)); }
   catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load this paper. Return to the paper list and try again.'); return; }
   if(state.subject!==subject || location.pathname!==routePath) return;
-  const gradable = data.questions.filter(q=>q.gradable);
+  const gradableQids = new Set(data.gradableQids || []);
+  const gradable = data.questions.filter(q=>q.gradable && gradableQids.has(q.qid));
   const canAutoGrade = gradable.length > 0;
   const chapterCounts = {};
   data.questions.forEach(q=>{
-    if(!q.chapterId) return;
+    if(!q.chapterId || !q.gradable || !gradableQids.has(q.qid)) return;
     if(!chapterCounts[q.chapterId]) chapterCounts[q.chapterId] = { id:q.chapterId, title:q.chapterTitle, branch:q.branch||null, count:0, gradableCount:0 };
     chapterCounts[q.chapterId].count++;
-    if(q.gradable) chapterCounts[q.chapterId].gradableCount++;
+    chapterCounts[q.chapterId].gradableCount++;
   });
   const stats = pypPaperStats(id, gradable.length);
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="section-title">${'$'}{data.board?esc(data.board)+' — ':''}${'$'}{data.year}${'$'}{data.set?' (Set '+data.set+')':''}${'$'}{stats.done?' ✓':''}</div>
-    <p style="color:var(--muted); margin-bottom:12px; font-size:14px;">${'$'}{data.questions.length} questions${'$'}{data.totalMarks?' · '+data.totalMarks+' marks':''} · ${'$'}{gradable.length} auto-gradable</p>
+    <p style="color:var(--muted); margin-bottom:12px; font-size:14px;">${'
+    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+    <div class="mode-grid" style="margin-bottom:28px;">
+      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
+      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
+      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
+    </div>
+    <div class="section-title">Chapters Covered</div>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
+    <div class="chapter-grid">
+      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+    </div>
+  \`;
+  if(!canAutoGrade){
+    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
+  }
+  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
+  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
+  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
+}
+}{data.questions.length} listed entries${'
+    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+    <div class="mode-grid" style="margin-bottom:28px;">
+      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
+      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
+      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
+    </div>
+    <div class="section-title">Chapters Covered</div>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
+    <div class="chapter-grid">
+      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+    </div>
+  \`;
+  if(!canAutoGrade){
+    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
+  }
+  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
+  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
+  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
+}
+}{data.totalMarks?' · '+data.totalMarks+' official marks':''} · ${'
+    <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
+    <div class="mode-grid" style="margin-bottom:28px;">
+      <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
+      <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
+      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
+    </div>
+    <div class="section-title">Chapters Covered</div>
+    <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter with auto-gradable questions to practice its questions from this paper.</p>
+    <div class="chapter-grid">
+      ${'$'}{Object.values(chapterCounts).filter(c=>c.gradableCount>0).map(c=>\`<div class="ch-card clickable" onclick="viewPypPaperChapter('${'$'}{id}','${'$'}{c.id}')">${'$'}{c.branch?\`<div class="num">${'$'}{esc(branchName(state.subject,c.branch))}</div>\`:''}<h3>${'$'}{esc(c.title)}</h3><div class="stats"><span>${'$'}{c.count} question${'$'}{c.count===1?'':'s'}</span>${'$'}{c.gradableCount?'':' <span style=\"color:var(--muted);\">(no auto-grading)</span>'}</div></div>\`).join('')}
+    </div>
+  \`;
+  if(!canAutoGrade){
+    ['pypPracticeBtn','pypSoloBtn','pypWarBtn'].forEach(buttonId=>{ const button=document.getElementById(buttonId); if(button) button.disabled=true; });
+  }
+  document.getElementById('pypPracticeBtn').addEventListener('click', ()=>{ if(canAutoGrade) startPypQuiz({paperId:id}); });
+  document.getElementById('pypSoloBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/solo')));
+  document.getElementById('pypWarBtn').addEventListener('click', ()=>navigate(sp('/pyp/paper/'+id+'/setup/war')));
+}
+}{gradable.length} questions in scored tests</p>
+    <p style="color:var(--muted); margin:-4px 0 20px; font-size:13px;">Questions with a/b alternatives use one variant per test. Multi-part answers that cannot be reliably auto-scored are excluded.</p>
     <div class="progress-track" style="margin-bottom:24px;"><div class="progress-fill" style="width:${'$'}{stats.pct}%"></div></div>
     <div class="mode-grid" style="margin-bottom:28px;">
       <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
@@ -2853,7 +2933,8 @@ async function renderPypPaperSetup(id, mode){
   try{ data = await requestJson('/api/'+subject+'/pyp/paper/'+encodeURIComponent(id)); }
   catch(err){ if(state.subject===subject && location.pathname===routePath) showRequestError(main,'Could not load full-paper setup. Return to the paper and try again.'); return; }
   if(state.subject!==subject || location.pathname!==routePath) return;
-  const gradable = data.questions.filter(q=>q.gradable);
+  const gradableQids = new Set(data.gradableQids || []);
+  const gradable = data.questions.filter(q=>q.gradable && gradableQids.has(q.qid));
   const defSeconds = gradable.length ? Math.max(600, gradable.length*90) : 900;
   const defHours = Math.floor(defSeconds/3600), defMinutes = Math.round((defSeconds%3600)/60);
   const modeInfo = { solo: { title:'Full Test Setup', goBtn:'Start the Job →' }, war: { title:'Challenge Test Setup', goBtn:'Create the War →' } }[mode] || { title:'Setup', goBtn:'Start →' };
