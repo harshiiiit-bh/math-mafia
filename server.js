@@ -299,7 +299,7 @@ function loadSubject(subjectId) {
       const mappedChapter = candidateId ? chapters[candidateId] || null : null;
       const chapterId = mappedChapter ? candidateId : null;
       pypPool.push({
-        qid, subject: subjectId, paperId: p.id, paperLabel: paperLabelFor(p),
+        qid, questionId: itemId, subject: subjectId, paperId: p.id, paperLabel: paperLabelFor(p),
         year: p.year, set: p.set || 1, order: idx,
         chapterId, chapter: chapterNum, branch: mappedChapter ? exBranch : null,
         chapterTitle: mappedChapter ? mappedChapter.title : (chapterNum == null ? 'Unmapped question' : `Unmapped chapter ${chapterNum}`),
@@ -363,7 +363,43 @@ function loadSubject(subjectId) {
     const limit = Number.isFinite(requested) ? Math.max(0, Math.floor(requested)) : pool.length;
     return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
-  function pypGradablePool() { return pypPool.filter(q => q.chapterId && chapters[q.chapterId] && q.gradable && !q.isDuplicate && (!mcqOnly || isMcq(q))); }
+  function selectAlternativeQuestions(items) {
+    const byPaper = new Map();
+    items.forEach(q => {
+      if(!byPaper.has(q.paperId)) byPaper.set(q.paperId, []);
+      byPaper.get(q.paperId).push(q);
+    });
+    const selected = [];
+    for(const [paperId, paperItems] of byPaper){
+      const byId = new Map(paperItems.map(q => [String(q.questionId||'').toLowerCase(), q]));
+      const handled = new Set();
+      for(const q of paperItems){
+        if(handled.has(q.qid)) continue;
+        const id = String(q.questionId||'');
+        const match = id.match(/^(.*?)([ab])$/i);
+        if(match){
+          const otherId = match[1] + (match[2].toLowerCase()==='a' ? 'b' : 'a');
+          const other = byId.get(otherId.toLowerCase());
+          if(other && other.qid!==q.qid && !handled.has(other.qid)){
+            const pair = [q, other].sort((a,b)=>a.order-b.order);
+            selected.push(pair[Math.floor(Math.random()*pair.length)]);
+            handled.add(q.qid); handled.add(other.qid);
+            continue;
+          }
+        }
+        selected.push(q); handled.add(q.qid);
+      }
+    }
+    return selected.sort((a,b)=>(a.year-b.year)||(a.set-b.set)||(a.order-b.order));
+  }
+  function paperGradableQuestions(paperId, chapterId) {
+    const eligible = pypPool.filter(q => q.paperId === paperId && q.gradable && (!mcqOnly || isMcq(q)) && (!chapterId || q.chapterId === chapterId));
+    return selectAlternativeQuestions(eligible);
+  }
+  function pypUniqueMappedPool() {
+    return selectAlternativeQuestions(pypPool.filter(q => q.chapterId && chapters[q.chapterId] && !q.isDuplicate));
+  }
+  function pypGradablePool() { return selectAlternativeQuestions(pypPool.filter(q => q.chapterId && chapters[q.chapterId] && q.gradable && !q.isDuplicate && (!mcqOnly || isMcq(q)))); }
   function filterPypPool(chapterIds, difficulty) {
     return pypGradablePool().filter(q => {
       if (Array.isArray(chapterIds) && chapterIds.length && !chapterIds.includes(q.chapterId)) return false;
@@ -379,7 +415,7 @@ function loadSubject(subjectId) {
     return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
   function paperGradableQids(paperId, chapterId) {
-    return pypPool.filter(q => q.paperId === paperId && q.gradable && (!mcqOnly || isMcq(q)) && (!chapterId || q.chapterId === chapterId)).sort((a, b) => a.order - b.order).map(q => q.qid);
+    return paperGradableQuestions(paperId, chapterId).map(q => q.qid);
   }
 
   // Include PYP difficulty values so chapterwise previous-paper setup filters use real options.
@@ -415,7 +451,7 @@ function loadSubject(subjectId) {
     id: subjectId, chapters, chapterList, questionPool, DIFFICULTIES, mcqOnly,
     papers, paperList, paperLabelFor, pypPool,
     filterPool, pickQuestions, pypGradablePool, filterPypPool, pickPypQuestions, paperGradableQids,
-    mcqPracticePool, mcqChapterCounts
+    mcqPracticePool, mcqChapterCounts, pypUniqueMappedPool
   };
 }
 
@@ -752,7 +788,7 @@ app.get('/api/:subject/pyp/papers', (req, res) => {
     return {
       id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
       questionCount: qs.length,
-      gradableCount: qs.filter(q => q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0))).length,
+      gradableCount: req.subj.paperGradableQids(p.id).length,
       chapters: [...new Set(qs.map(q => q.chapterId).filter(Boolean))].sort()
     };
   }));
@@ -773,7 +809,7 @@ app.get('/api/:subject/pyp/chapters', (req, res) => {
 app.get('/api/:subject/pyp/weightage', (req, res) => {
   const { pypPool, paperList } = req.subj;
   const unique = pypPool.filter(q => !q.isDuplicate);
-  const mappedUnique = unique.filter(q => q.chapterId && req.subj.chapters[q.chapterId]);
+  const mappedUnique = req.subj.pypUniqueMappedPool();
   const totalUnique = mappedUnique.length;
   const byChapter = {};
   mappedUnique.forEach(q => {
@@ -795,7 +831,7 @@ app.get('/api/:subject/pyp/weightage', (req, res) => {
     totalUniqueQuestions: totalUnique,
     totalRawQuestions: pypPool.length,
     duplicatesFound: pypPool.length - unique.length,
-    unmappedQuestions: unique.length - mappedUnique.length,
+    unmappedQuestions: unique.filter(q => !q.chapterId || !req.subj.chapters[q.chapterId]).length,
     paperCount: paperList.length,
     chapters: rows
   });
@@ -807,7 +843,9 @@ app.get('/api/:subject/pyp/paper/:id', (req, res) => {
   const qs = req.subj.pypPool.filter(q => q.paperId === p.id).sort((a, b) => a.order - b.order);
   res.json({
     id: p.id, year: p.year, set: p.set || 1, board: p.board || null, totalMarks: p.totalMarks || null,
-    questions: qs.map(q => ({ qid: q.qid, chapterId: q.chapterId, chapter: q.chapter, branch: q.branch || null, chapterTitle: q.chapterTitle, topic: q.topic, difficulty: q.difficulty, marks: q.marks, question: q.question, gradable: q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0)) }))
+    gradableCount: req.subj.paperGradableQids(p.id).length,
+    gradableQids: req.subj.paperGradableQids(p.id),
+    questions: qs.map(q => ({ qid: q.qid, questionId: q.questionId, chapterId: q.chapterId, chapter: q.chapter, branch: q.branch || null, chapterTitle: q.chapterTitle, topic: q.topic, difficulty: q.difficulty, marks: q.marks, question: q.question, gradable: q.gradable && (!req.subj.mcqOnly || (Array.isArray(q.options) && q.options.length > 0)) }))
   });
 });
 
