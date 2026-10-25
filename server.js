@@ -1894,6 +1894,12 @@ function normalizeMcqText(value){
 function mcqCorrectLetter(q){
   if(q.correctAnswer==null || !Array.isArray(q.options) || !q.options.length) return null;
   const ca = String(q.correctAnswer).trim();
+  const prefixed = ca.match(/^(?:option|choice)\\s+([A-F])(?:[.):\\-]\\s*(.*))?$/i);
+  if(prefixed){
+    const index = prefixed[1].toUpperCase().charCodeAt(0)-65;
+    const rest = (prefixed[2]||'').trim();
+    if(index>=0 && index<q.options.length && (!rest || /^\\([^()]*\\)$/.test(rest) || normalizeMcqText(rest)===normalizeMcqText(q.options[index]))) return String.fromCharCode(65+index);
+  }
   const bare = ca.match(/^\\(?([A-F])\\)?[.)]?$/i);
   if(bare){
     const index = bare[1].toUpperCase().charCodeAt(0)-65;
