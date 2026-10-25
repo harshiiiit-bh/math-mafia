@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { isGradable, checkAnswer } = require('./lib/grading');
 
 const app = express();
 app.use(express.json());
@@ -70,39 +71,6 @@ function mcqType(ex) {
   if (ex.assertion || ex.reason) return 'assertion-reason';
   if (Array.isArray(ex.options) && ex.options.length) return 'mcq';
   return null;
-}
-
-// A question is "gradable" (usable in auto-scored quiz/test) if its answer is short
-// and doesn't look like a proof. Everything else is browsable in Practice mode only.
-function isGradable(ex) {
-  if (!ex.answer) return false;
-  if (Array.isArray(ex.options) && ex.options.length) return true; // MCQ: click-to-answer, always gradable
-  const a = ex.answer.toLowerCase();
-  // Multi-part answers like "(i) ... (ii) ... (iii) ..." can't be graded with one text box
-  if ((a.match(/\(/g) || []).length >= 2) return false;
-  if (a.length > 70) return false;
-  if (/proof|prove|show that|hence|justif/.test(a) && a.length > 40) return false;
-  return true;
-}
-
-// Strip trailing/inline parenthetical explanations, e.g. "B (probability can never be negative)" -> "B "
-function stripParenthetical(str) {
-  return String(str).replace(/\([^)]*\)/g, ' ');
-}
-function normalize(str) {
-  return String(str).toLowerCase().replace(/rs\.?|₹|cm|m\b|degrees?|deg\b/g, '').replace(/[^a-z0-9.\-]/g, '').trim();
-}
-function checkAnswer(userAns, correctAns) {
-  const u = normalize(userAns);
-  // Compare against both the full correct answer and a version with parenthetical
-  // explanations stripped, so "B" matches "B (probability can never be negative)".
-  const c = normalize(correctAns);
-  const cCore = normalize(stripParenthetical(correctAns));
-  if (!u) return false;
-  if (u === c || u === cCore) return true;
-  // allow partial containment for multi-part answers e.g. "13 and 14"
-  if ((c.includes(u) && u.length >= 2) || (u.includes(c) && c.length >= 2)) return true;
-  return (cCore.includes(u) && u.length >= 2) || (u.includes(cCore) && cCore.length >= 2);
 }
 
 // Strip diagram markers/punctuation before comparing question text across papers (duplicate detection)
@@ -303,6 +271,15 @@ function loadSubject(subjectId) {
   const mcqOnly = MCQ_ONLY_SUBJECTS.includes(subjectId);
   const isMcq = q => Array.isArray(q.options) && q.options.length > 0;
 
+  function shuffleArray(items) {
+    const shuffled = [...items];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
   function filterPool(chapterIds, difficulty) {
     return questionPool.filter(q => {
       if (!chapterIds.includes(q.chapterId)) return false;
@@ -313,8 +290,10 @@ function loadSubject(subjectId) {
   }
   function pickQuestions(chapterIds, count, difficulty) {
     const pool = filterPool(chapterIds, difficulty);
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, Math.min(count, shuffled.length)).map(q => q.qid);
+    const shuffled = shuffleArray(pool);
+    const requested = Number(count);
+    const limit = Number.isFinite(requested) ? Math.max(0, Math.floor(requested)) : pool.length;
+    return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
   function pypGradablePool() { return pypPool.filter(q => q.gradable && !q.isDuplicate && (!mcqOnly || isMcq(q))); }
   function filterPypPool(chapterIds, difficulty) {
@@ -326,8 +305,10 @@ function loadSubject(subjectId) {
   }
   function pickPypQuestions(chapterIds, count, difficulty) {
     const pool = filterPypPool(chapterIds, difficulty);
-    const shuffled = [...pool].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, Math.min(count, shuffled.length)).map(q => q.qid);
+    const shuffled = shuffleArray(pool);
+    const requested = Number(count);
+    const limit = Number.isFinite(requested) ? Math.max(0, Math.floor(requested)) : pool.length;
+    return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
   function paperGradableQids(paperId, chapterId) {
     return pypPool.filter(q => q.paperId === paperId && q.gradable && (!chapterId || q.chapterId === chapterId)).sort((a, b) => a.order - b.order).map(q => q.qid);
@@ -568,7 +549,7 @@ app.post('/api/quiz/check', (req, res) => {
   const { qid, answer } = req.body;
   const q = findQuestionByQid(qid);
   if (!q) return res.status(404).json({ error: 'Question not found' });
-  const correct = checkAnswer(answer || '', q.answer);
+  const correct = checkAnswer(answer, q.answer, q.options);
   res.json({ correct, correctAnswer: q.answer });
 });
 
@@ -631,7 +612,7 @@ app.post('/api/test/:code/submit', (req, res) => {
   const breakdown = test.qids.map(qid => {
     const q = findQuestionByQid(qid);
     const userAns = (answers && answers[qid]) || '';
-    const correct = q ? checkAnswer(userAns, q.answer) : false;
+    const correct = q ? checkAnswer(userAns, q.answer, q.options) : false;
     const marks = (q && typeof q.marks === 'number') ? q.marks : 0;
     if (correct) score++;
     if (marksMode) { marksTotal += marks; if (correct) marksScored += marks; }
@@ -734,7 +715,8 @@ app.get('/api/:subject/pyp/paper/:id', (req, res) => {
 
 app.post('/api/:subject/pyp/pool-count', (req, res) => {
   const { chapterIds, difficulty } = req.body;
-  res.json({ count: req.subj.filterPypPool(chapterIds || [], difficulty).length });
+  if (!Array.isArray(chapterIds) || !chapterIds.length) return res.json({ count: 0 });
+  res.json({ count: req.subj.filterPypPool(chapterIds, difficulty).length });
 });
 
 // Practice / Quick-Heist-style generation. Pass { paperId } for one full paper (original order),
@@ -1403,14 +1385,14 @@ const nameInput = document.getElementById('nameInput');
 
 function boot(){
   const saved = localStorage.getItem('sm_name');
-  if(saved){ showQuoteThenEnter(saved); }
+  if(saved){ enterApp(saved); }
 }
 document.getElementById('gateForm').addEventListener('submit', e=>{
   e.preventDefault();
   const val = nameInput.value.trim();
   if(!val){ document.getElementById('nameErr').textContent = 'Every family member needs a name.'; return; }
   localStorage.setItem('sm_name', val);
-  showQuoteThenEnter(val);
+  enterApp(val);
 });
 document.getElementById('switchBtn').addEventListener('click', ()=>{
   localStorage.removeItem('sm_name');
@@ -1662,13 +1644,27 @@ const MCQ_LETTERS = ['A','B','C','D','E','F'];
 // The server only sends back the correct answer's text (e.g. from the data file's "answer" field),
 // which may itself be a bare letter ("B") or the full option text. Map either shape to a letter so
 // the matching option button can be highlighted once the question is submitted.
+function normalizeMcqText(value){
+  return String(value==null?'':value).normalize('NFKC').toLowerCase()
+    .replace(/[−–—]/g,'-').replace(/[×·⋅]/g,'x').replace(/÷/g,'/')
+    .replace(/\\s+/g,'').replace(/[.,;:]$/,'');
+}
 function mcqCorrectLetter(q){
-  if(!q.correctAnswer || !q.options) return null;
+  if(q.correctAnswer==null || !Array.isArray(q.options) || !q.options.length) return null;
   const ca = String(q.correctAnswer).trim();
-  const bare = ca.replace(/[().]/g,'').trim().toUpperCase();
-  if(bare.length===1 && MCQ_LETTERS.includes(bare)) return bare;
-  const idx = q.options.findIndex(o=>String(o).trim().toLowerCase()===ca.toLowerCase());
-  return idx>=0 ? MCQ_LETTERS[idx] : null;
+  const bare = ca.match(/^\\(?([A-F])\\)?[.)]?$/i);
+  if(bare){
+    const index = bare[1].toUpperCase().charCodeAt(0)-65;
+    if(index>=0 && index<q.options.length) return String.fromCharCode(65+index);
+  }
+  const labelled = ca.match(/^\\(?([A-F])\\)?(?:[.)]|\\s+(?=\\())\\s*(.*)$/i);
+  if(labelled){
+    const index = labelled[1].toUpperCase().charCodeAt(0)-65;
+    const rest = labelled[2].trim();
+    if(index>=0 && index<q.options.length && (!rest || /^\\([^()]*\\)$/.test(rest) || normalizeMcqText(rest)===normalizeMcqText(q.options[index]))) return String.fromCharCode(65+index);
+  }
+  const idx = q.options.findIndex(o=>normalizeMcqText(o)===normalizeMcqText(ca));
+  return idx>=0 ? String.fromCharCode(65+idx) : null;
 }
 function mcqOptionsHtml(q){
   const correctLetter = (q.submitted && q.correctAnswer) ? mcqCorrectLetter(q) : null;
@@ -1923,10 +1919,8 @@ function wirePracticeToggles(container, chapterId, chapterTitle, items){
 // but every item on the page is independent and nothing is submitted to the server or scored) ----------
 const MCQ_LETTERS_PRACTICE = ['A','B','C','D','E','F'];
 function mcqPracticeCorrectIndex(item){
-  const ca = String(item.answer||'').trim();
-  const bare = ca.replace(/[().]/g,'').trim().toUpperCase();
-  if(bare.length===1 && MCQ_LETTERS_PRACTICE.includes(bare)) return MCQ_LETTERS_PRACTICE.indexOf(bare);
-  return (item.options||[]).findIndex(o=>String(o).trim().toLowerCase()===ca.toLowerCase());
+  const letter = mcqCorrectLetter({ correctAnswer: item.answer, options: item.options || [] });
+  return letter ? letter.charCodeAt(0)-65 : -1;
 }
 function mcqPracticeItemHTML(item){
   const correctIdx = mcqPracticeCorrectIndex(item);
@@ -2042,7 +2036,7 @@ function renderChapterView(ch, tab){
     t.addEventListener('click', ()=>{
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
-      replaceUrl(sp('/chapter/'+ch.chapter+'?tab='+t.dataset.t));
+      replaceUrl(sp('/chapter/'+ch.id+'?tab='+t.dataset.t));
       renderChBody(ch, t.dataset.t);
     });
     if(t.dataset.t===tab) t.classList.add('active');
@@ -2064,8 +2058,13 @@ function renderChBody(ch, tab){
     wirePracticeToggles(body, ch.chapter, ch.title, items);
   } else if(tab==='mcq'){
     body.innerHTML = '<div class="empty">Loading MCQs…</div>';
-    fetch('/api/'+state.subject+'/mcq/chapter/'+ch.id).then(r=>r.json()).then(items=>{
-      renderMcqTabBody(body, items);
+    fetch('/api/'+state.subject+'/mcq/chapter/'+ch.id).then(r=>{
+      if(!r.ok) throw new Error('MCQ request failed');
+      return r.json();
+    }).then(items=>{
+      if(body.isConnected) renderMcqTabBody(body, items);
+    }).catch(()=>{
+      if(body.isConnected) body.innerHTML = '<div class="empty">MCQs could not be loaded. Please try again.</div>';
     });
   }
 }
@@ -2196,11 +2195,21 @@ async function renderTestSetup(mode, chapterIds){
 
 // ---------- Previous Year Papers (PYP) ----------
 async function loadPypPapers(){
-  if(!state.pypPapers){ const res = await fetch('/api/'+state.subject+'/pyp/papers'); state.pypPapers = await res.json(); }
+  if(!state.pypPapers || state.pypPapersSubject !== state.subject){
+    const res = await fetch('/api/'+state.subject+'/pyp/papers');
+    if(!res.ok) throw new Error('Could not load previous-year papers.');
+    state.pypPapers = await res.json();
+    state.pypPapersSubject = state.subject;
+  }
   return state.pypPapers;
 }
 async function loadPypChapters(){
-  if(!state.pypChapters){ const res = await fetch('/api/'+state.subject+'/pyp/chapters'); state.pypChapters = await res.json(); }
+  if(!state.pypChapters || state.pypChaptersSubject !== state.subject){
+    const res = await fetch('/api/'+state.subject+'/pyp/chapters');
+    if(!res.ok) throw new Error('Could not load previous-year-paper chapters.');
+    state.pypChapters = await res.json();
+    state.pypChaptersSubject = state.subject;
+  }
   return state.pypChapters;
 }
 
@@ -2220,13 +2229,16 @@ function renderPypHome(){
     <div class="section-title">By Year</div>
     <div class="chapter-grid" id="pypGrid"><div class="empty">Loading papers…</div></div>
   \`;
-  loadPypPapers().then(renderPypGrid);
+  loadPypPapers().then(renderPypGrid).catch(()=>{
+    const grid = document.getElementById('pypGrid');
+    if(grid) grid.innerHTML = '<div class="empty">Could not load papers right now. Please refresh and try again.</div>';
+  });
 }
 
 function renderPypGrid(){
   const grid = document.getElementById('pypGrid');
   if(!grid) return;
-  if(!state.pypPapers.length){ grid.innerHTML = '<div class="empty">No previous year papers uploaded yet. Check back soon.</div>'; return; }
+  if(!Array.isArray(state.pypPapers) || !state.pypPapers.length){ grid.innerHTML = '<div class="empty">No previous year papers uploaded yet. Check back soon.</div>'; return; }
   grid.innerHTML = state.pypPapers.map(p=>{
     const stats = pypPaperStats(p.id, p.gradableCount);
     return \`
