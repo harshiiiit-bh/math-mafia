@@ -42,7 +42,7 @@ function listNoteFiles(subjectId, branchId) {
 // ---------- Subjects ----------
 // One folder per subject under data/<subjectId>/*.json for chapters, data/<subjectId>/pyp/*.json for
 // previous-year papers. Every subject uses the exact same JSON schema, so all study modes (notes,
-// formulas, Quick Heist, Solo Job, Gang War, Previous Papers) work identically for each one.
+// formulas, Practice Quiz, Timed Test, Challenge Test, Previous Papers) work identically for each one.
 const SUBJECTS = [
   { id: 'maths', name: 'Maths', icon: '📐' },
   { id: 'science', name: 'Science', icon: '🔬' },
@@ -51,7 +51,7 @@ const SUBJECTS = [
 const SUBJECT_IDS = SUBJECTS.map(s => s.id);
 
 // Science and SST have long/short answers that vary too much student-to-student to auto-grade,
-// so every generated test/quiz/Gang War for these subjects draws ONLY from MCQ + Assertion-Reason
+// so every generated test/quiz/Challenge Test for these subjects draws ONLY from MCQ + Assertion-Reason
 // questions (chapter MCQ bank + PYP-extracted MCQs). Maths keeps every question type as-is, but
 // also gets the same MCQ bank/tab layered on top as an extra practice option.
 const MCQ_ONLY_SUBJECTS = ['science', 'sst'];
@@ -137,7 +137,7 @@ function loadSubject(subjectId) {
       } catch (err) {
         // A typo or trailing comma in ONE chapter file must never take the whole site down.
         // Skip just this file and keep going — every other chapter still loads and works.
-        console.error(`[Study Mafia] Skipping broken file data/${subjectId}/${f}: ${err.message}`);
+        console.error(`[Math Mafia] Skipping broken file data/${subjectId}/${f}: ${err.message}`);
         return;
       }
       const branch = raw.branch || null;
@@ -179,7 +179,7 @@ function loadSubject(subjectId) {
       try {
         raw = JSON.parse(fs.readFileSync(path.join(MCQ_DIR, f), 'utf8'));
       } catch (err) {
-        console.error(`[Study Mafia] Skipping broken file data/${subjectId}/mcq/${f}: ${err.message}`);
+        console.error(`[Math Mafia] Skipping broken file data/${subjectId}/mcq/${f}: ${err.message}`);
         return;
       }
       const branch = raw.branch || (Object.values(chapters).find(c => c.chapter === raw.chapter) || {}).branch || null;
@@ -212,7 +212,7 @@ function loadSubject(subjectId) {
       try {
         raw = JSON.parse(fs.readFileSync(path.join(PYP_DIR, f), 'utf8'));
       } catch (err) {
-        console.error(`[Study Mafia] Skipping broken file data/${subjectId}/pyp/${f}: ${err.message}`);
+        console.error(`[Math Mafia] Skipping broken file data/${subjectId}/pyp/${f}: ${err.message}`);
         return;
       }
       const paperId = raw.id || `${raw.year}-set${raw.set || 1}`;
@@ -398,7 +398,7 @@ app.get('/api/subjects', (req, res) => {
   res.json(SUBJECTS.map(s => ({ ...s, chapterCount: SUBJECT_DATA[s.id].chapterList.length, mcqOnly: SUBJECT_DATA[s.id].mcqOnly })));
 });
 
-// ---------- Mix Subjects Gang War ----------
+// ---------- Mix Subjects Challenge Test ----------
 // Registered BEFORE the generic /api/:subject/... routes below — otherwise Express would treat
 // the literal path segment "mix" as a subject id and 404 it via the app.param('subject', ...) guard.
 // parts: [{ subject, chapterIds, count, difficulty }, ...] — one or more subjects, each with its
@@ -536,7 +536,7 @@ function mcqPracticeItem(q) {
   };
 }
 
-// Quick Heist (practice quiz) - instant feedback, not saved to leaderboard
+// Practice Quiz (practice quiz) - instant feedback, not saved to leaderboard
 app.post('/api/:subject/quiz/generate', (req, res) => {
   const { chapterIds, count, difficulty } = req.body;
   if (!Array.isArray(chapterIds) || !chapterIds.length) return res.status(400).json({ error: 'Pick at least one chapter' });
@@ -553,7 +553,7 @@ app.post('/api/quiz/check', (req, res) => {
   res.json({ correct, correctAnswer: q.answer });
 });
 
-// Solo Job / Big Heist (timed test, not shared) & Gang War (shared via code), single subject
+// Timed Test / Big Heist (timed test, not shared) & Challenge Test (shared via code), single subject
 app.post('/api/:subject/test/create', (req, res) => {
   const { chapterIds, count, creatorName, mode, difficulty, timeLimitSeconds, readingTimeSeconds } = req.body;
   if (!Array.isArray(chapterIds) || !chapterIds.length) return res.status(400).json({ error: 'Pick at least one chapter' });
@@ -735,7 +735,7 @@ app.post('/api/:subject/pyp/quiz/generate', (req, res) => {
   res.json({ questions: questionsPublic(qids) });
 });
 
-// Solo Job / Gang War creation for PYP: { paperId } = full paper, or { chapterIds, count, difficulty } = chapterwise mix.
+// Timed Test / Challenge Test creation for PYP: { paperId } = full paper, or { chapterIds, count, difficulty } = chapterwise mix.
 app.post('/api/:subject/pyp/test/create', (req, res) => {
   const { paperId, chapterIds, count, creatorName, difficulty, timeLimitSeconds, readingTimeSeconds } = req.body;
   let qids, label;
@@ -779,7 +779,7 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Study Mafia running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Math Mafia running on port ${PORT}`));
 
 // ================================================================
 // FRONTEND (single-file embedded, per house style)
@@ -789,7 +789,7 @@ const FRONTEND_HTML = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study Mafia — Class 10 (Maths · Science · SST)</title>
+<title>Math Mafia — Class 10 Learning Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Dancing+Script:wght@600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -1197,21 +1197,250 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
   .code-display .code{ font-size:24px; letter-spacing:0.03em; }
   .topbar .who span.rec-clock{ display:none; }
 }
+
+/* ---------- Premium design system ---------- */
+:root{
+  color-scheme:dark;
+  --bg:#0B1220;
+  --felt:#18372F;
+  --felt-light:#244B3F;
+  --gold:#C7A96B;
+  --gold-soft:#E7D3A5;
+  --cream:#F4F6FB;
+  --red:#D87482;
+  --card:#121B2B;
+  --card-border:#2B374B;
+  --muted:#A8B3C5;
+  --accent:#8ED8BA;
+}
+html{scroll-behavior:smooth;scroll-padding-top:120px;}
+body{
+  color:var(--cream);
+  background-color:var(--bg);
+  line-height:1.6;
+  font-family:'IBM Plex Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background-image:
+    radial-gradient(ellipse at 12% 0%,rgba(142,216,186,.09),transparent 38%),
+    radial-gradient(ellipse at 92% 30%,rgba(199,169,107,.07),transparent 32%),
+    linear-gradient(180deg,#0B1220 0%,#0A101C 100%);
+}
+h1,h2,h3,.display{
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  text-transform:none;
+  letter-spacing:-.025em;
+  line-height:1.25;
+}
+button,input,select,textarea{font:inherit;}
+button{touch-action:manipulation;}
+:focus-visible{outline:3px solid rgba(142,216,186,.9);outline-offset:3px;}
+a{color:var(--gold-soft);text-underline-offset:3px;}
+#gate{padding:clamp(24px,5vw,64px);background:radial-gradient(ellipse at 50% 32%,rgba(142,216,186,.07),transparent 48%);}
+#gate::before{opacity:.42;}
+.badge-seal{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 7px rgba(142,216,186,.06),0 18px 52px rgba(0,0,0,.2);width:80px;height:80px;font-family:'IBM Plex Sans';font-size:24px;border-radius:24px;transform:none;}
+#gate h1{font-size:clamp(38px,6vw,64px);font-weight:700;letter-spacing:-.05em;margin-bottom:10px;}
+#gate h1 span{color:var(--accent);}
+#gate .tagline{font-size:15px;line-height:1.7;}
+.tagline-main{font-size:15px;letter-spacing:.01em;text-transform:none;font-weight:600;color:var(--muted);margin-top:8px;}
+.tagline-script{font-family:'IBM Plex Sans',sans-serif;font-size:18px;font-weight:600;color:var(--gold-soft);letter-spacing:.01em;margin:6px auto 26px;}
+.tagline-script::after{display:none;}
+.name-form{gap:10px;max-width:400px;}
+.name-form label{font-size:13px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--cream);}
+.name-form input{font-family:inherit;font-size:16px;letter-spacing:0;font-weight:400;border-radius:12px;padding:15px 16px;background:rgba(18,27,43,.86);border-color:#344157;}
+.name-form input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(142,216,186,.12);}
+.name-form .err{color:#F39BA5;}
+#app{min-height:100vh;}
+.topbar{
+  min-height:68px;
+  padding:12px clamp(16px,3vw,38px);
+  gap:20px;
+  border-color:rgba(168,179,197,.14);
+  background:rgba(9,15,26,.88);
+  backdrop-filter:blur(18px) saturate(130%);
+  -webkit-backdrop-filter:blur(18px) saturate(130%);
+}
+.topbar .brand{font-family:'IBM Plex Sans',sans-serif;font-size:16px;letter-spacing:.045em;font-weight:700;gap:12px;}
+.topbar .brand-badge{width:34px;height:34px;border-radius:11px;border-color:var(--accent);color:var(--accent);box-shadow:none;font-size:12px;}
+.ticker{max-width:560px;margin:0 8px;padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.025);border-color:rgba(168,179,197,.13);}
+.ticker-text{font-size:12.5px;}
+.topbar .who{font-size:12.5px;gap:10px;}
+.topbar .who b{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--cream);}
+.btn-ghost{color:var(--muted);text-decoration:none;border:1px solid transparent;border-radius:9px;padding:7px 9px;}
+.btn-ghost:hover{color:var(--cream);border-color:var(--card-border);background:rgba(255,255,255,.035);}
+.rec-clock{font-size:10.5px;color:var(--accent);border-color:rgba(168,179,197,.18);letter-spacing:.04em;}
+.rec-dot{background:var(--accent);animation:none;width:6px;height:6px;}
+.subject-tabs{gap:8px;padding:12px clamp(16px,3vw,38px);background:rgba(10,16,28,.84);border-color:rgba(168,179,197,.13);}
+.subj-tab{font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:0;border-radius:12px;padding:9px 15px;background:rgba(255,255,255,.025);border-color:rgba(168,179,197,.17);color:var(--muted);}
+.subj-tab:hover{border-color:rgba(142,216,186,.58);color:var(--cream);}
+.subj-tab.active{border-color:rgba(142,216,186,.72);color:var(--accent);background:rgba(142,216,186,.09);}
+.branch-tabs{background:rgba(10,16,28,.7);border-color:rgba(168,179,197,.13);}
+main{width:100%;max-width:1280px;margin:0 auto;padding:clamp(24px,3.2vw,44px) clamp(16px,3.2vw,42px) 84px;}
+.section-title{font-family:'IBM Plex Sans',sans-serif;font-size:clamp(20px,2vw,25px);font-weight:700;letter-spacing:-.035em;text-transform:none;color:var(--cream);margin-bottom:18px;}
+.crumbs{font-size:13px;margin-bottom:22px;color:var(--muted);}
+.crumbs button{font-family:inherit;color:var(--accent);text-decoration:none;font-weight:600;border-radius:8px;padding:6px 8px;margin-left:-8px;}
+.crumbs button:hover{background:rgba(142,216,186,.08);}
+.mode-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:48px;}
+.mode-card{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  min-width:0;min-height:174px;height:100%;padding:24px;
+  background:linear-gradient(145deg,rgba(22,33,51,.98),rgba(16,25,40,.96));
+  border:1px solid rgba(168,179,197,.15);border-radius:18px;
+  box-shadow:0 8px 26px rgba(0,0,0,.09);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.mode-card:hover{border-color:rgba(142,216,186,.55);transform:translateY(-3px);box-shadow:0 16px 36px rgba(0,0,0,.18);background:linear-gradient(145deg,rgba(25,43,59,.98),rgba(17,30,44,.98));}
+.mode-card .icon{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;margin:0 0 18px;border:1px solid rgba(142,216,186,.15);border-radius:14px;background:rgba(142,216,186,.08);font-size:22px;}
+.mode-card h3{font-size:17px;font-weight:700;line-height:1.35;letter-spacing:-.02em;text-transform:none;color:var(--cream);margin:0 0 8px;}
+.mode-card p{font-size:13px;color:var(--muted);line-height:1.65;margin-top:0;max-width:44ch;}
+.chapter-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.ch-card{min-width:0;padding:22px;background:linear-gradient(145deg,rgba(20,30,47,.96),rgba(16,25,39,.95));border:1px solid rgba(168,179,197,.14);border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,.07);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.ch-card:hover{border-color:rgba(142,216,186,.48);}
+.ch-card .num{font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--accent);text-transform:uppercase;}
+.ch-card h3{font-size:17px;line-height:1.4;font-weight:700;overflow-wrap:anywhere;color:var(--cream);margin:9px 0 12px;}
+.ch-card .stats{gap:8px;font-size:12px;}
+.ch-card .stats span{background:rgba(142,216,186,.07);border:1px solid rgba(142,216,186,.1);padding:4px 9px;color:var(--muted);}
+.ch-card.selectable.selected{border-color:var(--accent);background:rgba(142,216,186,.07);box-shadow:inset 0 0 0 1px rgba(142,216,186,.58);}
+.ch-card.selectable.selected::after{color:var(--accent);}
+.ch-card.clickable:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.14);}
+.progress-track{height:7px;background:rgba(255,255,255,.07);margin-top:18px;}
+.progress-fill{background:linear-gradient(90deg,var(--accent),var(--gold));}
+.progress-label{font-size:12px;line-height:1.4;margin-top:8px;}
+.progress-label .pct{color:var(--accent);}
+.summary-card{gap:28px;padding:28px;margin-bottom:42px;border-radius:20px;border-color:rgba(168,179,197,.15);background:linear-gradient(135deg,rgba(142,216,186,.09),rgba(199,169,107,.025));box-shadow:0 8px 30px rgba(0,0,0,.08);}
+.summary-left .summary-rank{font-family:'IBM Plex Sans',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.02em;text-transform:none;color:var(--accent);}
+.summary-left .summary-sub{font-size:13px;line-height:1.6;}
+.summary-right{min-width:min(100%,220px);}
+.summary-right .summary-pct{font-family:'IBM Plex Sans',sans-serif;font-size:26px;font-weight:700;color:var(--cream);}
+.setup-box,.q-card,.code-display{padding:clamp(18px,3vw,30px);border-radius:18px;border-color:rgba(168,179,197,.16);background:linear-gradient(145deg,rgba(19,29,45,.98),rgba(15,24,38,.98));box-shadow:0 8px 26px rgba(0,0,0,.08);}
+.setup-box label{font-size:13px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--muted);margin-bottom:9px;}
+.setup-select,.q-card input[type=text],.name-form input{border-radius:12px;}
+.setup-select{border-color:#344157;background:#0D1523;padding:12px 14px;min-width:0;}
+.setup-select:focus,.q-card input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(142,216,186,.1);}
+.count-row{gap:12px;flex-wrap:wrap;}
+.count-row input[type=number]{max-width:100%;border-radius:11px!important;border:1px solid #344157!important;background:#0D1523!important;color:var(--cream)!important;padding:12px!important;}
+.count-row .val{font-size:13px;font-weight:500;color:var(--muted);line-height:1.5;text-align:left;}
+.radio-opt{align-items:flex-start;line-height:1.5;color:var(--cream);font-size:14px;}
+.radio-opt input{margin-top:4px;}
+.btn,.btn-outline{
+  min-height:44px;padding:12px 18px;border-radius:12px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:0;text-transform:none;
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease;
+}
+.btn{background:linear-gradient(135deg,#E9D6A9,#C7A96B);color:#1B2230;box-shadow:0 5px 16px rgba(199,169,107,.14);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(199,169,107,.22);}
+.btn-outline{background:rgba(255,255,255,.025);border-color:#344157;color:var(--cream);}
+.btn-outline:hover{background:rgba(142,216,186,.06);border-color:rgba(142,216,186,.55);color:var(--accent);}
+button:disabled,input:disabled,select:disabled{opacity:.48;cursor:not-allowed!important;transform:none!important;box-shadow:none!important;}
+.tabs{gap:8px;margin-bottom:22px;align-items:center;}
+.tab{font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;border-radius:12px;padding:10px 15px;background:rgba(255,255,255,.025);border-color:rgba(168,179,197,.15);color:var(--muted);}
+.tab.active{border-color:rgba(142,216,186,.6);background:rgba(142,216,186,.08);color:var(--accent);}
+.note-item,.example-card,.ex-item{padding:20px 22px;margin-bottom:14px;border:1px solid rgba(168,179,197,.14);border-radius:16px;background:linear-gradient(145deg,rgba(20,30,47,.97),rgba(16,25,39,.96));line-height:1.75;}
+.note-item{border-left:3px solid var(--accent);}
+.example-card .q,.ex-item .q{font-size:15px;line-height:1.7;overflow-wrap:anywhere;color:var(--cream);}
+.example-card details summary,.ex-item details summary{font-weight:600;text-transform:none;letter-spacing:0;color:var(--accent);padding:5px 0;}
+.example-card details p,.ex-item details p{line-height:1.75;color:#C1CAD8;overflow-wrap:anywhere;}
+.ex-item .meta{gap:7px;margin-bottom:12px;}
+.ex-item .meta span{font-size:11px;border:1px solid rgba(199,169,107,.14);background:rgba(199,169,107,.07);color:var(--gold-soft);}
+.formula-table{border:1px solid rgba(168,179,197,.13);border-radius:14px;overflow:hidden;}
+.formula-table th{background:rgba(255,255,255,.035);color:var(--gold-soft);}
+.formula-table td,.formula-table th{padding:14px 16px;line-height:1.6;overflow-wrap:anywhere;}
+.formula-table td.f{white-space:normal;overflow-wrap:anywhere;color:var(--accent);}
+.q-progress{font-size:13px;line-height:1.5;}
+.runner-top{gap:16px;align-items:center;}
+.timer{font-size:15px;font-weight:600;padding:8px 12px;border-radius:10px;background:rgba(199,169,107,.07);border:1px solid rgba(199,169,107,.14);white-space:nowrap;}
+.q-card{margin-bottom:22px;}
+.q-card .qtext{font-size:clamp(16px,1.4vw,19px);line-height:1.8;overflow-wrap:anywhere;}
+.q-card input[type=text]{background:#0D1523;border-color:#344157;border-radius:12px;padding:14px 16px;min-height:48px;}
+.mcq-options{gap:12px;}
+.mcq-opt{border-radius:12px;padding:14px 16px;gap:14px;line-height:1.55;min-height:54px;background:#0D1523;border-color:#344157;overflow-wrap:anywhere;white-space:normal;}
+.mcq-opt .mcq-letter{width:30px;height:30px;background:rgba(142,216,186,.08);color:var(--accent);font-weight:700;}
+.mcq-opt.selected{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:rgba(142,216,186,.06);}
+.mcq-opt.selected .mcq-letter{background:var(--accent);color:#11221D;}
+.mcq-opt.correct{border-color:#53B890;background:rgba(83,184,144,.12);}
+.mcq-opt.correct .mcq-letter{background:#53B890;color:#092018;}
+.mcq-opt.wrong{border-color:#DE7C89;background:rgba(222,124,137,.1);}
+.mcq-opt.wrong .mcq-letter{background:#DE7C89;color:#241016;}
+.feedback{padding:14px 16px;border-radius:12px;line-height:1.65;overflow-wrap:anywhere;}
+.feedback.correct{background:rgba(83,184,144,.1);color:#A5E8CA;}
+.feedback.wrong{background:rgba(222,124,137,.1);color:#F2B3BA;}
+.feedback.locked{background:rgba(199,169,107,.08);color:var(--gold-soft);}
+.time-tag{margin-left:10px;}
+.code-display{text-align:center;border-style:solid;border-color:rgba(199,169,107,.4);padding:clamp(24px,5vw,40px);}
+.code-display .code{font-size:clamp(30px,5vw,48px);font-family:'IBM Plex Sans',sans-serif;font-weight:700;letter-spacing:.14em;color:var(--accent);overflow-wrap:anywhere;}
+.lb-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto 72px;gap:12px;padding:16px 18px;border-radius:14px;border-color:rgba(168,179,197,.13);background:rgba(18,27,43,.86);margin-bottom:10px;}
+.lb-row .rank{font-weight:700;}
+.lb-row .name{padding:0;min-width:0;overflow-wrap:anywhere;}
+.lb-row .score{font-size:12px;white-space:normal;overflow-wrap:anywhere;}
+.lb-row .time{width:auto;}
+.result-hero{padding:clamp(30px,6vw,64px) 16px;}
+.result-hero .big{font-family:'IBM Plex Sans',sans-serif;font-size:clamp(42px,8vw,76px);font-weight:700;letter-spacing:-.045em;color:var(--accent);}
+.result-hero .sub{max-width:700px;margin:10px auto 0;line-height:1.7;font-size:14px;}
+.empty{padding:clamp(36px,6vw,64px) 18px;line-height:1.7;background:rgba(18,27,43,.45);border:1px dashed rgba(168,179,197,.18);border-radius:16px;}
+.site-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:22px clamp(16px,3.2vw,42px);border-top:1px solid rgba(168,179,197,.12);color:var(--muted);font-size:12px;line-height:1.6;}
+.footer-brand{color:var(--accent);font-weight:700;letter-spacing:.08em;font-size:11px;}
+@media(max-width:1024px){
+  .mode-grid,.chapter-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ticker{max-width:34vw;}
+  main{padding-left:24px;padding-right:24px;}
+}
+@media(max-width:768px){
+  .topbar{gap:12px;flex-wrap:wrap;}
+  .ticker{order:3;flex-basis:100%;max-width:none;margin:0;}
+  .subject-tabs,.branch-tabs{position:relative;top:auto;}
+  main{padding:24px 18px 64px;}
+  .summary-card{align-items:stretch;gap:18px;}
+  .summary-right{min-width:0;max-width:none;}
+  .runner-top{align-items:flex-start;}
+  .q-card{padding:22px;}
+}
+@media(max-width:640px){
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:12px 14px;gap:10px;}
+  .topbar .brand{font-size:14px;gap:8px;min-width:0;}
+  .topbar .brand-badge{width:30px;height:30px;flex-shrink:0;}
+  .topbar .who{font-size:11px;gap:6px;min-width:0;max-width:58vw;justify-content:flex-end;}
+  .topbar .who b{max-width:72px;}
+  .topbar .who span.rec-clock{display:none;}
+  .ticker{display:none;}
+  .subject-tabs{padding:10px 14px;gap:7px;}
+  main{padding:24px 14px 56px;}
+  .mode-grid,.chapter-grid{grid-template-columns:minmax(0,1fr);gap:12px;}
+  .mode-card{display:grid;grid-template-columns:44px minmax(0,1fr);column-gap:14px;row-gap:2px;padding:18px;min-height:0;}
+  .mode-card .icon{grid-column:1;grid-row:1 / span 2;width:44px;height:44px;margin:0;}
+  .mode-card h3{grid-column:2;margin:1px 0 0;}
+  .mode-card p{grid-column:2;}
+  .ch-card{padding:18px;}
+  .summary-card{padding:20px;}
+  .setup-box,.q-card,.code-display{padding:20px;}
+  .tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;}
+  .tab{white-space:nowrap;flex-shrink:0;}
+  .nav-row{flex-direction:column-reverse;}
+  .nav-row button{width:100%;}
+  .lb-row{grid-template-columns:30px minmax(0,1fr);gap:8px 12px;}
+  .lb-row .score,.lb-row .time{grid-column:2;text-align:left;}
+  .time-tag{float:none;display:inline-block;margin-left:8px;}
+  .count-row{align-items:center;}
+  .count-row input[type=number]{width:76px!important;}
+  .site-footer{flex-direction:column;gap:5px;}
+  .code-display .code{font-size:clamp(26px,9vw,38px);letter-spacing:.08em;}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
+
 </style>
 </head>
 <body>
 
 <div id="gate">
   <div class="live-clock" id="liveClock"></div>
-  <div class="badge-seal">SM</div>
-  <h1>Study <span>Mafia</span></h1>
-  <p class="tagline-main">Welcome to the gang, buddy.</p>
-  <p class="tagline-script">It's time for a voyage.</p>
+  <div class="badge-seal">MM</div>
+  <h1>Math <span>Mafia</span></h1>
+  <p class="tagline-main">A calmer, clearer way to master Class 10.</p>
+  <p class="tagline-script">Practice. Understand. Improve.</p>
   <form class="name-form" id="gateForm">
-    <label for="nameInput">Your Alias</label>
-    <input id="nameInput" type="text" placeholder="e.g. harshit chaubey" autocomplete="off" autofocus>
+    <label for="nameInput">Your name</label>
+    <input id="nameInput" type="text" placeholder="Enter your name" maxlength="40" autocomplete="name" autofocus>
     <div class="err" id="nameErr"></div>
-    <button type="submit" class="btn">BOOYAH!!!! →</button>
+    <button type="submit" class="btn">Continue →</button>
   </form>
 </div>
 
@@ -1220,7 +1449,7 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
     <div class="badge-seal-sm">SM</div>
     <div class="quote-mark">"</div>
     <p class="quote-text" id="quoteText"></p>
-    <p class="quote-sub" id="quoteSub">— Study Mafia</p>
+    <p class="quote-sub" id="quoteSub">— Math Mafia</p>
     <button type="button" class="btn quote-enter-btn" id="quoteEnterBtn">Enter →</button>
     <p class="quote-hint">or press Enter to continue</p>
   </div>
@@ -1229,14 +1458,15 @@ main{ max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
 
 <div id="app">
   <div class="topbar">
-    <div class="brand"><span class="brand-badge">SM</span> STUDY MAFIA</div>
+    <div class="brand"><span class="brand-badge">MM</span> MATH MAFIA</div>
     <div class="ticker" id="topTicker"><span class="ticker-text" id="tickerText"></span></div>
-    <div class="who">Playing as <b id="whoName"></b> <button class="btn-ghost" id="switchBtn">switch</button>
-      <span class="rec-clock"><span class="rec-dot"></span>REC <span id="dashClock"></span></span>
+    <div class="who">Signed in as <b id="whoName"></b> <button class="btn-ghost" id="switchBtn">Change name</button>
+      <span class="rec-clock"><span class="rec-dot"></span>LOCAL TIME <span id="dashClock"></span></span>
     </div>
   </div>
   <div class="subject-tabs" id="subjectTabs"></div>
   <main id="main"></main>
+  <footer class="site-footer"><span class="footer-brand">MATH MAFIA</span><span>Class 10 Learning Studio · Designed by Harshit Chaubey</span></footer>
 </div>
 
 <script>
@@ -1334,9 +1564,9 @@ function route(){
       const sub = seg.slice(2);
       if(sub[0]==='chapter' && sub[1]) return openChapterPage(sub[1], qs.get('tab')||'notes');
       if(sub[0]==='pick' && sub[1]==='notes') return renderNotesPicker(sub[2]);
-      if(sub[0]==='pick' && sub[1]==='quiz') return renderPicker('quizPicker','Quick Heist','Pick one or more chapters to mix questions from.',true,(ids)=>navigate(sp('/setup/quiz?ch='+ids.join(','))));
-      if(sub[0]==='pick' && sub[1]==='solo') return renderPicker('soloPicker','Solo Job','Pick chapters for your timed test.',true,(ids)=>navigate(sp('/setup/solo?ch='+ids.join(','))));
-      if(sub[0]==='pick' && sub[1]==='war') return renderPicker('createWar','Start a Gang War','Pick chapters — your crew will get the exact same questions.',true,(ids)=>navigate(sp('/setup/war?ch='+ids.join(','))));
+      if(sub[0]==='pick' && sub[1]==='quiz') return renderPicker('quizPicker','Practice Quiz','Pick one or more chapters to mix questions from.',true,(ids)=>navigate(sp('/setup/quiz?ch='+ids.join(','))));
+      if(sub[0]==='pick' && sub[1]==='solo') return renderPicker('soloPicker','Timed Test','Pick chapters for your timed test.',true,(ids)=>navigate(sp('/setup/solo?ch='+ids.join(','))));
+      if(sub[0]==='pick' && sub[1]==='war') return renderPicker('createWar','Start a Challenge Test','Pick chapters — your crew will get the exact same questions.',true,(ids)=>navigate(sp('/setup/war?ch='+ids.join(','))));
       if(sub[0]==='pick' && sub[1]==='mcqpractice') return renderMcqPicker();
       if(sub[0]==='mcqpractice') return renderMcqPractice((qs.get('ch')||'').split(',').filter(Boolean));
       if(sub[0]==='setup' && sub[1]) return renderTestSetup(sub[1], (qs.get('ch')||'').split(',').filter(Boolean));
@@ -1390,7 +1620,7 @@ function boot(){
 document.getElementById('gateForm').addEventListener('submit', e=>{
   e.preventDefault();
   const val = nameInput.value.trim();
-  if(!val){ document.getElementById('nameErr').textContent = 'Every family member needs a name.'; return; }
+  if(!val){ document.getElementById('nameErr').textContent = 'Please enter your name to continue.'; return; }
   localStorage.setItem('sm_name', val);
   enterApp(val);
 });
@@ -1507,7 +1737,7 @@ const QUOTE_CLOSERS = [
 function getRandomFamilyQuote(){
   const o = QUOTE_OPENERS[Math.floor(Math.random()*QUOTE_OPENERS.length)];
   const c = QUOTE_CLOSERS[Math.floor(Math.random()*QUOTE_CLOSERS.length)];
-  return { text: o + ', ' + c + '.', author: 'Study Mafia' };
+  return { text: o + ', ' + c + '.', author: 'Math Mafia' };
 }
 
 // Real quotes: freedom fighters, scientists, world leaders, and Bhagavad Gita shlokas (translated)
@@ -1712,15 +1942,15 @@ function renderDashboard(){
       </div>
     </div>
     <div class="section-title">Choose your move</div>
-    ${'$'}{isMcqOnlySubject(state.subject) ? \`<p style="color:var(--gold-soft); margin:-10px 0 18px; font-size:13px;">📌 Quick Heist, Solo Job and Gang War pull MCQ / Assertion-Reason questions only for this subject — long/short answers vary too much to auto-grade. Use MCQ Practice below for the full bank.</p>\` : ''}
+    ${'$'}{isMcqOnlySubject(state.subject) ? \`<p style="color:var(--gold-soft); margin:-10px 0 18px; font-size:13px;">📌 Practice Quiz, Timed Test and Challenge Test pull MCQ / Assertion-Reason questions only for this subject — long/short answers vary too much to auto-grade. Use MCQ Practice below for the full bank.</p>\` : ''}
     <div class="mode-grid">
       <button class="mode-card" onclick="goto('notesPicker')"><span class="icon">📒</span><h3>Short Notes</h3><p>Chapter-wise short notes, straight to the point.</p></button>
-      <button class="mode-card" onclick="goto('quizPicker')"><span class="icon">⚡</span><h3>Quick Heist</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Instant-feedback MCQ practice, no pressure, no leaderboard.' : 'Instant-feedback practice quiz, no pressure, no leaderboard.'}</p></button>
-      <button class="mode-card" onclick="goto('soloPicker')"><span class="icon">🎯</span><h3>Solo Job</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Timed MCQ test on one or many chapters. Just you and the clock.' : 'Timed test on one or many chapters. Just you and the clock.'}</p></button>
-      <button class="mode-card" onclick="goto('createWar')"><span class="icon">🤝</span><h3>Start a Gang War</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Pick chapters, get a code, challenge your crew on MCQs.' : 'Pick chapters, get a code, challenge your crew. Leaderboard included.'}</p></button>
+      <button class="mode-card" onclick="goto('quizPicker')"><span class="icon">⚡</span><h3>Practice Quiz</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Instant-feedback MCQ practice, no pressure, no leaderboard.' : 'Instant-feedback practice quiz, no pressure, no leaderboard.'}</p></button>
+      <button class="mode-card" onclick="goto('soloPicker')"><span class="icon">🎯</span><h3>Timed Test</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Timed MCQ test on one or many chapters. Just you and the clock.' : 'Timed test on one or many chapters. Just you and the clock.'}</p></button>
+      <button class="mode-card" onclick="goto('createWar')"><span class="icon">🤝</span><h3>Start a Challenge Test</h3><p>${'$'}{isMcqOnlySubject(state.subject) ? 'Pick chapters, get a code, challenge your crew on MCQs.' : 'Pick chapters, get a code, challenge your crew. Leaderboard included.'}</p></button>
       <button class="mode-card" onclick="goto('mcqPractice')"><span class="icon">🧠</span><h3>MCQ Practice</h3><p>Read, think, reveal — every MCQ &amp; Assertion-Reason question on file. No typing, no scoring.</p></button>
-      <button class="mode-card" onclick="navigate('/mix/pick')"><span class="icon">🌐</span><h3>Mix Subjects War</h3><p>Blend chapters from every subject into one Gang War.</p></button>
-      <button class="mode-card" onclick="goto('joinWar')"><span class="icon">🔑</span><h3>Join a Gang War</h3><p>Got a code from a friend? Enter it and take them down.</p></button>
+      <button class="mode-card" onclick="navigate('/mix/pick')"><span class="icon">🌐</span><h3>Mix Subjects War</h3><p>Blend chapters from every subject into one Challenge Test.</p></button>
+      <button class="mode-card" onclick="goto('joinWar')"><span class="icon">🔑</span><h3>Join a Challenge Test</h3><p>Got a code from a friend? Enter it and take them down.</p></button>
       <button class="mode-card" onclick="navigate(sp('/pyp'))"><span class="icon">📜</span><h3>Previous Papers</h3><p>Real board papers, year-wise and chapter-wise, with every test mode.</p></button>
     </div>
     <div class="section-title">Contents</div>
@@ -1744,7 +1974,7 @@ function renderDashboard(){
 function renderPicker(key,title,sub,multi,onGo){
   const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">${'$'}{esc(title)}</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">${'$'}{esc(sub)}</p>
     <div class="chapter-grid" id="pickGrid"></div>
@@ -1780,7 +2010,7 @@ async function renderNotesPicker(branchId){
 
   if(branches.length && !branchId){
     main.innerHTML = \`
-      <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+      <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
       <div class="section-title">Short Notes — ${'$'}{esc(sInfo.name)}</div>
       <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Pick a section to read its notes.</p>
       <div class="mode-grid">
@@ -1795,7 +2025,7 @@ async function renderNotesPicker(branchId){
   const files = data.files || [];
   const crumbLabel = branchId ? branchName(subj, branchId) : sInfo.name;
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(${'$'}{branchId ? \`sp('/pick/notes')\` : \`sp('')\`})">← ${'$'}{branchId ? 'Sections' : 'The Turf'}</button></div>
+    <div class="crumbs"><button onclick="navigate(${'$'}{branchId ? \`sp('/pick/notes')\` : \`sp('')\`})">← ${'$'}{branchId ? 'Sections' : 'Dashboard'}</button></div>
     <div class="section-title">Short Notes — ${'$'}{esc(crumbLabel)}</div>
     ${'$'}{files.length
       ? \`<div class="mode-grid">${'$'}{files.map(f=>\`<button class="mode-card" onclick="window.open('${'$'}{f.url}','_blank')"><span class="icon">📒</span><h3>${'$'}{esc(f.name)}</h3></button>\`).join('')}</div>\`
@@ -1915,7 +2145,7 @@ function wirePracticeToggles(container, chapterId, chapterTitle, items){
   });
 }
 
-// ---------- MCQ Practice (click an option, see correct/incorrect instantly — same feel as Quick Heist,
+// ---------- MCQ Practice (click an option, see correct/incorrect instantly — same feel as Practice Quiz,
 // but every item on the page is independent and nothing is submitted to the server or scored) ----------
 const MCQ_LETTERS_PRACTICE = ['A','B','C','D','E','F'];
 function mcqPracticeCorrectIndex(item){
@@ -1957,7 +2187,7 @@ function renderMcqPicker(){
   replaceUrl(sp('/pick/mcqpractice'));
   const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">MCQ Practice</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Pick one or more chapters. Read each question, think of your answer, then reveal it. No typing, no scoring.</p>
     <div class="chapter-grid" id="mcqPickGrid"></div>
@@ -2005,7 +2235,7 @@ async function openChapterPage(id, tab){
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Loading chapter…</div>';
   const res = await fetch('/api/'+state.subject+'/chapter/'+id);
-  if(!res.ok){ main.innerHTML = '<div class="empty">Chapter not found.</div><div class="crumbs"><button onclick="navigate(sp(\\'\\'))">← The Turf</button></div>'; return; }
+  if(!res.ok){ main.innerHTML = '<div class="empty">Chapter not found.</div><div class="crumbs"><button onclick="navigate(sp(\\'\\'))">← Dashboard</button></div>'; return; }
   const ch = await res.json();
   state.currentChapter = ch;
   renderChapterView(ch, tab || 'notes');
@@ -2016,13 +2246,13 @@ function renderChapterView(ch, tab){
   const main = document.getElementById('main');
   const branchLabel = ch.branch ? branchName(state.subject, ch.branch) + ' · ' : '';
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">${'$'}{esc(branchLabel)}CH ${'$'}{ch.chapter} — ${'$'}{esc(ch.title)}</div>
-    ${'$'}{isMcqOnlySubject(state.subject) ? \`<p style="color:var(--gold-soft); margin:-6px 0 14px; font-size:13px;">📌 Quick Heist / Solo Job / Gang War use MCQ &amp; Assertion-Reason questions only. Check the MCQ tab below for the full bank.</p>\` : ''}
+    ${'$'}{isMcqOnlySubject(state.subject) ? \`<p style="color:var(--gold-soft); margin:-6px 0 14px; font-size:13px;">📌 Practice Quiz / Timed Test / Challenge Test use MCQ &amp; Assertion-Reason questions only. Check the MCQ tab below for the full bank.</p>\` : ''}
     <div class="mode-grid" style="margin-bottom:28px;">
-      <button class="mode-card" onclick="navigate(sp('/setup/quiz?ch=${'$'}{ch.id}'))"><span class="icon">⚡</span><h3>Quick Heist</h3><p>Practice this chapter only, instant feedback.</p></button>
-      <button class="mode-card" onclick="navigate(sp('/setup/solo?ch=${'$'}{ch.id}'))"><span class="icon">🎯</span><h3>Solo Job</h3><p>Timed test on this chapter, just you and the clock.</p></button>
-      <button class="mode-card" onclick="navigate(sp('/setup/war?ch=${'$'}{ch.id}'))"><span class="icon">🤝</span><h3>Start a Gang War</h3><p>Challenge your crew on this chapter, code + leaderboard.</p></button>
+      <button class="mode-card" onclick="navigate(sp('/setup/quiz?ch=${'$'}{ch.id}'))"><span class="icon">⚡</span><h3>Practice Quiz</h3><p>Practice this chapter only, instant feedback.</p></button>
+      <button class="mode-card" onclick="navigate(sp('/setup/solo?ch=${'$'}{ch.id}'))"><span class="icon">🎯</span><h3>Timed Test</h3><p>Timed test on this chapter, just you and the clock.</p></button>
+      <button class="mode-card" onclick="navigate(sp('/setup/war?ch=${'$'}{ch.id}'))"><span class="icon">🤝</span><h3>Start a Challenge Test</h3><p>Challenge your crew on this chapter, code + leaderboard.</p></button>
     </div>
     <div class="tabs">
       <button class="tab" data-t="notes">📒 Notes</button>
@@ -2098,20 +2328,20 @@ function renderMcqTabBody(body, items){
   });
 }
 
-// ---------- Quick Heist (practice quiz, instant feedback) ----------
-// ---------- Test setup page: difficulty, question count, timer (shared by Quiz / Solo / Gang War) ----------
+// ---------- Practice Quiz (practice quiz, instant feedback) ----------
+// ---------- Test setup page: difficulty, question count, timer (shared by Quiz / Solo / Challenge Test) ----------
 async function renderTestSetup(mode, chapterIds){
   const main = document.getElementById('main');
   chapterIds = (chapterIds||[]).filter(id => state.chapters.some(c=>c.id===id));
   if(!chapterIds.length){
-    main.innerHTML = \`<div class="empty">No chapters selected.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp(''))">← The Turf</button></div>\`;
+    main.innerHTML = \`<div class="empty">No chapters selected.</div><div class="crumbs" style="justify-content:center;margin-top:16px;"><button onclick="navigate(sp(''))">← Dashboard</button></div>\`;
     return;
   }
   const titles = chapterIds.map(id => { const c = state.chapters.find(x=>x.id===id); if(!c) return ''; return (c.branchName?c.branchName+' · ':'')+'CH '+c.chapterNum+' — '+c.title; }).filter(Boolean);
   const modeInfo = {
-    quiz: { title:'Quick Heist Setup', sub:'Instant feedback, no leaderboard.', defCount:10, defTimer:false, defMinutes:10, goBtn:'Start Heist →', pickPath:sp('/pick/quiz') },
-    solo: { title:'Solo Job Setup', sub:'Timed test, just you and the clock.', defCount:15, defTimer:true, defMinutes:15, goBtn:'Start the Job →', pickPath:sp('/pick/solo') },
-    war:  { title:'Gang War Setup', sub:'Everyone who joins with your code gets these exact settings.', defCount:12, defTimer:true, defMinutes:15, goBtn:'Create the War →', pickPath:sp('/pick/war') }
+    quiz: { title:'Practice Quiz Setup', sub:'Instant feedback, no leaderboard.', defCount:10, defTimer:false, defMinutes:10, goBtn:'Start Heist →', pickPath:sp('/pick/quiz') },
+    solo: { title:'Timed Test Setup', sub:'Timed test, just you and the clock.', defCount:15, defTimer:true, defMinutes:15, goBtn:'Start the Job →', pickPath:sp('/pick/solo') },
+    war:  { title:'Challenge Test Setup', sub:'Everyone who joins with your code gets these exact settings.', defCount:12, defTimer:true, defMinutes:15, goBtn:'Create the War →', pickPath:sp('/pick/war') }
   }[mode] || { title:'Test Setup', sub:'', defCount:10, defTimer:false, defMinutes:10, goBtn:'Start →', pickPath:sp('') };
 
   main.innerHTML = \`
@@ -2217,13 +2447,13 @@ function renderPypHome(){
   replaceUrl(sp('/pyp'));
   const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">Previous Year Papers</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Real board papers. Take one whole, or mix questions by chapter across every year.</p>
     <div class="mode-grid" style="margin-bottom:32px;">
       <button class="mode-card" onclick="navigate(sp('/pyp/pick/quiz'))"><span class="icon">⚡</span><h3>Chapterwise Practice</h3><p>Pull PYP questions from any chapter, across every paper.</p></button>
       <button class="mode-card" onclick="navigate(sp('/pyp/pick/solo'))"><span class="icon">🎯</span><h3>Chapterwise Timed Test</h3><p>Same mix, but timed — one or many chapters.</p></button>
-      <button class="mode-card" onclick="navigate(sp('/pyp/pick/war'))"><span class="icon">🤝</span><h3>Chapterwise Gang War</h3><p>Challenge your crew with a chapterwise PYP mix.</p></button>
+      <button class="mode-card" onclick="navigate(sp('/pyp/pick/war'))"><span class="icon">🤝</span><h3>Chapterwise Challenge Test</h3><p>Challenge your crew with a chapterwise PYP mix.</p></button>
       <button class="mode-card" onclick="navigate(sp('/pyp/weightage'))"><span class="icon">📊</span><h3>Chapter Weightage</h3><p>Which chapters the board actually leans on, based on every unique question on file.</p></button>
     </div>
     <div class="section-title">By Year</div>
@@ -2307,7 +2537,7 @@ async function renderPypPaperDetail(id){
     <div class="mode-grid" style="margin-bottom:28px;">
       <button class="mode-card" id="pypPracticeBtn"><span class="icon">⚡</span><h3>Practice</h3><p>Instant feedback, no timer.</p></button>
       <button class="mode-card" id="pypSoloBtn"><span class="icon">🎯</span><h3>Full Test</h3><p>Timed, just you — the complete paper.</p></button>
-      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Gang War</h3><p>Challenge your crew on this exact paper.</p></button>
+      <button class="mode-card" id="pypWarBtn"><span class="icon">🤝</span><h3>Challenge Test</h3><p>Challenge your crew on this exact paper.</p></button>
     </div>
     <div class="section-title">Chapters Covered</div>
     <p style="color:var(--muted); margin-bottom:14px; font-size:13px;">Tap a chapter to practice just its questions from this paper.</p>
@@ -2331,7 +2561,7 @@ async function renderPypPaperSetup(id, mode){
   const gradable = data.questions.filter(q=>q.gradable);
   const defSeconds = gradable.length ? Math.max(600, gradable.length*90) : 900;
   const defHours = Math.floor(defSeconds/3600), defMinutes = Math.round((defSeconds%3600)/60);
-  const modeInfo = { solo: { title:'Full Test Setup', goBtn:'Start the Job →' }, war: { title:'Gang War Setup', goBtn:'Create the War →' } }[mode] || { title:'Setup', goBtn:'Start →' };
+  const modeInfo = { solo: { title:'Full Test Setup', goBtn:'Start the Job →' }, war: { title:'Challenge Test Setup', goBtn:'Create the War →' } }[mode] || { title:'Setup', goBtn:'Start →' };
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp/paper/${'$'}{id}'))">← Back to Paper</button></div>
     <div class="section-title">${'$'}{esc(modeInfo.title)}</div>
@@ -2369,7 +2599,7 @@ async function renderPypPaperSetup(id, mode){
 
 // Chapterwise picker, scoped to chapters that actually have PYP coverage (mirrors renderPicker)
 async function renderPypPicker(mode){
-  const titleMap = { quiz:'Chapterwise Practice', solo:'Chapterwise Timed Test', war:'Chapterwise Gang War' };
+  const titleMap = { quiz:'Chapterwise Practice', solo:'Chapterwise Timed Test', war:'Chapterwise Challenge Test' };
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Loading chapters…</div>';
   const pypChapters = await loadPypChapters();
@@ -2407,7 +2637,7 @@ async function renderPypTestSetup(mode, chapterIds){
   const modeInfo = {
     quiz: { title:'Chapterwise Practice Setup', sub:'Instant feedback, no leaderboard.', defCount:10, defTimer:false, defMinutes:10, goBtn:'Start Practice →' },
     solo: { title:'Chapterwise Timed Test Setup', sub:'Timed test, just you and the clock.', defCount:15, defTimer:true, defMinutes:15, goBtn:'Start the Job →' },
-    war:  { title:'Chapterwise Gang War Setup', sub:'Everyone who joins with your code gets these exact settings.', defCount:12, defTimer:true, defMinutes:15, goBtn:'Create the War →' }
+    war:  { title:'Chapterwise Challenge Test Setup', sub:'Everyone who joins with your code gets these exact settings.', defCount:12, defTimer:true, defMinutes:15, goBtn:'Create the War →' }
   }[mode] || { title:'Test Setup', sub:'', defCount:10, defTimer:false, defMinutes:10, goBtn:'Start →' };
 
   main.innerHTML = \`
@@ -2530,7 +2760,7 @@ async function createPypGangWar(opts){
   main.innerHTML = \`
     <div class="crumbs"><button onclick="navigate(sp('/pyp'))">← Previous Papers</button></div>
     <div class="code-display">
-      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Gang War Code</div>
+      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Challenge Test Code</div>
       <div class="code">${'$'}{data.code}</div>
       <div style="color:var(--muted); font-size:13px;">Share this code with your crew — same PYP questions, same rules, same fight.</div>
       <div style="margin-top:6px; font-size:12.5px; color:var(--gold-soft);">${'$'}{data.chapters.join(' · ')} — ${'$'}{data.questions.length} questions${'$'}{data.timeLimitSeconds ? ' · '+Math.round(data.timeLimitSeconds/60)+' min limit' : ' · no timer'}${'$'}{data.readingTimeSeconds ? ' · '+Math.round(data.readingTimeSeconds/60)+' min reading time' : ''}${'$'}{data.paperTotalMarks ? ' · marked out of '+data.paperTotalMarks : ''}</div>
@@ -2542,7 +2772,7 @@ async function createPypGangWar(opts){
   \`;
 }
 
-// ---------- Quick Heist (practice quiz, instant feedback) ----------
+// ---------- Practice Quiz (practice quiz, instant feedback) ----------
 async function startQuiz(chapterIds, opts){
   opts = opts || {};
   const res = await fetch('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||10, difficulty: opts.difficulty||'all'}) });
@@ -2613,7 +2843,7 @@ function renderQuizDone(){
     <div class="result-hero">
       <div class="big">${'$'}{state.quizScore} / ${'$'}{state.quiz.length}</div>
       <div class="sub">Heist complete. Not bad, ${'$'}{esc(state.name)}.</div>
-      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to The Turf</button></div>
+      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
     ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
@@ -2651,7 +2881,7 @@ function finishReadingPhase(){
   renderTimedRunner();
 }
 
-// ---------- Shared timed runner (Solo Job + Gang War): explicit submit, then answer is locked ----------
+// ---------- Shared timed runner (Timed Test + Challenge Test): explicit submit, then answer is locked ----------
 function renderTimedRunner(){
   if(state.readingActive) return renderReadingPhase();
   state.activeRunner = renderTimedRunner;
@@ -2722,7 +2952,7 @@ function autoFinishOnTimeout(){
   if(state.runnerMode==='war') finishGangWar(); else finishSoloTest();
 }
 
-// ---------- Solo Job (timed, local only) ----------
+// ---------- Timed Test (timed, local only) ----------
 async function startSoloTest(chapterIds, opts){
   opts = opts || {};
   const res = await fetch('/api/'+state.subject+'/quiz/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||15, difficulty: opts.difficulty||'all'}) });
@@ -2765,14 +2995,14 @@ async function finishSoloTest(){
       <div class="big">${'$'}{score} / ${'$'}{state.quiz.length}</div>
       <div class="sub">${'$'}{score} correct · ${'$'}{incorrect} incorrect — Job done in ${'$'}{mm}:${'$'}{ss}</div>
       ${'$'}{marksLine}
-      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to The Turf</button></div>
+      <div style="margin-top:24px;"><button class="btn" onclick="navigate(sp(''))">Back to Dashboard</button></div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
     ${'$'}{state.quiz.map(r=>\`<div class="ex-item"><div class="q">${'$'}{renderMedia(r.question)}${'$'}{r.marks?' <span style="color:var(--gold-soft);font-size:12px;">('+r.marks+' marks)</span>':''}</div><div class="feedback ${'$'}{r.correct?'correct':'wrong'}">${'$'}{r.correct?'✅ Correct':'❌ Your answer: '+esc(r.given||'(blank)')+' — Correct: '+renderMedia(r.correctAnswer||'')}<span class="time-tag">⏱ ${'$'}{r.timeSec!=null?r.timeSec+'s':'—'}</span></div></div>\`).join('')}
   \`;
 }
 
-// ---------- Gang War (shared test code + leaderboard) ----------
+// ---------- Challenge Test (shared test code + leaderboard) ----------
 async function createGangWar(chapterIds, opts){
   opts = opts || {};
   const res = await fetch('/api/'+state.subject+'/test/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chapterIds, count: opts.count||12, creatorName: state.name, mode:'squad', difficulty: opts.difficulty||'all', timeLimitSeconds: opts.timeLimitSeconds||null, readingTimeSeconds: opts.readingTimeSeconds||null}) });
@@ -2781,9 +3011,9 @@ async function createGangWar(chapterIds, opts){
   state.testCode = data.code;
   const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="code-display">
-      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Gang War Code</div>
+      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Challenge Test Code</div>
       <div class="code">${'$'}{data.code}</div>
       <div style="color:var(--muted); font-size:13px;">Share this code with your crew — same questions, same rules, same fight.</div>
       <div style="margin-top:6px; font-size:12.5px; color:var(--gold-soft);">${'$'}{data.chapters.join(' · ')} — ${'$'}{data.questions.length} questions${'$'}{data.timeLimitSeconds ? ' · '+Math.round(data.timeLimitSeconds/60)+' min limit' : ' · no timer'}${'$'}{data.readingTimeSeconds ? ' · '+Math.round(data.readingTimeSeconds/60)+' min reading time' : ''}</div>
@@ -2798,9 +3028,9 @@ async function createGangWar(chapterIds, opts){
 function renderJoinWar(){
   const main = document.getElementById('main');
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="setup-box" style="max-width:420px; margin:40px auto; text-align:center;">
-      <div class="section-title">Enter Gang War Code</div>
+      <div class="section-title">Enter Challenge Test Code</div>
       <input type="text" id="joinCode" maxlength="6" placeholder="ABC123" style="width:100%; text-align:center; text-transform:uppercase; font-family:'IBM Plex Mono'; font-size:22px; letter-spacing:0.2em; background:var(--bg); border:1.5px solid var(--card-border); color:var(--gold); padding:14px; border-radius:8px; margin:16px 0;">
       <button class="btn" id="joinGo" style="width:100%;">Enter the War →</button>
     </div>
@@ -2849,7 +3079,7 @@ async function finishGangWar(){
       ${'$'}{marksLine}
       <div style="margin-top:24px; display:flex; gap:12px; justify-content:center;">
         <button class="btn" onclick="navigate('/leaderboard/${'$'}{state.testCode}')">View Leaderboard</button>
-        <button class="btn-outline" onclick="navigate(sp(''))">Back to The Turf</button>
+        <button class="btn-outline" onclick="navigate(sp(''))">Back to Dashboard</button>
       </div>
     </div>
     <div class="section-title" style="margin-top:20px;">Breakdown</div>
@@ -2864,8 +3094,8 @@ async function viewLeaderboard(code){
   const data = await res.json();
   if(data.error){ alert(data.error); navigate(sp('')); return; }
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
-    <div class="section-title">Most Wanted — Code ${'$'}{esc(code)}</div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
+    <div class="section-title">Leaderboard — Code ${'$'}{esc(code)}</div>
     <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Started by ${'$'}{esc(data.creatorName)} · ${'$'}{data.total} questions</p>
     <div id="lbList"></div>
     <div style="margin-top:20px; text-align:center;">
@@ -2883,12 +3113,12 @@ async function viewLeaderboard(code){
   }).join('');
 }
 
-// ---------- Mix Subjects Gang War: pull chapters from several subjects into one combined war ----------
+// ---------- Mix Subjects Challenge Test: pull chapters from several subjects into one combined war ----------
 async function renderMixPicker(){
   const main = document.getElementById('main');
   if(!state.subjects.length) await loadSubjects();
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="section-title">Mix Subjects War</div>
     <p style="color:var(--muted); margin-bottom:20px; font-size:14px;">Add chapters from as many subjects as you want — your crew answers one combined test.</p>
     <div id="mixPartsList"></div>
@@ -3027,9 +3257,9 @@ async function createMixGangWar(opts){
   state.mixParts = [];
   state.testCode = data.code;
   main.innerHTML = \`
-    <div class="crumbs"><button onclick="navigate(sp(''))">← The Turf</button></div>
+    <div class="crumbs"><button onclick="navigate(sp(''))">← Dashboard</button></div>
     <div class="code-display">
-      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Mix Subjects Gang War Code</div>
+      <div style="color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.08em;">Mix Subjects Challenge Test Code</div>
       <div class="code">${'$'}{data.code}</div>
       <div style="color:var(--muted); font-size:13px;">Share this code with your crew — same mixed questions, same rules.</div>
       <div style="margin-top:6px; font-size:12.5px; color:var(--gold-soft);">${'$'}{data.chapters.join(' · ')} — ${'$'}{data.questions.length} questions${'$'}{data.timeLimitSeconds ? ' · '+Math.round(data.timeLimitSeconds/60)+' min limit' : ' · no timer'}</div>
