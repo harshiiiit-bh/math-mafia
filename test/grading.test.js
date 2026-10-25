@@ -58,6 +58,12 @@ test('MCQ answer labels support more than six choices', () => {
   assert.equal(checkAnswer('Y', 'Z', options), false);
 });
 
+test('option lists beyond the A–Z UI limit are not auto-gradable', () => {
+  const options = Array.from({ length: 27 }, (_, i) => 'Option ' + (i + 1));
+  assert.equal(isGradable({ answer: 'Option 27', options }), false);
+  assert.equal(checkAnswer('Option 27', 'Option 27', options), false);
+});
+
 test('MCQs with invalid answer keys are excluded from graded pools', () => {
   assert.equal(isGradable({ answer: 'Z', options: ['one', 'two', 'three', 'four'] }), false);
   assert.equal(checkAnswer('Z', 'Z', ['one', 'two', 'three', 'four']), false);
