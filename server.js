@@ -27,6 +27,7 @@ function prettifyNoteFileName(f) {
 // Lists every .html file directly inside notes/<subject>[/<branch>], sorted alphabetically.
 // Returns [] if the folder doesn't exist yet (nothing uploaded there yet).
 function listNoteFiles(subjectId, branchId) {
+  if(branchId && !branchesFor(subjectId).some(branch => branch.id === branchId)) return [];
   const dir = branchId ? path.join(NOTES_DIR, subjectId, branchId) : path.join(NOTES_DIR, subjectId);
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
@@ -483,6 +484,7 @@ app.get('/api/:subject/chapters', (req, res) => {
     formulaCount: (c.formulas || []).length,
     exampleCount: (c.examples || []).length,
     exerciseCount: (c.exercises || []).length,
+    practiceCount: (c.examples || []).length + (c.exercises || []).filter(ex => !(Array.isArray(ex.options) && ex.options.length)).length,
     gradableCount: req.subj.filterPool([c.id], null).length,
     mcqCount: req.subj.mcqPracticePool([c.id]).length
   })));
@@ -509,6 +511,7 @@ app.get('/api/:subject/notes', (req, res) => {
 });
 // Short Notes: list uploaded static HTML notes files for one branch (e.g. sst/history).
 app.get('/api/:subject/notes/:branch', (req, res) => {
+  if(!branchesFor(req.subjectId).some(branch => branch.id === req.params.branch)) return res.status(404).json({ error: 'Unknown notes section' });
   res.json({ files: listNoteFiles(req.subjectId, req.params.branch) });
 });
 
@@ -2030,7 +2033,7 @@ function renderDashboard(){
   \`;
   const grid = document.getElementById('chGrid');
   grid.innerHTML = visibleChapters().map(c => {
-    const total = c.exampleCount + c.exerciseCount;
+    const total = c.practiceCount != null ? c.practiceCount : c.exampleCount + c.exerciseCount;
     const pct = progressPct(c.id, total);
     return \`
     <div class="ch-card clickable" data-id="${'$'}{c.id}" data-total="${'$'}{total}" onclick="navigate(sp('/chapter/${'$'}{c.id}'))">
@@ -2138,7 +2141,7 @@ function getOverallProgress(){
   const prog = getProgress();
   let total = 0, viewed = 0;
   state.chapters.forEach(c=>{
-    const t = c.exampleCount + c.exerciseCount;
+    const t = c.practiceCount != null ? c.practiceCount : c.exampleCount + c.exerciseCount;
     total += t;
     viewed += Math.min((prog[c.id] || []).length, t);
   });
@@ -3286,7 +3289,7 @@ async function finishGangWar(){
   \`;
 }
 
-async function viewLeaderboard(code){
+async async function viewLeaderboard(code){
   const main = document.getElementById('main');
   main.innerHTML = '<div class="empty">Loading leaderboard…</div>';
   const routePath = location.pathname;
