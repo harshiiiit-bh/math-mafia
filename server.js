@@ -257,7 +257,18 @@ function loadSubject(subjectId) {
         console.error(`[Math Mafia] Skipping broken file data/${subjectId}/pyp/${f}: ${err.message}`);
         return;
       }
-      const paperId = raw.id || `${raw.year}-set${raw.set || 1}`;
+      if(!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(raw.questions) || !Number.isInteger(Number(raw.year)) || Number(raw.year) < 1900){
+        console.error(`[Math Mafia] Skipping invalid paper data/${subjectId}/pyp/${f}: expected year and questions[]`);
+        return;
+      }
+      raw.year = Number(raw.year);
+      const requestedSet = Number(raw.set);
+      raw.set = Number.isInteger(requestedSet) && requestedSet > 0 ? requestedSet : 1;
+      const paperId = String(raw.id || `${raw.year}-set${raw.set}`);
+      if(!/^[A-Za-z0-9_-]+$/.test(paperId) || Object.prototype.hasOwnProperty.call(papers, paperId)){
+        console.error(`[Math Mafia] Skipping invalid or duplicate paper id ${paperId} in data/${subjectId}/pyp/${f}`);
+        return;
+      }
       raw.id = paperId;
       papers[paperId] = raw;
     });
@@ -266,18 +277,32 @@ function loadSubject(subjectId) {
   function paperLabelFor(p) { return `${p.board ? p.board + ' ' : ''}${p.year}${p.set ? ' Set ' + p.set : ''}`; }
 
   const pypPool = [];
+  const usedPypQids = new Set();
   paperList.forEach(p => {
-    (p.questions || []).forEach((ex, idx) => {
-      const qid = `${subjectId}:pyp-${p.id}-${ex.id != null ? ex.id : idx + 1}`;
-      // A PYP question can specify its own "branch" (needed for SST papers spanning books);
-      // if omitted it falls back to whatever branch that chapter number is already registered under.
-      const exBranch = ex.branch || (Object.values(chapters).find(c => c.chapter === ex.chapter) || {}).branch || null;
-      const chapterId = chapterCompositeId(exBranch, ex.chapter);
+    p.questions.forEach((ex, idx) => {
+      if(!ex || typeof ex !== 'object' || Array.isArray(ex)){
+        console.error(`[Math Mafia] Skipping malformed question ${idx + 1} in paper ${p.id}`);
+        return;
+      }
+      const itemId = ex.id != null && String(ex.id).trim() ? String(ex.id).trim() : String(idx + 1);
+      const qid = `${subjectId}:pyp-${p.id}-${itemId}`;
+      if(usedPypQids.has(qid)){
+        console.error(`[Math Mafia] Skipping duplicate PYP question id ${qid}`);
+        return;
+      }
+      usedPypQids.add(qid);
+      const chapterNum = Number.isInteger(Number(ex.chapter)) && Number(ex.chapter) > 0 ? Number(ex.chapter) : null;
+      const matchingChapters = chapterNum == null ? [] : Object.values(chapters).filter(ch => ch.chapter === chapterNum);
+      const explicitBranch = typeof ex.branch === 'string' && ex.branch.trim() ? ex.branch.trim() : null;
+      const exBranch = explicitBranch || (matchingChapters.length === 1 ? matchingChapters[0].branch || null : null);
+      const candidateId = chapterNum == null ? null : chapterCompositeId(exBranch, chapterNum);
+      const mappedChapter = candidateId ? chapters[candidateId] || null : null;
+      const chapterId = mappedChapter ? candidateId : null;
       pypPool.push({
         qid, subject: subjectId, paperId: p.id, paperLabel: paperLabelFor(p),
         year: p.year, set: p.set || 1, order: idx,
-        chapterId, chapter: ex.chapter, branch: exBranch,
-        chapterTitle: (chapters[chapterId] && chapters[chapterId].title) || ('Chapter ' + ex.chapter),
+        chapterId, chapter: chapterNum, branch: mappedChapter ? exBranch : null,
+        chapterTitle: mappedChapter ? mappedChapter.title : (chapterNum == null ? 'Unmapped question' : `Unmapped chapter ${chapterNum}`),
         topic: ex.topic, difficulty: ex.difficulty, marks: ex.marks,
         question: mcqDisplayQuestion(ex), answer: ex.answer, gradable: isGradable(ex),
         options: Array.isArray(ex.options) ? ex.options : null,
@@ -285,7 +310,6 @@ function loadSubject(subjectId) {
       });
     });
   });
-
   // Duplicate detection across PYP papers: CBSE previous-year/sample papers frequently reuse the
   // exact same question, verbatim or lightly reworded, across different years/sets. Only the FIRST
   // occurrence (earliest year, then earliest set, then original order) stays eligible for shuffled
@@ -303,7 +327,8 @@ function loadSubject(subjectId) {
       if (!norm) return;
       const exactKey = q.chapterId != null ? String(q.chapterId) + '\u0000' + norm : String(q.qid) + '\u0000' + norm;
       if (seenByExactText.has(exactKey)) { q.isDuplicate = true; q.duplicateOf = seenByExactText.get(exactKey); return; }
-      const bucket = keptByChapter[q.chapterId] || (keptByChapter[q.chapterId] = []);
+      const bucketKey = q.chapterId != null ? String(q.chapterId) : String(q.qid);
+      const bucket = keptByChapter[bucketKey] || (keptByChapter[bucketKey] = []);
       const near = bucket.find(o => textSimilarity(norm, o.norm) >= SIMILARITY_DUPLICATE_THRESHOLD);
       if (near) { q.isDuplicate = true; q.duplicateOf = near.qid; return; }
       seenByExactText.set(exactKey, q.qid);
@@ -338,7 +363,7 @@ function loadSubject(subjectId) {
     const limit = Number.isFinite(requested) ? Math.max(0, Math.floor(requested)) : pool.length;
     return shuffled.slice(0, Math.min(limit, shuffled.length)).map(q => q.qid);
   }
-  function pypGradablePool() { return pypPool.filter(q => q.gradable && !q.isDuplicate && (!mcqOnly || isMcq(q))); }
+  function pypGradablePool() { return pypPool.filter(q => q.chapterId && chapters[q.chapterId] && q.gradable && !q.isDuplicate && (!mcqOnly || isMcq(q))); }
   function filterPypPool(chapterIds, difficulty) {
     return pypGradablePool().filter(q => {
       if (Array.isArray(chapterIds) && chapterIds.length && !chapterIds.includes(q.chapterId)) return false;
@@ -369,7 +394,7 @@ function loadSubject(subjectId) {
   // each chapter's "MCQ" tab, where the student just reads, thinks, and reveals (no auto-grading).
   function mcqPracticePool(chapterIds) {
     const fromMain = questionPool.filter(q => isMc(q));
-    const fromPyp = pypPool.filter(q => isMc(q) && q.gradable && !q.isDuplicate);
+    const fromPyp = pypPool.filter(q => q.chapterId && chapters[q.chapterId] && isMc(q) && q.gradable && !q.isDuplicate);
     let combined = [...fromMain, ...fromPyp];
     if (Array.isArray(chapterIds) && chapterIds.length) {
       combined = combined.filter(q => chapterIds.includes(q.chapterId));
