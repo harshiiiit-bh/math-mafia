@@ -5,7 +5,20 @@ const crypto = require('crypto');
 const { isGradable, checkAnswer } = require('./lib/grading');
 
 const app = express();
-app.use(express.json());
+
+// Reduce information leakage and add defense-in-depth browser security headers.
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  next();
+});
+
+// Bound JSON request bodies so oversized payloads are rejected early.
+app.use(express.json({ limit: '100kb' }));
 
 // Serve question/answer diagram images referenced by PYP papers, e.g.
 // /assets/science/questions/2026-set1/q4.png -> <repo-root>/assets/science/questions/2026-set1/q4.png
